@@ -74,6 +74,7 @@ RentNest frontend (Assignment 5): a Next.js App Router app for a rental marketpl
 **Data notes**
 - Prisma `Decimal` fields (`rentAmount`, `totalRent`, `amount`) arrive as **strings**. Always `Number()` before math/formatting.
 - `images` is a JSON array of URL strings.
+- **Locations are USA only.** `city` is a US city and `division` holds the US state (label it "State" in the UI; pick from a select of the 50 states + DC, never Bangladesh divisions). Use different states across examples and seed-like copy. Phone examples use US format (`+1…`); the backend phone regex `^\+?[0-9]{7,15}$` accepts them.
 - Seed images come from `images.unsplash.com`; uploads come from `i.ibb.co`. Add both to `next.config` `images.remotePatterns`.
 
 ## Architecture rules

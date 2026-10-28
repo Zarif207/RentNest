@@ -13,6 +13,17 @@ export function roleHome(role: UserRole) {
   return ROLE_HOME[role];
 }
 
+/**
+ * Validates a `?redirect=` value: same-site paths only (no "//host" or
+ * "https://…"), and never back into /auth.
+ */
+export function safeRedirect(path: string | null | undefined) {
+  if (!path || !path.startsWith("/") || path.startsWith("//") || path.startsWith("/\\")) {
+    return null;
+  }
+  return path.startsWith("/auth") ? null : path;
+}
+
 function isUserRole(value: unknown): value is UserRole {
   return USER_ROLES.includes(value as UserRole);
 }
