@@ -40,6 +40,14 @@ export function useLandlordProperties(page: number) {
   });
 }
 
+/** Up to 100 of the landlord's properties, for overview counts. */
+export function useAllLandlordProperties() {
+  return useQuery({
+    queryKey: queryKeys.landlord.properties.list({ limit: 100 }),
+    queryFn: () => landlordService.getProperties({ limit: 100 }),
+  });
+}
+
 /** One property (public endpoint; the edit page checks ownership). */
 export function useProperty(id: string) {
   return useQuery({

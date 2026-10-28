@@ -127,7 +127,7 @@
   --input: rgb(255 255 255 / 14%);
   --ring: #f5f5f5;
   --chart-1: #f5f5f5;
-  --chart-2: #7aa7e0;
+  --chart-2: #5b8fd1; /* same blue: validated on the dark surface (#7aa7e0 read too light) */
   --chart-3: #ff291b;
   --chart-4: #6b7280;
   --chart-5: #2a3a4d;
