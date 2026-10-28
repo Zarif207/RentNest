@@ -1,7 +1,7 @@
 import { Mail, Phone } from "lucide-react";
 import { UserAvatar } from "@/components/shared/user-avatar";
+import { RequestToRent } from "@/components/rentals/request-to-rent";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { formatCurrency, formatNumber } from "@/lib/format";
 import type { PropertyWithRelations } from "@/types";
 
@@ -35,10 +35,7 @@ export function BookingCard({ property }: { property: PropertyWithRelations }) {
         ))}
       </dl>
 
-      {/* Wired up in the next step (request-to-rent dialog). */}
-      <Button type="button" size="lg" className="h-13 w-full text-base">
-        Request to Rent
-      </Button>
+      <RequestToRent property={property} />
 
       <div className="space-y-4 border-t pt-6">
         <div className="flex items-center gap-3">
