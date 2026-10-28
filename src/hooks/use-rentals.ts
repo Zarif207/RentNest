@@ -20,6 +20,14 @@ export function useMyRentals(status?: BookingStatus) {
   });
 }
 
+/** One rental request with its property and payment (tenant or owning landlord). */
+export function useRental(id: string) {
+  return useQuery({
+    queryKey: queryKeys.rentals.detail(id),
+    queryFn: () => rentalsService.getById(id),
+  });
+}
+
 export function useCreateRental() {
   const queryClient = useQueryClient();
   const router = useRouter();
