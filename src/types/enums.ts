@@ -27,5 +27,3 @@ export type PaymentStatus = (typeof PAYMENT_STATUSES)[number];
 
 export type PaymentMethod = "CARD";
 export type PaymentProvider = "STRIPE";
-
-export type SortOrder = "asc" | "desc";

@@ -1,6 +1,6 @@
 import { cacheLife, cacheTag } from "next/cache";
 import { categoriesService } from "@/lib/api/categories";
-import { isApiError } from "@/lib/api/client";
+import { ApiError, getErrorMessage, isApiError } from "@/lib/api/client";
 import { propertiesService } from "@/lib/api/properties";
 import { reviewsService } from "@/lib/api/reviews";
 import type { PropertyQuery } from "@/types";
@@ -17,43 +17,75 @@ export const PROPERTIES_TAG = "properties";
 /** Tag on the cached category list; expired when an admin changes categories. */
 export const CATEGORIES_TAG = "categories";
 
-export async function getPublicProperties(query: PropertyQuery = {}) {
-  "use cache";
-  cacheLife(PUBLIC_CACHE);
-  cacheTag(PROPERTIES_TAG);
-  return propertiesService.getAll(query);
-}
-
-/** null when the property doesn't exist (404) or the id is malformed (400). */
-export async function getPublicProperty(id: string) {
-  "use cache";
-  cacheLife(PUBLIC_CACHE);
-  cacheTag(PROPERTIES_TAG);
-  try {
-    return await propertiesService.getById(id);
-  } catch (error) {
-    if (isApiError(error) && (error.status === 404 || error.status === 400)) return null;
-    throw error;
-  }
-}
-
-export async function getPublicCategories() {
-  "use cache";
-  cacheLife(PUBLIC_CACHE);
-  cacheTag(CATEGORIES_TAG);
-  return categoriesService.getAll();
-}
-
 /** Cache tag for one property's reviews; expired after a tenant posts a review. */
 export function propertyReviewsTag(propertyId: string) {
   return `reviews:${propertyId}`;
 }
 
-export async function getPublicPropertyReviews(propertyId: string) {
+// A cached function must not throw: an exception escaping "use cache" fails
+// the prerender (e.g. `next build` while the API is down) even if the caller
+// catches it. So the cached functions return a plain result, and the exported
+// wrappers rethrow outside the cache, where pages and error boundaries handle it.
+type CacheResult<T> = { ok: true; data: T } | { ok: false; status: number; message: string };
+
+async function settle<T>(request: Promise<T>): Promise<CacheResult<T>> {
+  try {
+    return { ok: true, data: await request };
+  } catch (error) {
+    return { ok: false, status: isApiError(error) ? error.status : 0, message: getErrorMessage(error) };
+  }
+}
+
+function unwrap<T>(result: CacheResult<T>): T {
+  if (result.ok) return result.data;
+  throw new ApiError(result.status, result.message);
+}
+
+async function cachedProperties(query: PropertyQuery) {
+  "use cache";
+  cacheLife(PUBLIC_CACHE);
+  cacheTag(PROPERTIES_TAG);
+  return settle(propertiesService.getAll(query));
+}
+
+async function cachedProperty(id: string) {
+  "use cache";
+  cacheLife(PUBLIC_CACHE);
+  cacheTag(PROPERTIES_TAG);
+  return settle(propertiesService.getById(id));
+}
+
+async function cachedCategories() {
+  "use cache";
+  cacheLife(PUBLIC_CACHE);
+  cacheTag(CATEGORIES_TAG);
+  return settle(categoriesService.getAll());
+}
+
+async function cachedPropertyReviews(propertyId: string) {
   "use cache";
   cacheLife(PUBLIC_CACHE);
   cacheTag(propertyReviewsTag(propertyId));
-  return reviewsService.getForProperty(propertyId);
+  return settle(reviewsService.getForProperty(propertyId));
+}
+
+export async function getPublicProperties(query: PropertyQuery = {}) {
+  return unwrap(await cachedProperties(query));
+}
+
+/** null when the property doesn't exist (404) or the id is malformed (400). */
+export async function getPublicProperty(id: string) {
+  const result = await cachedProperty(id);
+  if (!result.ok && (result.status === 404 || result.status === 400)) return null;
+  return unwrap(result);
+}
+
+export async function getPublicCategories() {
+  return unwrap(await cachedCategories());
+}
+
+export async function getPublicPropertyReviews(propertyId: string) {
+  return unwrap(await cachedPropertyReviews(propertyId));
 }
 
 /** Resolves to null instead of throwing, so one failed section doesn't blank the page. */

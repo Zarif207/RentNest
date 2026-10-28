@@ -1,4 +1,4 @@
-import { format, formatDistanceToNow, isValid, parseISO } from "date-fns";
+import { format, isValid, parseISO } from "date-fns";
 
 // Shown instead of "NaN", "Invalid Date" or "undefined" when a value is missing.
 const PLACEHOLDER = "—";
@@ -44,12 +44,6 @@ export function formatDate(value: string | Date | null | undefined) {
 export function formatDateTime(value: string | Date | null | undefined) {
   const date = toDate(value);
   return date ? format(date, "MMM d, yyyy, h:mm a") : PLACEHOLDER;
-}
-
-/** "3 days ago" */
-export function formatRelativeTime(value: string | Date | null | undefined) {
-  const date = toDate(value);
-  return date ? formatDistanceToNow(date, { addSuffix: true }) : PLACEHOLDER;
 }
 
 /** "Nadia Tenant" → "NT", "madonna" → "M" */
