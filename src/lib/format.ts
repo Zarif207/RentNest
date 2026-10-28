@@ -43,6 +43,16 @@ export function formatRelativeTime(value: string | Date | null | undefined) {
   return date ? formatDistanceToNow(date, { addSuffix: true }) : PLACEHOLDER;
 }
 
+/** "Nadia Tenant" → "NT", "madonna" → "M" */
+export function getInitials(name: string | null | undefined) {
+  const parts = (name ?? "").trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "?";
+  return parts
+    .slice(0, 2)
+    .map((part) => part[0].toUpperCase())
+    .join("");
+}
+
 /** Enum values to labels: "APARTMENT" → "Apartment", "IN_REVIEW" → "In review". */
 export function formatEnumLabel(value: string | null | undefined) {
   if (!value) return PLACEHOLDER;
