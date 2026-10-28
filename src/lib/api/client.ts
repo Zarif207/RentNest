@@ -30,6 +30,35 @@ export function isApiError(error: unknown): error is ApiError {
   return error instanceof ApiError;
 }
 
+export function getErrorMessage(error: unknown) {
+  return isApiError(error)
+    ? error.message
+    : "Something went wrong. Please try again.";
+}
+
+// Sent by the backend's auth middleware for a blocked account.
+const BLOCKED_USER_MESSAGE = "User is blocked";
+
+type SessionErrorHandler = (error: ApiError) => void;
+
+let sessionErrorHandler: SessionErrorHandler | undefined;
+
+/**
+ * Registered by AuthProvider. Called (before the error is thrown) when an
+ * authenticated request fails because the session is expired/invalid (401)
+ * or the account is blocked (403 "User is blocked").
+ */
+export function setSessionErrorHandler(handler: SessionErrorHandler | undefined) {
+  sessionErrorHandler = handler;
+}
+
+function isSessionError(error: ApiError) {
+  return (
+    error.status === 401 ||
+    (error.status === 403 && error.message === BLOCKED_USER_MESSAGE)
+  );
+}
+
 type QueryValue = string | number | boolean | null | undefined;
 
 export type RequestOptions = {
@@ -39,6 +68,8 @@ export type RequestOptions = {
   /** Overrides the cookie token (e.g. right after login, or on the server). */
   token?: string;
   signal?: AbortSignal;
+  /** Don't trigger the session error handler (login's 401 is a wrong password). */
+  skipSessionHandling?: boolean;
 };
 
 function buildUrl(path: string, query?: RequestOptions["query"]) {
@@ -67,7 +98,14 @@ function getClientToken() {
 /** The single fetch wrapper for every backend call. Throws ApiError on failure. */
 export async function apiRequest<T>(
   path: string,
-  { method = "GET", body, query, token, signal }: RequestOptions = {},
+  {
+    method = "GET",
+    body,
+    query,
+    token,
+    signal,
+    skipSessionHandling = false,
+  }: RequestOptions = {},
 ): Promise<ApiSuccess<T>> {
   if (!API_URL) {
     throw new ApiError(0, "The API URL is not configured.");
@@ -101,18 +139,23 @@ export async function apiRequest<T>(
 
   if (!response.ok || !payload?.success) {
     const errorBody = payload && !payload.success ? payload : null;
-
-    throw new ApiError(
+    const error = new ApiError(
       response.status,
       errorBody?.message || fallbackMessage(response.status),
       errorBody?.errorDetails ?? [],
     );
+
+    if (authToken && !skipSessionHandling && isSessionError(error)) {
+      sessionErrorHandler?.(error);
+    }
+
+    throw error;
   }
 
   return payload;
 }
 
-type MethodOptions = Omit<RequestOptions, "method" | "body">;
+export type MethodOptions = Omit<RequestOptions, "method" | "body">;
 
 export const api = {
   get: async <T>(path: string, options?: MethodOptions) =>

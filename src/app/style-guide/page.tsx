@@ -6,6 +6,7 @@ import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ApiCheck } from "./api-check";
+import { AuthCheck } from "./auth-check";
 
 // Temporary page for checking the design system; removed in step 24.
 export const metadata: Metadata = { title: "Style guide" };
@@ -176,6 +177,10 @@ export default function StyleGuidePage() {
         >
           <ApiCheck />
         </Suspense>
+      </Section>
+
+      <Section title="Auth session">
+        <AuthCheck />
       </Section>
 
       <Section title="Surfaces">
