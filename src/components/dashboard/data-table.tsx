@@ -1,3 +1,4 @@
+import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
 import { EmptyState, type EmptyStateProps } from "@/components/shared/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -17,7 +18,32 @@ export type DataTableColumn<T> = {
   className?: string;
   /** Leave out of the stacked mobile card (e.g. when it's in the card title). */
   hideOnMobile?: boolean;
+  /** Makes the header a sort toggle; `direction` is null when sorted by another column. */
+  sort?: { direction: "asc" | "desc" | null; onToggle: () => void };
 };
+
+function SortableHeader<T>({ column }: { column: DataTableColumn<T> }) {
+  const sort = column.sort;
+  if (!sort) return column.header;
+  const Icon = sort.direction === "asc" ? ArrowUp : sort.direction === "desc" ? ArrowDown : ArrowUpDown;
+  return (
+    <button
+      type="button"
+      onClick={sort.onToggle}
+      className="-mx-2 inline-flex items-center gap-1.5 rounded-lg px-2 py-1 outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
+    >
+      {column.header}
+      <Icon className={cn("size-3.5", !sort.direction && "opacity-50")} aria-hidden />
+    </button>
+  );
+}
+
+function ariaSort<T>(column: DataTableColumn<T>) {
+  if (!column.sort) return undefined;
+  if (column.sort.direction === "asc") return "ascending" as const;
+  if (column.sort.direction === "desc") return "descending" as const;
+  return "none" as const;
+}
 
 type DataTableProps<T> = {
   columns: DataTableColumn<T>[];
@@ -57,8 +83,12 @@ export function DataTable<T>({
           <TableHeader>
             <TableRow className="hover:bg-transparent">
               {columns.map((column) => (
-                <TableHead key={column.key} className={cn("h-12 px-4", column.className)}>
-                  {column.header}
+                <TableHead
+                  key={column.key}
+                  aria-sort={ariaSort(column)}
+                  className={cn("h-12 px-4", column.className)}
+                >
+                  <SortableHeader column={column} />
                 </TableHead>
               ))}
             </TableRow>

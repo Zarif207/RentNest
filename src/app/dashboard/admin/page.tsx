@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { DashboardWelcome } from "@/components/dashboard/dashboard-welcome";
+import { AdminOverview } from "@/components/admin/admin-overview";
 
 export const metadata: Metadata = { title: "Admin dashboard" };
 
 export default function AdminOverviewPage() {
-  return <DashboardWelcome role="ADMIN" />;
+  return <AdminOverview />;
 }
