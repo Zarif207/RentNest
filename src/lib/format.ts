@@ -62,6 +62,13 @@ export function getInitials(name: string | null | undefined) {
     .join("");
 }
 
+/** Amenity tags to labels: "air-conditioning" → "Air conditioning", "wifi" → "Wi-Fi". */
+export function formatAmenity(value: string) {
+  if (value.toLowerCase() === "wifi") return "Wi-Fi";
+  const label = value.toLowerCase().replaceAll(/[-_]/g, " ");
+  return label.charAt(0).toUpperCase() + label.slice(1);
+}
+
 /** Enum values to labels: "APARTMENT" → "Apartment", "IN_REVIEW" → "In review". */
 export function formatEnumLabel(value: string | null | undefined) {
   if (!value) return PLACEHOLDER;
