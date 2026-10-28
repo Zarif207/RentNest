@@ -5,8 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAuth, useLogin, useLogout } from "@/hooks/use-auth";
 import { authService } from "@/lib/api/auth";
-import { TOKEN_COOKIE } from "@/lib/api/client";
-import { roleHome } from "@/lib/auth";
+import { roleHome, TOKEN_COOKIE } from "@/lib/auth";
 import { formatEnumLabel } from "@/lib/format";
 import { useAuthStore } from "@/store/auth-store";
 

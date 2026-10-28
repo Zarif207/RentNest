@@ -3,6 +3,8 @@ import { USER_ROLES, type JwtPayload, type UserRole } from "@/types";
 
 // Server-safe helpers (also used by the route-protection proxy).
 
+export const TOKEN_COOKIE = "rn_token";
+
 const ROLE_HOME: Record<UserRole, string> = {
   TENANT: "/dashboard/tenant",
   LANDLORD: "/dashboard/landlord",

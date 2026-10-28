@@ -1,8 +1,7 @@
 import Cookies from "js-cookie";
 import { create } from "zustand";
 import { authService } from "@/lib/api/auth";
-import { TOKEN_COOKIE } from "@/lib/api/client";
-import { decodeToken, isTokenExpired } from "@/lib/auth";
+import { decodeToken, isTokenExpired, TOKEN_COOKIE } from "@/lib/auth";
 import type { User } from "@/types";
 
 /** idle: not checked yet · loading: validating a stored token with /auth/me */

@@ -1,12 +1,11 @@
 import Cookies from "js-cookie";
+import { TOKEN_COOKIE } from "@/lib/auth";
 import type {
   ApiErrorBody,
   ApiErrorDetail,
   ApiSuccess,
   Paginated,
 } from "@/types";
-
-export const TOKEN_COOKIE = "rn_token";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, "");
 
