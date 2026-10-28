@@ -15,7 +15,10 @@ export function applyServerErrors<T extends FieldValues>(
   let applied = false;
 
   for (const detail of error.errorDetails) {
-    const field = fields.find((name) => name === detail.path);
+    // "amenities.0" (one array item) belongs to the "amenities" field.
+    const field = fields.find(
+      (name) => detail.path === name || detail.path.startsWith(`${name}.`),
+    );
     if (!field) continue;
 
     setError(

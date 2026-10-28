@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AuthCheck } from "./auth-check";
 import { PropertyPreview } from "./property-preview";
+import { UploaderDemo } from "./uploader-demo";
 
 // Temporary page for checking the design system; removed in step 24.
 export const metadata: Metadata = { title: "Style guide" };
@@ -190,6 +191,10 @@ export default function StyleGuidePage() {
           description="Try a different city, widen the price range or remove a few amenities."
           action={<Button variant="outline">Clear filters</Button>}
         />
+      </Section>
+
+      <Section title="Image uploader">
+        <UploaderDemo />
       </Section>
 
       <Section title="Auth session">

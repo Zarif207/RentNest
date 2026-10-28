@@ -11,9 +11,13 @@ import type { PropertyQuery } from "@/types";
 
 const PUBLIC_CACHE = { stale: 60, revalidate: 60, expire: 3600 };
 
+/** Tag on every cached listing read; expired when a landlord changes a property. */
+export const PROPERTIES_TAG = "properties";
+
 export async function getPublicProperties(query: PropertyQuery = {}) {
   "use cache";
   cacheLife(PUBLIC_CACHE);
+  cacheTag(PROPERTIES_TAG);
   return propertiesService.getAll(query);
 }
 
@@ -21,6 +25,7 @@ export async function getPublicProperties(query: PropertyQuery = {}) {
 export async function getPublicProperty(id: string) {
   "use cache";
   cacheLife(PUBLIC_CACHE);
+  cacheTag(PROPERTIES_TAG);
   try {
     return await propertiesService.getById(id);
   } catch (error) {
