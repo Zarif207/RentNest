@@ -19,6 +19,15 @@ export function formatCurrency(value: string | number | null | undefined) {
   return currencyFormatter.format(amount);
 }
 
+const numberFormatter = new Intl.NumberFormat("en-US");
+
+/** "1450" → "1,450" */
+export function formatNumber(value: number | null | undefined) {
+  return value === null || value === undefined || !Number.isFinite(value)
+    ? PLACEHOLDER
+    : numberFormatter.format(value);
+}
+
 function toDate(value: string | Date | null | undefined) {
   if (!value) return null;
   const date = typeof value === "string" ? parseISO(value) : value;

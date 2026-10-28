@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { ArrowRight, Heart, Plus } from "lucide-react";
+import { ArrowRight, Heart, Plus, SearchX } from "lucide-react";
+import { PropertyGridSkeleton } from "@/components/properties/property-card-skeleton";
+import { EmptyState } from "@/components/shared/empty-state";
 import { SerifAccent } from "@/components/shared/serif-accent";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ApiCheck } from "./api-check";
 import { AuthCheck } from "./auth-check";
+import { PropertyPreview } from "./property-preview";
 
 // Temporary page for checking the design system; removed in step 24.
 export const metadata: Metadata = { title: "Style guide" };
@@ -171,12 +173,23 @@ export default function StyleGuidePage() {
         </div>
       </Section>
 
-      <Section title="API client">
-        <Suspense
-          fallback={<p className="text-sm text-muted-foreground">Loading properties…</p>}
-        >
-          <ApiCheck />
+      <Section title="Property cards (live API)">
+        <Suspense fallback={<PropertyGridSkeleton count={3} />}>
+          <PropertyPreview />
         </Suspense>
+      </Section>
+
+      <Section title="Card skeletons">
+        <PropertyGridSkeleton count={3} />
+      </Section>
+
+      <Section title="Empty state">
+        <EmptyState
+          icon={SearchX}
+          title="No properties match your filters"
+          description="Try a different city, widen the price range or remove a few amenities."
+          action={<Button variant="outline">Clear filters</Button>}
+        />
       </Section>
 
       <Section title="Auth session">
