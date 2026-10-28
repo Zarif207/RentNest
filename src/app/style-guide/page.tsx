@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { ArrowRight, Heart, Plus } from "lucide-react";
 import { SerifAccent } from "@/components/shared/serif-accent";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ApiCheck } from "./api-check";
 
 // Temporary page for checking the design system; removed in step 24.
 export const metadata: Metadata = { title: "Style guide" };
@@ -166,6 +168,14 @@ export default function StyleGuidePage() {
             ))}
           </div>
         </div>
+      </Section>
+
+      <Section title="API client">
+        <Suspense
+          fallback={<p className="text-sm text-muted-foreground">Loading properties…</p>}
+        >
+          <ApiCheck />
+        </Suspense>
       </Section>
 
       <Section title="Surfaces">
