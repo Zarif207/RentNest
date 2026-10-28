@@ -11,7 +11,14 @@ import { toast } from "sonner";
 import { adminService } from "@/lib/api/admin";
 import { getErrorMessage } from "@/lib/api/client";
 import { queryKeys } from "@/lib/query-keys";
-import type { AdminRentalQuery, AdminUserQuery, Paginated, User, UserStatus } from "@/types";
+import type {
+  AdminRentalQuery,
+  AdminUserQuery,
+  Paginated,
+  PropertyQuery,
+  User,
+  UserStatus,
+} from "@/types";
 
 const ONE = { limit: 1 } as const;
 
@@ -63,6 +70,14 @@ export function useAdminUsers(query: AdminUserQuery) {
   return useQuery({
     queryKey: queryKeys.admin.users.list(query),
     queryFn: () => adminService.getUsers(query),
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function useAdminProperties(query: PropertyQuery) {
+  return useQuery({
+    queryKey: queryKeys.admin.properties.list(query),
+    queryFn: () => adminService.getProperties(query),
     placeholderData: keepPreviousData,
   });
 }

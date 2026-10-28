@@ -14,6 +14,9 @@ const PUBLIC_CACHE = { stale: 60, revalidate: 60, expire: 3600 };
 /** Tag on every cached listing read; expired when a landlord changes a property. */
 export const PROPERTIES_TAG = "properties";
 
+/** Tag on the cached category list; expired when an admin changes categories. */
+export const CATEGORIES_TAG = "categories";
+
 export async function getPublicProperties(query: PropertyQuery = {}) {
   "use cache";
   cacheLife(PUBLIC_CACHE);
@@ -37,6 +40,7 @@ export async function getPublicProperty(id: string) {
 export async function getPublicCategories() {
   "use cache";
   cacheLife(PUBLIC_CACHE);
+  cacheTag(CATEGORIES_TAG);
   return categoriesService.getAll();
 }
 

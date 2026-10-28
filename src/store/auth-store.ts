@@ -12,6 +12,8 @@ type AuthState = {
   token: string | null;
   status: AuthStatus;
   setSession: (token: string, user: User) => void;
+  /** Replaces the signed-in user (e.g. after a profile edit); the token is unchanged. */
+  setUser: (user: User) => void;
   clearSession: () => void;
   /** Restores the session from the cookie once per page load. */
   hydrate: () => Promise<void>;
@@ -35,6 +37,8 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
 
     set({ token, user, status: "authenticated" });
   },
+
+  setUser: (user) => set({ user }),
 
   clearSession: () => {
     Cookies.remove(TOKEN_COOKIE, { path: "/" });

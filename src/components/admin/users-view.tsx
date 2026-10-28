@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Ban, Search, ShieldCheck, Users } from "lucide-react";
 import { ConfirmDialog } from "@/components/dashboard/confirm-dialog";
 import { DataTable, type DataTableColumn } from "@/components/dashboard/data-table";
@@ -21,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import { useAdminUsers, useUpdateUserStatus } from "@/hooks/use-admin";
 import { useAuth } from "@/hooks/use-auth";
+import { useUrlParams } from "@/hooks/use-url-params";
 import { formatDate, formatEnumLabel } from "@/lib/format";
 import { USER_ROLES, USER_STATUSES, type AdminUserQuery, type User, type UserRole, type UserStatus } from "@/types";
 
@@ -47,30 +47,13 @@ function readQuery(params: URLSearchParams): Required<Pick<AdminUserQuery, "page
 }
 
 export function UsersView() {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const { searchParams, pathname, setParams, clear } = useUrlParams();
   const query = readQuery(searchParams);
   const { user: currentUser } = useAuth();
 
   const users = useAdminUsers({ ...query, limit: PAGE_SIZE });
   const updateStatus = useUpdateUserStatus();
   const [target, setTarget] = useState<User | null>(null);
-
-  /** Updates URL params; any filter change goes back to page 1. */
-  const setParams = useCallback(
-    (updates: Record<string, string | null>) => {
-      const params = new URLSearchParams(searchParams.toString());
-      for (const [key, value] of Object.entries(updates)) {
-        if (value) params.set(key, value);
-        else params.delete(key);
-      }
-      if (!("page" in updates)) params.delete("page");
-      const next = params.toString();
-      router.replace(next ? `${pathname}?${next}` : pathname, { scroll: false });
-    },
-    [pathname, router, searchParams],
-  );
 
   const commitSearch = useCallback((value: string) => setParams({ searchTerm: value }), [setParams]);
 
@@ -200,7 +183,7 @@ export function UsersView() {
               title: "No users match",
               description: "Try a different name or email, or clear the role and status filters.",
               action: (
-                <Button variant="outline" onClick={() => router.replace(pathname)}>
+                <Button variant="outline" onClick={clear}>
                   Clear filters
                 </Button>
               ),
