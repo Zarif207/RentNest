@@ -1,23 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ClipboardList } from "lucide-react";
 import { DataTable, type DataTableColumn } from "@/components/dashboard/data-table";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { PropertyCell } from "@/components/dashboard/property-cell";
 import { QueryError } from "@/components/dashboard/query-error";
 import { StatusBadge } from "@/components/dashboard/status-badge";
+import { StatusTabs, useStatusParam } from "@/components/dashboard/status-tabs";
 import { RequestActions } from "@/components/tenant/request-actions";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useMyRentals } from "@/hooks/use-rentals";
 import { formatCurrency, formatDate, formatEnumLabel } from "@/lib/format";
-import type { BookingStatus, BookingWithProperty } from "@/types";
-
-const ALL = "ALL";
-const TABS = [ALL, "PENDING", "APPROVED", "ACTIVE", "COMPLETED", "REJECTED"] as const;
-type Tab = (typeof TABS)[number];
+import type { BookingWithProperty } from "@/types";
 
 const columns: DataTableColumn<BookingWithProperty>[] = [
   {
@@ -48,20 +43,8 @@ const columns: DataTableColumn<BookingWithProperty>[] = [
 ];
 
 export function RequestsView() {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-
-  // ?status= drives the tab, so a filtered list can be bookmarked or shared.
-  const requested = searchParams.get("status")?.toUpperCase();
-  const tab: Tab = TABS.find((value) => value === requested) ?? ALL;
-  const status = tab === ALL ? undefined : (tab as BookingStatus);
-
+  const status = useStatusParam();
   const rentals = useMyRentals(status);
-
-  const selectTab = (value: string) => {
-    router.replace(value === ALL ? pathname : `${pathname}?status=${value}`, { scroll: false });
-  };
 
   return (
     <div className="space-y-6">
@@ -75,17 +58,7 @@ export function RequestsView() {
         }
       />
 
-      <Tabs value={tab} onValueChange={selectTab}>
-        <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
-          <TabsList>
-            {TABS.map((value) => (
-              <TabsTrigger key={value} value={value}>
-                {value === ALL ? "All" : formatEnumLabel(value)}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </div>
-      </Tabs>
+      <StatusTabs />
 
       {rentals.isError ? (
         <QueryError error={rentals.error} onRetry={() => void rentals.refetch()} />

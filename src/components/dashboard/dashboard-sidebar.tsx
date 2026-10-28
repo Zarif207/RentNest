@@ -8,6 +8,7 @@ import { UserAvatar } from "@/components/shared/user-avatar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth, useLogout } from "@/hooks/use-auth";
+import { usePendingRequestCount } from "@/hooks/use-landlord-requests";
 import { activeNavItem, DASHBOARD_NAV, dashboardRoleFromPath } from "@/lib/dashboard-nav";
 import { formatEnumLabel } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -20,6 +21,8 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const active = activeNavItem(items, pathname);
   const { user, isLoading } = useAuth();
   const logout = useLogout();
+  // Landlords see how many requests are waiting on the "Requests" item.
+  const pendingRequests = usePendingRequestCount(role === "LANDLORD");
 
   return (
     <div className="flex h-full flex-col">
@@ -34,6 +37,7 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         <ul className="space-y-1">
           {items.map((item) => {
             const isActive = item === active;
+            const badge = item.href === "/dashboard/landlord/requests" ? pendingRequests : 0;
             return (
               <li key={item.href}>
                 <Link
@@ -48,7 +52,13 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                   )}
                 >
                   <item.icon className="size-4.5 shrink-0" aria-hidden />
-                  {item.label}
+                  <span className="flex-1">{item.label}</span>
+                  {badge > 0 && (
+                    <span className="grid h-5 min-w-5 place-items-center rounded-full bg-brand px-1.5 text-xs font-semibold text-brand-foreground">
+                      {badge}
+                      <span className="sr-only"> pending</span>
+                    </span>
+                  )}
                 </Link>
               </li>
             );
