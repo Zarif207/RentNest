@@ -23,7 +23,7 @@ export default function AuthLayout({ children }: LayoutProps<"/auth">) {
             src="https://images.unsplash.com/photo-1613490493576-7fde63acd811"
             alt="Modern villa with a pool at dusk"
             fill
-            priority
+            preload
             sizes="50vw"
             className="object-cover"
           />
