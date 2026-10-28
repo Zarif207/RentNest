@@ -1,5 +1,6 @@
 import { cacheLife } from "next/cache";
 import { categoriesService } from "@/lib/api/categories";
+import { isApiError } from "@/lib/api/client";
 import { propertiesService } from "@/lib/api/properties";
 import { reviewsService } from "@/lib/api/reviews";
 import type { PropertyQuery } from "@/types";
@@ -14,6 +15,18 @@ export async function getPublicProperties(query: PropertyQuery = {}) {
   "use cache";
   cacheLife(PUBLIC_CACHE);
   return propertiesService.getAll(query);
+}
+
+/** null when the property doesn't exist (404) or the id is malformed (400). */
+export async function getPublicProperty(id: string) {
+  "use cache";
+  cacheLife(PUBLIC_CACHE);
+  try {
+    return await propertiesService.getById(id);
+  } catch (error) {
+    if (isApiError(error) && (error.status === 404 || error.status === 400)) return null;
+    throw error;
+  }
 }
 
 export async function getPublicCategories() {

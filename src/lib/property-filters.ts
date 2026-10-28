@@ -1,3 +1,4 @@
+import { isUuid } from "@/lib/utils";
 import { PROPERTY_TYPES, type PropertyQuery, type PropertyType } from "@/types";
 
 // URL search params <-> browse filters. Shared by the server page (to query
@@ -48,8 +49,6 @@ export type BrowseFilters = {
 
 type RawParams = Record<string, string | string[] | undefined>;
 
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
 function first(value: string | string[] | undefined) {
   return (Array.isArray(value) ? value[0] : value)?.trim() ?? "";
 }
@@ -79,7 +78,7 @@ export function readFilters(params: RawParams): BrowseFilters {
     propertyType: PROPERTY_TYPES.includes(propertyType as PropertyType)
       ? (propertyType as PropertyType)
       : null,
-    categoryId: UUID.test(categoryId) ? categoryId : null,
+    categoryId: isUuid(categoryId) ? categoryId : null,
     minPrice,
     maxPrice,
     amenities: [

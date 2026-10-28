@@ -13,6 +13,23 @@ import { useScrolled } from "@/hooks/use-scrolled";
 import { isActiveLink, PUBLIC_NAV_LINKS, roleShortcut } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
 
+/**
+ * Shown while SiteHeader streams in on dynamic routes (it reads the pathname,
+ * which isn't known when those pages are prerendered). Same height and frame.
+ */
+export function SiteHeaderFallback() {
+  return (
+    <>
+      <div aria-hidden className="h-16" />
+      <header className="fixed inset-x-0 top-0 z-50 border-b bg-background/80 backdrop-blur-md">
+        <div className="mx-auto flex h-16 max-w-7xl items-center px-4 sm:px-6 lg:px-8">
+          <Logo />
+        </div>
+      </header>
+    </>
+  );
+}
+
 export function SiteHeader() {
   const pathname = usePathname();
   const scrolled = useScrolled();

@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { ArrowLeft, ArrowRight, Star } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
+import { StarRating } from "@/components/shared/star-rating";
 import { UserAvatar } from "@/components/shared/user-avatar";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 
 export type Testimonial = {
   id: string;
@@ -35,20 +35,7 @@ export function Testimonials({ items }: { items: Testimonial[] }) {
             exit={reduceMotion ? undefined : { opacity: 0, y: -12 }}
             transition={{ duration: 0.35, ease: "easeOut" }}
           >
-            <div className="flex gap-1" role="img" aria-label={`Rated ${current.rating} out of 5`}>
-              {Array.from({ length: 5 }, (_, star) => (
-                <Star
-                  key={star}
-                  aria-hidden
-                  className={cn(
-                    "size-5",
-                    star < current.rating
-                      ? "fill-amber-400 text-amber-400"
-                      : "text-muted-foreground/40",
-                  )}
-                />
-              ))}
-            </div>
+            <StarRating rating={current.rating} className="text-xl" />
             <blockquote className="mt-5 text-xl leading-relaxed font-medium tracking-tight sm:text-2xl">
               “{current.quote}”
             </blockquote>
