@@ -1,13 +1,24 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/api/client";
 import { rentalsService } from "@/lib/api/rentals";
 import { queryKeys } from "@/lib/query-keys";
+import type { BookingStatus } from "@/types";
 
 export const TENANT_REQUESTS_PATH = "/dashboard/tenant/requests";
+
+/** The signed-in tenant's rental requests, newest first (optionally one status). */
+export function useMyRentals(status?: BookingStatus) {
+  return useQuery({
+    queryKey: queryKeys.rentals.list(status),
+    queryFn: () => rentalsService.getMine(status),
+    // Keep the previous tab's rows on screen while the next tab loads.
+    placeholderData: keepPreviousData,
+  });
+}
 
 export function useCreateRental() {
   const queryClient = useQueryClient();
