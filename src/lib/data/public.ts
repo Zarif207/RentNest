@@ -1,4 +1,4 @@
-import { cacheLife } from "next/cache";
+import { cacheLife, cacheTag } from "next/cache";
 import { categoriesService } from "@/lib/api/categories";
 import { isApiError } from "@/lib/api/client";
 import { propertiesService } from "@/lib/api/properties";
@@ -35,9 +35,15 @@ export async function getPublicCategories() {
   return categoriesService.getAll();
 }
 
+/** Cache tag for one property's reviews; expired after a tenant posts a review. */
+export function propertyReviewsTag(propertyId: string) {
+  return `reviews:${propertyId}`;
+}
+
 export async function getPublicPropertyReviews(propertyId: string) {
   "use cache";
   cacheLife(PUBLIC_CACHE);
+  cacheTag(propertyReviewsTag(propertyId));
   return reviewsService.getForProperty(propertyId);
 }
 

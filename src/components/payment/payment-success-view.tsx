@@ -3,8 +3,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { LayoutDashboard, LogIn, RotateCcw, Star, TriangleAlert } from "lucide-react";
+import { LayoutDashboard, LogIn, RotateCcw, TriangleAlert } from "lucide-react";
 import { AnimatedCheck } from "@/components/payment/animated-check";
+import { LeaveReviewButton } from "@/components/reviews/leave-review-button";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/use-auth";
@@ -150,12 +151,7 @@ export function PaymentSuccessView() {
       </dl>
 
       <div className="mt-6 flex w-full flex-col gap-3 sm:flex-row">
-        {/* The review dialog arrives in step 16; until then this opens active rentals. */}
-        <Button asChild variant="outline" className="flex-1">
-          <Link href={`${TENANT_REQUESTS_PATH}?status=ACTIVE`}>
-            <Star data-icon="inline-start" /> Leave a review
-          </Link>
-        </Button>
+        <LeaveReviewButton rental={payment.booking} size="default" className="flex-1" />
         <Button asChild className="flex-1">
           <Link href="/dashboard/tenant">
             <LayoutDashboard data-icon="inline-start" /> Go to dashboard

@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { CreditCard, Eye, Star } from "lucide-react";
-import { toast } from "sonner";
+import { CreditCard, Eye } from "lucide-react";
+import { LeaveReviewButton } from "@/components/reviews/leave-review-button";
 import { Button } from "@/components/ui/button";
 import type { BookingWithProperty } from "@/types";
 
@@ -19,16 +19,7 @@ export function RequestActions({ rental }: { rental: BookingWithProperty }) {
           </Link>
         </Button>
       )}
-      {(status === "ACTIVE" || status === "COMPLETED") && (
-        // The review dialog is added in step 16.
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => toast.info("Reviews are coming soon")}
-        >
-          <Star data-icon="inline-start" /> Leave Review
-        </Button>
-      )}
+      {(status === "ACTIVE" || status === "COMPLETED") && <LeaveReviewButton rental={rental} />}
       <Button asChild size="sm" variant="ghost">
         <Link href={`/properties/${rental.propertyId}`}>
           <Eye data-icon="inline-start" /> View property
