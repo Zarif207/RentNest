@@ -159,3 +159,17 @@
     @apply font-sans;
   }
 }
+
+/* Reduced motion: motion/react components check useReducedMotion themselves;
+   this covers the CSS side (dialog/sheet enter-exit, hover lift and zoom,
+   skeleton pulse, marquee) so nothing moves. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

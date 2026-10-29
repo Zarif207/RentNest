@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Hanken_Grotesk, Instrument_Serif } from "next/font/google";
 import { AuthProvider } from "@/components/providers/auth-provider";
 import { QueryProvider } from "@/components/providers/query-provider";
@@ -19,13 +19,32 @@ const instrumentSerif = Instrument_Serif({
   style: "italic",
 });
 
+const description =
+  "RentNest is a rental marketplace connecting tenants with landlords.";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
   title: {
     default: "RentNest — Find. Request. Move in.",
     template: "%s · RentNest",
   },
-  description:
-    "RentNest is a rental marketplace connecting tenants with landlords.",
+  description,
+  openGraph: {
+    siteName: "RentNest",
+    title: "RentNest — Find. Request. Move in.",
+    description,
+    type: "website",
+    locale: "en_US",
+    url: "/",
+  },
+  twitter: { card: "summary_large_image" },
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0e0e0f" },
+  ],
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

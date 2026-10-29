@@ -50,7 +50,9 @@ export function SiteFooter() {
           <div className="space-y-5">
             <Logo />
             <p className="max-w-sm text-muted-foreground">
-              Find. Request. <SerifAccent>Move in.</SerifAccent> Verified rentals
+              Find. Request.{" "}
+              {/* Body-size text: ink instead of the accent blue, which fails AA here. */}
+              <SerifAccent className="text-foreground">Move in.</SerifAccent> Verified rentals
               across the US, with secure payments and honest reviews.
             </p>
             <div className="space-y-2">

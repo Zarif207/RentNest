@@ -39,25 +39,29 @@ export function PropertyGallery({ images, title }: PropertyGalleryProps) {
     if (event.key === "ArrowLeft") go(-1);
   };
 
+  const openLabel = count > 1 ? `View all ${count} photos` : "View photo";
+
   return (
     <div className="space-y-3">
       <button
         type="button"
         onClick={() => setOpen(true)}
         className="group relative block aspect-16/9 w-full overflow-hidden rounded-3xl bg-muted outline-none focus-visible:ring-3 focus-visible:ring-ring/50 lg:aspect-21/9"
-        aria-label={`Open photo ${active + 1} of ${count} full screen`}
+        // Starts with the visible text so voice-control users can say it.
+        aria-label={`${openLabel}, full screen from photo ${active + 1}`}
       >
         <Image
           src={images[active]}
           alt={`${title}, photo ${active + 1}`}
           fill
           preload={active === 0}
+          fetchPriority={active === 0 ? "high" : undefined}
           sizes="(min-width: 1280px) 1216px, 100vw"
           className="object-cover transition-transform duration-500 group-hover:scale-[1.02] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
         />
         <span className="absolute right-4 bottom-4 inline-flex items-center gap-2 rounded-full bg-background/90 px-4 py-2 text-sm font-medium shadow-sm backdrop-blur">
           <Expand className="size-4" aria-hidden />
-          {count > 1 ? `View all ${count} photos` : "View photo"}
+          {openLabel}
         </span>
       </button>
 

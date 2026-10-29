@@ -20,6 +20,7 @@ export function HeroImage() {
           alt="Modern two-story home with a lit pool at dusk"
           fill
           preload
+          fetchPriority="high"
           sizes="(min-width: 1280px) 1216px, 100vw"
           className="object-cover"
         />

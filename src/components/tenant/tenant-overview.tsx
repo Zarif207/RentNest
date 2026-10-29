@@ -72,7 +72,7 @@ export function TenantOverview() {
         />
       </div>
 
-      <section className="space-y-4 rounded-3xl border bg-card p-5 sm:p-6">
+      <section className="min-w-0 space-y-4 rounded-3xl border bg-card p-5 sm:p-6">
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-lg font-semibold tracking-tight">Recent requests</h2>
           <Button asChild variant="ghost" size="sm">
