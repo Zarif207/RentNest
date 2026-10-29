@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LogOut } from "lucide-react";
-import { Logo } from "@/components/shared/logo";
+import { BrandLogo } from "@/components/brand/brand-logo";
 import { UserAvatar } from "@/components/shared/user-avatar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -27,7 +27,7 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <div className="flex h-full flex-col">
       <div className="flex h-16 items-center px-5">
-        <Logo />
+        <BrandLogo />
       </div>
 
       <nav aria-label="Dashboard" className="flex-1 overflow-y-auto px-3 py-4">

@@ -1,7 +1,18 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { ArrowRight, ArrowUpRight, Heart, Search } from "lucide-react";
+import { BrandLogo } from "@/components/brand/brand-logo";
+import { Logo } from "@/components/brand/logo";
+import { Wordmark } from "@/components/brand/wordmark";
 import { StatusBadge } from "@/components/dashboard/status-badge";
+import { Counter } from "@/components/motion/counter";
+import { Magnetic } from "@/components/motion/magnetic";
+import { Marquee } from "@/components/motion/marquee";
+import { Parallax } from "@/components/motion/parallax";
+import { Reveal } from "@/components/motion/reveal";
+import { SplitText } from "@/components/motion/split-text";
+import { TiltCard } from "@/components/motion/tilt-card";
+import { WordScrub } from "@/components/motion/word-scrub";
 import { SerifAccent } from "@/components/shared/serif-accent";
 import { StarRating } from "@/components/shared/star-rating";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
@@ -65,6 +76,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import type { BookingStatus } from "@/types";
+import { ReplayIntroButton } from "./replay-intro-button";
 
 // Temporary review page for the redesign's design system (removed in Step 42).
 
@@ -97,7 +109,7 @@ function Section({ eyebrow, title, children }: { eyebrow: string; title: string;
     <section className="space-y-6 border-t border-border pt-12">
       <div className="space-y-2">
         <p className="text-xs font-medium tracking-[0.25em] text-bronze uppercase">{eyebrow}</p>
-        <h2 className="text-4xl font-light">{title}</h2>
+        <h2 className="text-4xl font-medium">{title}</h2>
       </div>
       {children}
     </section>
@@ -108,20 +120,51 @@ export default function StyleGuidePage() {
   return (
     <main className="mx-auto w-full max-w-6xl space-y-16 px-4 py-10 sm:px-6 lg:px-8">
       <header className="flex items-center justify-between gap-4">
-        <p className="text-sm font-medium tracking-[0.35em] uppercase">RentNest · Style guide</p>
+        <span className="flex items-center gap-3">
+          <BrandLogo size="sm" />
+          <span className="text-sm text-muted-foreground">Style guide</span>
+        </span>
         <ThemeToggle />
       </header>
 
       <div className="space-y-6">
         <p className="text-xs font-medium tracking-[0.25em] text-bronze uppercase">Quiet luxury</p>
-        <h1 className="text-6xl leading-[0.95] font-light sm:text-8xl">
+        <h1 className="text-6xl leading-[0.95] font-medium tracking-[-0.045em] sm:text-8xl">
           Live somewhere <SerifAccent>extraordinary</SerifAccent>
         </h1>
         <p className="max-w-xl text-lg text-muted-foreground">
-          Ink and ivory, champagne used sparingly, Cormorant Garamond for headings and Manrope for
-          everything you read and click.
+          Ink and ivory, champagne used sparingly. Geist for headlines and everything you read and
+          click, with an upright Cormorant accent.
         </p>
       </div>
+
+      <Section eyebrow="00" title="Brand">
+        <div className="grid gap-6 lg:grid-cols-2">
+          <div className="flex flex-col items-center justify-center gap-8 rounded-3xl border border-border bg-card p-8">
+            <Logo size={200} title="RentNest monogram" />
+            <div className="flex items-end gap-6">
+              {[24, 32, 48, 64].map((px) => (
+                <Logo key={px} size={px} />
+              ))}
+            </div>
+          </div>
+          <div className="space-y-4">
+            {(["lg", "md", "sm"] as const).map((size) => (
+              <div key={size} className="flex items-center justify-between rounded-3xl border border-border bg-card px-6 py-5">
+                <BrandLogo size={size} href={null} />
+                <span className="text-xs tracking-[0.2em] text-muted-foreground uppercase">{size}</span>
+              </div>
+            ))}
+            <div className="flex items-center justify-between rounded-3xl bg-[#12100e] px-6 py-5 text-[#f2eee7]">
+              <span className="flex items-center gap-2.5">
+                <Logo size={32} className="text-gold" />
+                <Wordmark className="text-2xl" />
+              </span>
+              <BrandLogo variant="mark" size="md" href={null} className="text-gold" />
+            </div>
+          </div>
+        </div>
+      </Section>
 
       <Section eyebrow="01" title="Palette">
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
@@ -142,14 +185,14 @@ export default function StyleGuidePage() {
 
       <Section eyebrow="02" title="Typography">
         <div className="space-y-6">
-          <p className="font-heading text-7xl font-light">Display 72 · Light</p>
-          <h3 className="text-5xl font-normal">
-            Heading 48 with an <SerifAccent>italic</SerifAccent> phrase
+          <p className="font-heading text-7xl font-medium tracking-[-0.045em]">Display 72 · Medium</p>
+          <h3 className="text-5xl font-medium">
+            Heading 48 with a <SerifAccent>serif accent</SerifAccent>
           </h3>
-          <p className="font-heading text-3xl font-medium">Heading 30 · Medium</p>
+          <p className="font-heading text-3xl font-semibold tracking-tight">Heading 30 · Semibold</p>
           <p className="text-xs font-medium tracking-[0.25em] text-bronze uppercase">Eyebrow · tracked small caps</p>
           <p className="max-w-2xl text-base leading-relaxed">
-            Body copy in Manrope. Every residence is shaped around the way you live, with open
+            Body copy in Geist. Every residence is shaped around the way you live, with open
             layouts, abundant daylight and materials chosen to age beautifully.
           </p>
           <p className="text-sm text-muted-foreground">Muted text in stone for secondary details.</p>
@@ -208,7 +251,7 @@ export default function StyleGuidePage() {
               <CardDescription>Lease value of active rentals</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="font-heading text-6xl font-light">$12,480</p>
+              <p className="font-heading text-6xl font-medium tracking-[-0.04em]">$12,480</p>
             </CardContent>
             <CardFooter className="justify-between">
               <span className="text-muted-foreground">Updated just now</span>
@@ -229,7 +272,7 @@ export default function StyleGuidePage() {
             <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent" />
             <div className="absolute inset-x-4 bottom-4 rounded-3xl border border-white/20 bg-white/10 p-5 text-white backdrop-blur-xl">
               <p className="text-xs tracking-[0.25em] text-white/70 uppercase">Glass panel</p>
-              <p className="mt-1 font-heading text-3xl font-light">Lincoln Park, Chicago</p>
+              <p className="mt-1 font-heading text-3xl font-medium tracking-tight">Lincoln Park, Chicago</p>
               <p className="mt-1 text-sm text-white/80">3 beds · 2 baths · from $2,900/mo</p>
             </div>
           </div>
@@ -364,6 +407,118 @@ export default function StyleGuidePage() {
               ))}
             </TableBody>
           </Table>
+        </div>
+      </Section>
+
+      <Section eyebrow="10" title="Motion">
+        <div className="space-y-20">
+          <div className="flex flex-wrap items-center gap-3">
+            <ReplayIntroButton />
+            <p className="text-sm text-muted-foreground">
+              Intro plays once per browser session and never with reduced motion.
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <p className="text-xs tracking-[0.25em] text-muted-foreground uppercase">SplitText</p>
+            <SplitText
+              as="h3"
+              text="Live somewhere extraordinary"
+              className="text-6xl font-medium tracking-[-0.045em]"
+            />
+          </div>
+
+          <div className="space-y-4">
+            <p className="text-xs tracking-[0.25em] text-muted-foreground uppercase">Reveal · stagger</p>
+            <Reveal stagger className="grid gap-4 sm:grid-cols-3">
+              {["Browse", "Request", "Move in"].map((label) => (
+                <div key={label} className="rounded-3xl border border-border bg-card p-6 text-xl font-medium">
+                  {label}
+                </div>
+              ))}
+            </Reveal>
+          </div>
+
+          <div className="space-y-2">
+            <p className="text-xs tracking-[0.25em] text-muted-foreground uppercase">WordScrub</p>
+            <WordScrub
+              text="We connect people to homes worth staying in: vetted landlords, transparent pricing and secure payments."
+              className="max-w-4xl text-4xl leading-tight font-medium tracking-tight sm:text-5xl"
+            />
+          </div>
+
+          <div className="grid items-center gap-8 md:grid-cols-2">
+            <div className="space-y-3">
+              <p className="text-xs tracking-[0.25em] text-muted-foreground uppercase">Counter</p>
+              <div className="flex gap-10">
+                <p className="text-5xl font-medium tracking-tight">
+                  <Counter value={128} />
+                </p>
+                <p className="text-5xl font-medium tracking-tight">
+                  <Counter value={2900} prefix="$" />
+                </p>
+              </div>
+            </div>
+            <div className="space-y-3">
+              <p className="text-xs tracking-[0.25em] text-muted-foreground uppercase">Magnetic</p>
+              <div className="flex gap-4">
+                <Magnetic>
+                  <Button size="lg">Get started</Button>
+                </Magnetic>
+                <Magnetic>
+                  <Button size="lg" variant="outline">
+                    Sign in
+                  </Button>
+                </Magnetic>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid gap-8 md:grid-cols-2">
+            <div className="space-y-3">
+              <p className="text-xs tracking-[0.25em] text-muted-foreground uppercase">Parallax</p>
+              <div className="relative h-80 overflow-hidden rounded-3xl">
+                <Parallax speed={0.25} className="absolute -inset-y-16 inset-x-0">
+                  <Image
+                    src="https://images.unsplash.com/photo-1613490493576-7fde63acd811"
+                    alt="Modern villa with a pool at dusk"
+                    fill
+                    sizes="(min-width: 768px) 50vw, 100vw"
+                    className="object-cover"
+                  />
+                </Parallax>
+              </div>
+            </div>
+            <div className="space-y-3">
+              <p className="text-xs tracking-[0.25em] text-muted-foreground uppercase">TiltCard (desktop mouse)</p>
+              <TiltCard className="overflow-hidden rounded-3xl border border-border bg-card">
+                <div className="relative h-56">
+                  <Image
+                    src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9"
+                    alt="Modern two-story home with a lit pool at dusk"
+                    fill
+                    sizes="(min-width: 768px) 50vw, 100vw"
+                    className="object-cover"
+                  />
+                </div>
+                <div className="p-5">
+                  <p className="text-lg font-medium tracking-tight">Modern 3-Bed Apartment</p>
+                  <p className="text-sm text-muted-foreground">Lincoln Park, Chicago · $2,900/mo</p>
+                </div>
+              </TiltCard>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <p className="text-xs tracking-[0.25em] text-muted-foreground uppercase">Marquee</p>
+            <Marquee duration={30} className="border-y border-border py-5">
+              {["Find", "Request", "Move in", "Pay securely", "Live well"].map((word) => (
+                <span key={word} className="flex items-center gap-8 pr-8 text-3xl font-medium tracking-tight">
+                  {word} <span className="text-gold">✦</span>
+                </span>
+              ))}
+            </Marquee>
+          </div>
         </div>
       </Section>
 

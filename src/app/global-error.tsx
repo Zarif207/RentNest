@@ -1,21 +1,20 @@
 "use client";
 
-import { Cormorant_Garamond, Manrope } from "next/font/google";
+import { Geist } from "next/font/google";
 import "./globals.css";
 
-const manrope = Manrope({ variable: "--font-manrope", subsets: ["latin"] });
-const cormorant = Cormorant_Garamond({ variable: "--font-cormorant", subsets: ["latin"], weight: "400" });
+const geist = Geist({ variable: "--font-geist", subsets: ["latin"] });
 
 // Replaces the root layout when it crashes, so it brings its own document,
 // styles and font, and uses no providers. Follows the OS color scheme.
 export default function GlobalError({ retry }: { error: unknown; retry: () => void }) {
   return (
-    <html lang="en" className={`${manrope.variable} ${cormorant.variable} antialiased`}>
+    <html lang="en" className={`${geist.variable} antialiased`}>
       <body className="grid min-h-svh place-items-center bg-background px-4 text-foreground dark:bg-[#0c0b0a] dark:text-[#f2eee7]">
         <title>Something went wrong · RentNest</title>
         <main className="flex max-w-md flex-col items-center text-center">
           <p className="text-sm font-medium tracking-[0.3em] uppercase">RentNest</p>
-          <h1 className="mt-8 text-5xl font-normal">Something went wrong</h1>
+          <h1 className="mt-8 text-4xl font-medium tracking-tight">Something went wrong</h1>
           <p className="mt-3 text-muted-foreground">
             The app hit an unexpected problem. Please try again. If it keeps happening, come back in a
             few minutes.

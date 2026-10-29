@@ -7,8 +7,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-manrope);
-  --font-heading: var(--font-cormorant);
+  --font-sans: var(--font-geist);
+  --font-heading: var(--font-geist);
   --font-serif: var(--font-cormorant);
   --color-gold: var(--gold);
   --color-gold-foreground: var(--gold-foreground);
@@ -165,15 +165,20 @@
   html {
     @apply font-sans;
   }
-  /* Cormorant reads best large and light; pages refine sizes per step. */
+  /* Grotesk headlines, set tight like the references; pages set size/weight. */
   h1,
   h2,
   h3 {
-    @apply font-heading;
+    @apply font-heading tracking-[-0.025em];
   }
   ::selection {
     @apply bg-gold text-gold-foreground;
   }
+}
+
+/* Intro preloader: hidden before paint once seen this session (see IntroGate). */
+html[data-intro-seen] [data-intro] {
+  display: none;
 }
 
 /* Reduced motion: motion/react components check useReducedMotion themselves;

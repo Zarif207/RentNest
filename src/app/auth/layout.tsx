@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { Logo } from "@/components/shared/logo";
+import { BrandLogo } from "@/components/brand/brand-logo";
 import { SerifAccent } from "@/components/shared/serif-accent";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 
@@ -8,7 +8,7 @@ export default function AuthLayout({ children }: LayoutProps<"/auth">) {
     <div className="grid min-h-svh lg:grid-cols-2">
       <div className="flex flex-col px-4 py-5 sm:px-10">
         <header className="flex items-center justify-between">
-          <Logo />
+          <BrandLogo />
           <ThemeToggle />
         </header>
         <main className="flex flex-1 items-center justify-center py-10">

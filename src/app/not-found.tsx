@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Logo } from "@/components/shared/logo";
+import { BrandLogo } from "@/components/brand/brand-logo";
 import { NotFoundSearch } from "@/components/shared/not-found-search";
 import { NotFoundState } from "@/components/shared/not-found-state";
 import { SerifAccent } from "@/components/shared/serif-accent";
@@ -12,7 +12,7 @@ export default function NotFound() {
   return (
     <div className="flex min-h-svh flex-col bg-linear-to-b from-wash-from to-wash-to">
       <header className="flex h-16 items-center justify-between px-4 sm:px-6">
-        <Logo />
+        <BrandLogo />
         <ThemeToggle />
       </header>
       <main id="main" className="flex flex-1 items-center justify-center">

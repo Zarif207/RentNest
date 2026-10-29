@@ -16,20 +16,24 @@ import { useLogout } from "@/hooks/use-auth";
 import { roleHome } from "@/lib/auth";
 import { formatEnumLabel } from "@/lib/format";
 import { profilePath } from "@/lib/navigation";
+import { cn } from "@/lib/utils";
 import type { User } from "@/types";
 
-export function UserMenu({ user }: { user: User }) {
+export function UserMenu({ user, onDark = false }: { user: User; onDark?: boolean }) {
   const logout = useLogout();
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
         aria-label="Open account menu"
-        className="rounded-full outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+        className={cn(
+          "rounded-full ring-1 outline-none transition-shadow focus-visible:ring-3 focus-visible:ring-ring/50",
+          onDark ? "ring-white/40" : "ring-border",
+        )}
       >
-        <UserAvatar name={user.name} className="size-9" />
+        <UserAvatar name={user.name} className="size-10" />
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-64">
+      <DropdownMenuContent align="end" sideOffset={10} className="w-64 rounded-2xl">
         <DropdownMenuLabel className="flex flex-col items-start gap-1 font-normal">
           <span className="w-full truncate font-medium text-foreground">{user.name}</span>
           <span className="w-full truncate text-xs text-muted-foreground">{user.email}</span>

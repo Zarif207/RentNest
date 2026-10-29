@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Cormorant_Garamond, Manrope } from "next/font/google";
+import { Cormorant_Garamond, Geist } from "next/font/google";
 import { AuthProvider } from "@/components/providers/auth-provider";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { ThemeProvider } from "@/components/providers/theme-provider";
@@ -7,17 +7,20 @@ import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
 
-const manrope = Manrope({
-  variable: "--font-manrope",
+// Headings, UI and body: a clean, tight grotesk like the design references.
+const geist = Geist({
+  variable: "--font-geist",
   subsets: ["latin"],
 });
 
-// Headings: large and light, with the italic for the one emphasized phrase.
+// Upright serif for accent phrases; the italic is only for the logo wordmark.
 const cormorant = Cormorant_Garamond({
   variable: "--font-cormorant",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600"],
+  weight: ["400", "500"],
   style: ["normal", "italic"],
+  // Secondary face (accents, wordmark): don't compete with Geist for preload.
+  preload: false,
 });
 
 const description =
@@ -52,7 +55,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${manrope.variable} ${cormorant.variable} h-full antialiased`}
+      className={`${geist.variable} ${cormorant.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <body className="flex min-h-full flex-col">

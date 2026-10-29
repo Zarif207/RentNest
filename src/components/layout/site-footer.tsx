@@ -2,7 +2,7 @@ import { cacheLife } from "next/cache";
 import Link from "next/link";
 import { Mail, MapPin, Phone } from "lucide-react";
 import { NewsletterForm } from "@/components/layout/newsletter-form";
-import { Logo } from "@/components/shared/logo";
+import { BrandLogo } from "@/components/brand/brand-logo";
 import { SerifAccent } from "@/components/shared/serif-accent";
 import type { NavLink } from "@/lib/navigation";
 
@@ -48,7 +48,7 @@ export function SiteFooter() {
       <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
         <div className="grid gap-12 lg:grid-cols-[1fr_2fr]">
           <div className="space-y-5">
-            <Logo />
+            <BrandLogo />
             <p className="max-w-sm text-muted-foreground">
               Find. Request.{" "}
               {/* Body-size text: ink instead of the accent blue, which fails AA here. */}

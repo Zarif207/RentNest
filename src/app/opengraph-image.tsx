@@ -1,12 +1,33 @@
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
+import { cacheLife } from "next/cache";
 import { ImageResponse } from "next/og";
+import { MARK_PATHS } from "@/components/brand/logo";
 
 // Default social preview for every page that doesn't set its own image.
+// The font files come from node_modules.
 
-export const alt = "RentNest — Find. Request. Move in.";
+export const alt = "RentNest — Find a home worth coming home to";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-export default function OpengraphImage() {
+const FONT_DIR = join(process.cwd(), "node_modules/@fontsource/cormorant-garamond/files");
+
+// Cached so the image is prerendered once at build time (Cache Components).
+async function loadFonts() {
+  "use cache";
+  cacheLife("max");
+  const [italic, light] = await Promise.all([
+    readFile(join(FONT_DIR, "cormorant-garamond-latin-500-italic.woff")),
+    readFile(join(FONT_DIR, "cormorant-garamond-latin-300-normal.woff")),
+  ]);
+  return { italic: new Uint8Array(italic), light: new Uint8Array(light) };
+}
+
+export default async function OpengraphImage() {
+  const { italic, light } = await loadFonts();
+  const { circle, roof, letter } = MARK_PATHS;
+
   return new ImageResponse(
     (
       <div
@@ -15,41 +36,40 @@ export default function OpengraphImage() {
           height: "100%",
           display: "flex",
           flexDirection: "column",
-          justifyContent: "space-between",
-          padding: 80,
-          background: "linear-gradient(180deg, #e9e2d6 0%, #f6f3ee 100%)",
-          color: "#12100e",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 36,
+          background: "#12100e",
+          color: "#f2eee7",
+          fontFamily: "Cormorant",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-          <div
-            style={{
-              width: 72,
-              height: 72,
-              borderRadius: 20,
-              background: "#12100e",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8" />
-              <path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-            </svg>
-          </div>
-          <div style={{ fontSize: 44, fontWeight: 700 }}>RentNest</div>
-        </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-          <div style={{ fontSize: 84, fontWeight: 700, lineHeight: 1.05, letterSpacing: -2 }}>
-            Find. Request. Move in.
-          </div>
-          <div style={{ fontSize: 34, color: "#6f685f" }}>
-            Handpicked rental homes across the United States.
-          </div>
-        </div>
+        <svg width="168" height="168" viewBox="0 0 48 48" fill="none" stroke="#c2a878" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx={circle.cx} cy={circle.cy} r={circle.r} strokeWidth={0.6} />
+          <path d={roof.d} strokeWidth={1.2} />
+          <path d={letter.d} strokeWidth={1.6} />
+        </svg>
+        <div style={{ fontSize: 64, fontStyle: "italic", fontWeight: 500, color: "#c2a878" }}>RentNest</div>
+        <div style={{ fontSize: 46, fontWeight: 300, letterSpacing: 0.5 }}>Find a home worth coming home to</div>
+        <div
+          style={{
+            position: "absolute",
+            top: 28,
+            right: 28,
+            bottom: 28,
+            left: 28,
+            border: "1px solid rgba(194, 168, 120, 0.35)",
+            borderRadius: 28,
+          }}
+        />
       </div>
     ),
-    size,
+    {
+      ...size,
+      fonts: [
+        { name: "Cormorant", data: italic.buffer, style: "italic", weight: 500 },
+        { name: "Cormorant", data: light.buffer, style: "normal", weight: 300 },
+      ],
+    },
   );
 }
