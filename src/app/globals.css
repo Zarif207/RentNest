@@ -181,6 +181,37 @@ html[data-intro-seen] [data-intro] {
   display: none;
 }
 
+/* Above-the-fold reveals start hidden in CSS (no flash before hydration) and
+   GSAP plays them in. Only when motion is allowed; IntroGate's <noscript>
+   undoes this without JavaScript. */
+@media (prefers-reduced-motion: no-preference) {
+  [data-split="load"] [data-word] {
+    transform: translateY(110%);
+  }
+  [data-enter] {
+    opacity: 0;
+  }
+}
+
+@keyframes hero-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes scroll-cue {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(200%);
+  }
+}
+
 /* Reduced motion: motion/react components check useReducedMotion themselves;
    this covers the CSS side (dialog/sheet enter-exit, hover lift and zoom,
    skeleton pulse, marquee) so nothing moves. */

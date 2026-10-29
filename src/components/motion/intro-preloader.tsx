@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { MARK_PATHS } from "@/components/brand/logo";
+import { markIntroDone } from "@/hooks/use-intro-done";
 import { gsap, useGSAP } from "@/lib/gsap";
 import { INTRO_SEEN_KEY } from "./intro-gate";
 
@@ -22,6 +23,7 @@ export function IntroPreloader() {
     () => {
       const root = rootRef.current;
       if (!root || "introSeen" in document.documentElement.dataset) {
+        markIntroDone();
         setDone(true);
         return;
       }
@@ -31,7 +33,10 @@ export function IntroPreloader() {
         // Storage blocked: the intro may replay next visit, which is harmless.
       }
 
-      const finish = () => setDone(true);
+      const finish = () => {
+        markIntroDone();
+        setDone(true);
+      };
       const safety = window.setTimeout(finish, MAX_MS);
       const count = { n: 0 };
       const tl = gsap.timeline({ onComplete: finish });

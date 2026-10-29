@@ -16,13 +16,18 @@ export function SplitText({
   text,
   as: Comp = "h2",
   trigger = "scroll",
+  ready = true,
   delay = 0,
   className,
 }: {
   text: string;
   as?: Tag;
-  /** "load" plays immediately (heroes); "scroll" waits until it's in view. */
+  /**
+   * "load" plays once `ready` (heroes; words start hidden in CSS so nothing
+   * flashes before hydration); "scroll" waits until it's in view.
+   */
   trigger?: "load" | "scroll";
+  ready?: boolean;
   delay?: number;
   className?: string;
 }) {
@@ -33,26 +38,32 @@ export function SplitText({
   useGSAP(
     () => {
       const el = ref.current;
-      if (!motionOk || !el) return;
-      gsap.from(el.querySelectorAll("[data-word]"), {
-        yPercent: 110,
-        duration: 0.9,
-        delay,
-        ease: "power4.out",
-        stagger: 0.06,
-        scrollTrigger: trigger === "scroll" ? { trigger: el, start: "top 85%", once: true } : undefined,
-      });
+      if (!motionOk || !ready || !el) return;
+      gsap.fromTo(
+        el.querySelectorAll("[data-word]"),
+        // y: 0 clears the CSS starting offset, which GSAP would read back as pixels.
+        { yPercent: 110, y: 0 },
+        {
+          yPercent: 0,
+          y: 0,
+          duration: 1,
+          delay,
+          ease: "power4.out",
+          stagger: 0.07,
+          scrollTrigger: trigger === "scroll" ? { trigger: el, start: "top 85%", once: true } : undefined,
+        },
+      );
     },
-    { scope: ref, dependencies: [motionOk, trigger, delay, text] },
+    { scope: ref, dependencies: [motionOk, ready, trigger, delay, text] },
   );
 
   return (
     <Comp className={cn(className)}>
       <span className="sr-only">{text}</span>
-      <span ref={ref} aria-hidden>
+      <span ref={ref} aria-hidden data-split={trigger}>
         {words.map((word, index) => (
           <span key={index} className="inline-block overflow-hidden pb-[0.08em] align-top">
-            <span data-word className="inline-block">
+            <span data-word className="inline-block will-change-transform">
               {word}
               {index < words.length - 1 && " "}
             </span>

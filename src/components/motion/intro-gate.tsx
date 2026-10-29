@@ -11,7 +11,9 @@ export function IntroGate() {
     <>
       <script dangerouslySetInnerHTML={{ __html: script }} />
       <noscript>
-        <style>{"[data-intro]{display:none}"}</style>
+        <style>
+          {"[data-intro]{display:none}[data-split] [data-word]{transform:none!important}[data-enter]{opacity:1!important}"}
+        </style>
       </noscript>
     </>
   );

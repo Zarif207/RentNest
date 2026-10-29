@@ -2,7 +2,8 @@ import Link from "next/link";
 import { ArrowRight, House } from "lucide-react";
 import { CategoryChips } from "@/components/home/category-chips";
 import { CtaBanner } from "@/components/home/cta-banner";
-import { Hero } from "@/components/home/hero";
+import { Hero, type HeroCard } from "@/components/home/hero";
+import type { HeroCity } from "@/components/home/hero-search";
 import { HowItWorks } from "@/components/home/how-it-works";
 import { JourneyStats, type HomeStat } from "@/components/home/journey-stats";
 import { ListingsMarquee } from "@/components/home/listings-marquee";
@@ -19,6 +20,8 @@ import {
   getPublicPropertyReviews,
   orNull,
 } from "@/lib/data/public";
+import { formatCurrency } from "@/lib/format";
+import { formatLocation } from "@/lib/us-states";
 import type { PropertyWithRelations } from "@/types";
 
 // Shown only while there are fewer than three real reviews; worded as
@@ -47,6 +50,31 @@ const GENERIC_TESTIMONIALS: Testimonial[] = [
   },
 ];
 
+/** Unique cities from real listings, for the hero's city picker. */
+function toHeroCities(properties: PropertyWithRelations[]): HeroCity[] {
+  const byCity = new Map<string, string>();
+  for (const { city, division } of properties) {
+    if (city && !byCity.has(city)) byCity.set(city, formatLocation(city, division));
+  }
+  return [...byCity]
+    .map(([value, label]) => ({ value, label }))
+    .sort((a, b) => a.label.localeCompare(b.label));
+}
+
+/** The first three featured listings that have a photo. */
+function toHeroCards(properties: PropertyWithRelations[]): HeroCard[] {
+  return properties
+    .filter((property) => property.images.length > 0)
+    .slice(0, 3)
+    .map((property) => ({
+      id: property.id,
+      title: property.title,
+      image: property.images[0],
+      price: `${formatCurrency(property.rentAmount)}/mo`,
+      location: formatLocation(property.city, property.division),
+    }));
+}
+
 async function loadTestimonials(properties: PropertyWithRelations[]) {
   const reviewLists = await Promise.all(
     properties.map((property) => orNull(getPublicPropertyReviews(property.id))),
@@ -66,11 +94,12 @@ async function loadTestimonials(properties: PropertyWithRelations[]) {
 }
 
 export default async function HomePage() {
-  const [featured, latest, available, categories] = await Promise.all([
+  const [featured, latest, available, categories, all] = await Promise.all([
     orNull(getPublicProperties({ limit: 6 })),
     orNull(getPublicProperties({ limit: 10, sortBy: "createdAt", sortOrder: "desc" })),
     orNull(getPublicProperties({ availabilityStatus: "AVAILABLE", limit: 1 })),
     orNull(getPublicCategories()),
+    orNull(getPublicProperties({ limit: 100 })),
   ]);
 
   const testimonials = await loadTestimonials(featured?.data ?? []);
@@ -95,7 +124,7 @@ export default async function HomePage() {
 
   return (
     <>
-      <Hero />
+      <Hero cities={toHeroCities(all?.data ?? [])} cards={toHeroCards(featured?.data ?? [])} />
 
       <section className="pt-24 pb-20 sm:pt-32 sm:pb-28">
         <div className="mx-auto max-w-7xl space-y-10 px-4 sm:px-6 lg:px-8">

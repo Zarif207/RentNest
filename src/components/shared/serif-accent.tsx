@@ -8,7 +8,7 @@ export function SerifAccent({
   return (
     <em
       className={cn(
-        "font-serif font-normal tracking-[-0.01em] text-serif-accent",
+        "font-serif font-normal tracking-[-0.01em] text-serif-accent not-italic",
         className,
       )}
       {...props}
