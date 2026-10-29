@@ -7,7 +7,14 @@ import type { Property } from "@/types";
 
 const container = staggerContainer();
 
-export function PropertyGrid({ properties }: { properties: Property[] }) {
+export function PropertyGrid({
+  properties,
+  eagerCount = 0,
+}: {
+  properties: Property[];
+  /** How many leading cards load their photo eagerly (the first visible row). */
+  eagerCount?: number;
+}) {
   const reduceMotion = useReducedMotion();
 
   return (
@@ -19,9 +26,9 @@ export function PropertyGrid({ properties }: { properties: Property[] }) {
       whileInView="visible"
       viewport={{ once: true, amount: 0.1 }}
     >
-      {properties.map((property) => (
+      {properties.map((property, index) => (
         <motion.li key={property.id} variants={fadeUp}>
-          <PropertyCard property={property} />
+          <PropertyCard property={property} eager={index < eagerCount} />
         </motion.li>
       ))}
     </motion.ul>

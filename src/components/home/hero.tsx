@@ -121,7 +121,7 @@ export function Hero({ cities, cards }: { cities: HeroCity[]; cards: HeroCard[] 
     <div>
       <section
         ref={sectionRef}
-        className="relative h-svh min-h-[640px] overflow-hidden bg-[#12100e] text-white"
+        className="relative h-svh min-h-160 overflow-hidden bg-[#12100e] text-white"
       >
         <div data-hero-media className="absolute inset-0 will-change-transform">
           <Image
@@ -130,7 +130,6 @@ export function Hero({ cities, cards }: { cities: HeroCity[]; cards: HeroCard[] 
             fill
             preload
             fetchPriority="high"
-            quality={80}
             sizes="100vw"
             className="object-cover"
           />
@@ -139,7 +138,7 @@ export function Hero({ cities, cards }: { cities: HeroCity[]; cards: HeroCard[] 
         <div aria-hidden className="absolute inset-0 bg-linear-to-r from-black/55 via-black/10 to-transparent" />
 
         {cards.length > 0 && (
-          <div className="absolute inset-0 hidden perspective-[1200px] transform-3d xl:block">
+          <div className="absolute inset-0 hidden perspective-distant transform-3d xl:block">
             <ul aria-label="Featured homes">
               {cards.map((card, index) => {
                 const layout = CARD_LAYOUT[index];
@@ -182,7 +181,7 @@ export function Hero({ cities, cards }: { cities: HeroCity[]; cards: HeroCard[] 
             <p data-enter className="text-xs font-medium tracking-[0.3em] text-white/75 uppercase">
               Rental homes across the United States
             </p>
-            <h1 className="mt-5 text-[clamp(3.25rem,9vw,7.5rem)] leading-[0.92] font-medium tracking-[-0.05em]">
+            <h1 className="mt-5 text-[clamp(3.25rem,9vw,7.5rem)] leading-[0.92] font-medium tracking-tighter">
               <SplitText as="span" trigger="load" ready={ready} text="Live somewhere" className="block" />
               <SplitText
                 as="span"
@@ -225,7 +224,7 @@ export function Hero({ cities, cards }: { cities: HeroCity[]; cards: HeroCard[] 
         {/* Scroll cue, under the badge (the search owns the bottom-left). */}
         <div
           aria-hidden
-          className="absolute right-[4.75rem] bottom-6 hidden flex-col items-center gap-2 text-[11px] tracking-[0.3em] text-white/60 uppercase xl:flex"
+          className="absolute right-19 bottom-6 hidden flex-col items-center gap-2 text-[11px] tracking-[0.3em] text-white/60 uppercase xl:flex"
         >
           Scroll
           <span className="relative h-10 w-px overflow-hidden bg-white/20">

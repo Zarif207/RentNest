@@ -25,7 +25,7 @@ export function PropertyGallery({ images, title }: PropertyGalleryProps) {
 
   if (count === 0) {
     return (
-      <div className="grid aspect-16/9 place-items-center rounded-3xl bg-muted text-muted-foreground">
+      <div className="grid aspect-video place-items-center rounded-3xl bg-muted text-muted-foreground">
         <House className="size-12" aria-hidden />
         <span className="sr-only">No photos available</span>
       </div>
@@ -46,7 +46,7 @@ export function PropertyGallery({ images, title }: PropertyGalleryProps) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="group relative block aspect-16/9 w-full overflow-hidden rounded-3xl bg-muted outline-none focus-visible:ring-3 focus-visible:ring-ring/50 lg:aspect-21/9"
+        className="group relative block aspect-video w-full overflow-hidden rounded-3xl bg-muted outline-none focus-visible:ring-3 focus-visible:ring-ring/50 lg:aspect-21/9"
         // Starts with the visible text so voice-control users can say it.
         aria-label={`${openLabel}, full screen from photo ${active + 1}`}
       >

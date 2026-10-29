@@ -1,28 +1,23 @@
 import Link from "next/link";
-import { ArrowRight, House } from "lucide-react";
-import { CategoryChips } from "@/components/home/category-chips";
+import { House } from "lucide-react";
 import { CtaBanner } from "@/components/home/cta-banner";
+import { FeaturedCollection, type FeaturedHome } from "@/components/home/featured-collection";
 import { Hero, type HeroCard } from "@/components/home/hero";
 import type { HeroCity } from "@/components/home/hero-search";
+import { HomeStatement } from "@/components/home/home-statement";
 import { HowItWorks } from "@/components/home/how-it-works";
-import { JourneyStats, type HomeStat } from "@/components/home/journey-stats";
 import { ListingsMarquee } from "@/components/home/listings-marquee";
+import { LiveStats, type LiveStat } from "@/components/home/live-stats";
 import { Testimonials, type Testimonial } from "@/components/home/testimonials";
-import { PropertyGrid } from "@/components/properties/property-grid";
 import { EmptyState } from "@/components/shared/empty-state";
 import { FadeIn } from "@/components/shared/fade-in";
 import { SectionHeading } from "@/components/shared/section-heading";
 import { SerifAccent } from "@/components/shared/serif-accent";
 import { Button } from "@/components/ui/button";
-import {
-  getPublicCategories,
-  getPublicProperties,
-  getPublicPropertyReviews,
-  orNull,
-} from "@/lib/data/public";
-import { formatCurrency } from "@/lib/format";
+import { getPublicProperties, getPublicPropertyReviews, orNull } from "@/lib/data/public";
+import { formatCurrency, formatEnumLabel } from "@/lib/format";
 import { formatLocation } from "@/lib/us-states";
-import type { PropertyWithRelations } from "@/types";
+import type { Paginated, PropertyWithRelations } from "@/types";
 
 // Shown only while there are fewer than three real reviews; worded as
 // typical feedback rather than attributed to real people.
@@ -75,6 +70,45 @@ function toHeroCards(properties: PropertyWithRelations[]): HeroCard[] {
     }));
 }
 
+/** The featured collection's cards (real listings, up to eight). */
+function toFeaturedHomes(properties: PropertyWithRelations[]): FeaturedHome[] {
+  return properties.map((property) => ({
+    id: property.id,
+    title: property.title,
+    image: property.images[0] ?? null,
+    price: `${formatCurrency(property.rentAmount)}/mo`,
+    location: formatLocation(property.city, property.division),
+    type: formatEnumLabel(property.propertyType),
+    bedrooms: property.bedrooms,
+    bathrooms: property.bathrooms,
+    area: property.area,
+  }));
+}
+
+/**
+ * Platform numbers, only the ones we can count truthfully: totals come from
+ * `meta.total`; cities and landlords only when every listing was fetched.
+ */
+function toLiveStats(
+  all: Paginated<PropertyWithRelations> | null,
+  available: Paginated<PropertyWithRelations> | null,
+): LiveStat[] {
+  const stats: LiveStat[] = [];
+  if (all) {
+    stats.push({ value: all.meta.total, label: "Homes listed", description: "Apartments, houses, studios and villas." });
+  }
+  if (available) {
+    stats.push({ value: available.meta.total, label: "Available now", description: "Ready to request today." });
+  }
+  if (all && all.data.length === all.meta.total) {
+    const cities = new Set(all.data.map((property) => `${property.city}|${property.division}`));
+    const landlords = new Set(all.data.map((property) => property.ownerId));
+    stats.push({ value: cities.size, label: "Cities covered", description: "Across different US states." });
+    stats.push({ value: landlords.size, label: "Landlords listing", description: "Each one managing their own homes." });
+  }
+  return stats;
+}
+
 async function loadTestimonials(properties: PropertyWithRelations[]) {
   const reviewLists = await Promise.all(
     properties.map((property) => orNull(getPublicPropertyReviews(property.id))),
@@ -94,61 +128,29 @@ async function loadTestimonials(properties: PropertyWithRelations[]) {
 }
 
 export default async function HomePage() {
-  const [featured, latest, available, categories, all] = await Promise.all([
-    orNull(getPublicProperties({ limit: 6 })),
+  const [featured, latest, available, all] = await Promise.all([
+    orNull(getPublicProperties({ limit: 8 })),
     orNull(getPublicProperties({ limit: 10, sortBy: "createdAt", sortOrder: "desc" })),
     orNull(getPublicProperties({ availabilityStatus: "AVAILABLE", limit: 1 })),
-    orNull(getPublicCategories()),
     orNull(getPublicProperties({ limit: 100 })),
   ]);
 
   const testimonials = await loadTestimonials(featured?.data ?? []);
-
-  const stats: HomeStat[] = [
-    {
-      value: featured?.meta.total ?? null,
-      label: "Homes listed",
-      description: "Apartments, houses, studios and villas.",
-    },
-    {
-      value: available?.meta.total ?? null,
-      label: "Available now",
-      description: "Ready to request today.",
-    },
-    {
-      value: categories?.length ?? null,
-      label: "Property categories",
-      description: "Find the kind of place that fits you.",
-    },
-  ];
+  const featuredHomes = toFeaturedHomes(featured?.data ?? []);
 
   return (
     <>
       <Hero cities={toHeroCities(all?.data ?? [])} cards={toHeroCards(featured?.data ?? [])} />
 
-      <section className="pt-24 pb-20 sm:pt-32 sm:pb-28">
-        <div className="mx-auto max-w-7xl space-y-10 px-4 sm:px-6 lg:px-8">
-          <FadeIn className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-            <SectionHeading
-              eyebrow="Featured"
-              title={
-                <>
-                  Discover handpicked homes that <SerifAccent>define elegance</SerifAccent>
-                </>
-              }
-            />
-            <Button asChild variant="outline" className="self-start lg:self-auto">
-              <Link href="/properties">
-                View all properties <ArrowRight data-icon="inline-end" />
-              </Link>
-            </Button>
-          </FadeIn>
+      <HomeStatement />
 
-          {categories && categories.length > 0 && <CategoryChips categories={categories} />}
+      <LiveStats stats={toLiveStats(all, available)} />
 
-          {featured && featured.data.length > 0 ? (
-            <PropertyGrid properties={featured.data} />
-          ) : (
+      {featuredHomes.length > 0 ? (
+        <FeaturedCollection homes={featuredHomes} />
+      ) : (
+        <section className="bg-surface py-24">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <EmptyState
               icon={House}
               title={featured ? "No homes listed yet" : "Listings are unavailable right now"}
@@ -163,12 +165,12 @@ export default async function HomePage() {
                 </Button>
               }
             />
-          )}
-        </div>
-      </section>
+          </div>
+        </section>
+      )}
 
       {latest && latest.data.length > 0 && (
-        <section className="overflow-hidden bg-surface py-20 sm:py-28">
+        <section className="overflow-hidden py-20 sm:py-28">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <FadeIn>
               <SectionHeading
@@ -186,8 +188,6 @@ export default async function HomePage() {
           </div>
         </section>
       )}
-
-      <JourneyStats stats={stats} />
 
       <HowItWorks />
 

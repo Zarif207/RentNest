@@ -169,7 +169,7 @@
   h1,
   h2,
   h3 {
-    @apply font-heading tracking-[-0.025em];
+    @apply font-heading tracking-tight;
   }
   ::selection {
     @apply bg-gold text-gold-foreground;

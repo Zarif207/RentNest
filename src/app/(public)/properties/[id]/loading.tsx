@@ -10,7 +10,7 @@ export default function Loading() {
         <Skeleton className="h-12 w-full max-w-2xl" />
         <Skeleton className="h-5 w-72 max-w-full" />
       </div>
-      <Skeleton className="mt-8 aspect-16/9 w-full rounded-3xl lg:aspect-21/9" />
+      <Skeleton className="mt-8 aspect-video w-full rounded-3xl lg:aspect-21/9" />
       <div className="mt-10 grid gap-10 lg:grid-cols-[1fr_24rem]">
         <div className="space-y-4">
           <Skeleton className="h-8 w-56" />

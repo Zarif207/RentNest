@@ -9,7 +9,14 @@ import type { Property } from "@/types";
 const PROPERTY_CARD_IMAGE_SIZES =
   "(min-width: 1280px) 400px, (min-width: 768px) 50vw, 100vw";
 
-export function PropertyCard({ property }: { property: Property }) {
+export function PropertyCard({
+  property,
+  eager = false,
+}: {
+  property: Property;
+  /** Above-the-fold cards load their photo immediately (it's often the LCP). */
+  eager?: boolean;
+}) {
   const image = property.images[0];
   const available = property.availabilityStatus === "AVAILABLE";
 
@@ -25,6 +32,7 @@ export function PropertyCard({ property }: { property: Property }) {
               src={image}
               alt={property.title}
               fill
+              loading={eager ? "eager" : undefined}
               sizes={PROPERTY_CARD_IMAGE_SIZES}
               className="object-cover transition-transform duration-500 ease-out group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
             />

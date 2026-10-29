@@ -11,13 +11,13 @@ const buttonVariants = cva(
         // Ink pill in light; champagne pill on ink in dark (via --primary).
         default: "bg-primary text-primary-foreground hover:bg-primary/88",
         outline:
-          "border-foreground/15 bg-transparent text-foreground hover:border-foreground/30 hover:bg-foreground/[0.04] aria-expanded:bg-foreground/[0.04]",
+          "border-foreground/15 bg-transparent text-foreground hover:border-foreground/30 hover:bg-foreground/4 aria-expanded:bg-foreground/4",
         // Champagne in both themes: for the one key call to action.
         gold: "bg-gold text-gold-foreground hover:bg-gold/85",
         secondary:
           "bg-secondary text-secondary-foreground hover:bg-accent aria-expanded:bg-accent",
         ghost:
-          "hover:bg-foreground/[0.05] hover:text-foreground aria-expanded:bg-foreground/[0.05] aria-expanded:text-foreground",
+          "hover:bg-foreground/5 hover:text-foreground aria-expanded:bg-foreground/5 aria-expanded:text-foreground",
         destructive:
           "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
         link: "rounded-none text-primary underline-offset-4 hover:underline",

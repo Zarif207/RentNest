@@ -52,7 +52,7 @@ export default async function PropertiesPage({ searchParams }: PageProps<"/prope
       <BrowseProvider>
         <div className="mt-10 grid gap-10 lg:grid-cols-[17rem_1fr]">
           <aside className="hidden lg:block" aria-label="Filters">
-            <div className="sticky top-24 max-h-[calc(100svh-7rem)] overflow-y-auto pr-3 pb-6 [scrollbar-width:thin]">
+            <div className="sticky top-24 max-h-[calc(100svh-7rem)] overflow-y-auto pr-3 pb-6 scrollbar-thin">
               <PropertyFilters {...filterOptions} />
             </div>
           </aside>
@@ -64,7 +64,7 @@ export default async function PropertiesPage({ searchParams }: PageProps<"/prope
             <ResultsShell>
               {result.data.length > 0 ? (
                 <div className="space-y-12">
-                  <PropertyGrid properties={result.data} />
+                  <PropertyGrid properties={result.data} eagerCount={3} />
                   <PaginationNav
                     page={result.meta.page}
                     totalPages={result.meta.totalPage}
