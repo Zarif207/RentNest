@@ -43,7 +43,7 @@ export function ResultsToolbar({ total, ...options }: FilterOptions & { total: n
               <SlidersHorizontal data-icon="inline-start" />
               Filters
               {activeCount > 0 && (
-                <span className="grid size-5 place-items-center rounded-full bg-brand text-xs text-brand-foreground">
+                <span className="grid size-5 place-items-center rounded-full bg-gold text-xs text-gold-foreground">
                   {activeCount}
                 </span>
               )}

@@ -38,7 +38,7 @@ export function PropertyCard({ property }: { property: Property }) {
               aria-hidden
               className={cn(
                 "size-1.5 rounded-full",
-                available ? "bg-emerald-500" : "bg-muted-foreground",
+                available ? "bg-[#7f9a6b]" : "bg-muted-foreground",
               )}
             />
             {available ? "Available" : "Rented"}

@@ -4,7 +4,7 @@ import { SerifAccent } from "@/components/shared/serif-accent";
 
 export function Hero() {
   return (
-    <section className="bg-linear-to-b from-sky-from to-sky-to pt-28 sm:pt-32">
+    <section className="bg-linear-to-b from-wash-from to-wash-to pt-28 sm:pt-32">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl text-center">
           <h1 className="text-5xl leading-[1.02] font-semibold tracking-tight sm:text-6xl lg:text-7xl">

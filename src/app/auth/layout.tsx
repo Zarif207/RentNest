@@ -32,7 +32,7 @@ export default function AuthLayout({ children }: LayoutProps<"/auth">) {
             <p className="max-w-md text-4xl leading-tight font-semibold tracking-tight">
               A home isn&apos;t just a place.{" "}
               {/* Fixed light tint: the quote sits on a photo in both themes. */}
-              <SerifAccent className="text-[#c9dcef]">It&apos;s a feeling.</SerifAccent>
+              <SerifAccent className="text-gold">It&apos;s a feeling.</SerifAccent>
             </p>
             <footer className="mt-4 text-sm text-white/75">
               Verified rentals across the US, from studios to villas.

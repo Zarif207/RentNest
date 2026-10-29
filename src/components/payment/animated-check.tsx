@@ -8,7 +8,7 @@ export function AnimatedCheck() {
 
   return (
     <motion.div
-      className="grid size-20 place-items-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-400/15 dark:text-emerald-400"
+      className="grid size-20 place-items-center rounded-full bg-[#e2e8dc] text-[#4a5f3c] dark:bg-[#9db48a]/15 dark:text-[#bccfab]"
       initial={reduceMotion ? false : { scale: 0.6, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       transition={{ duration: 0.4, ease: "easeOut" }}

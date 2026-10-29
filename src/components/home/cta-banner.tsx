@@ -8,7 +8,7 @@ export function CtaBanner() {
   return (
     <section className="py-20 sm:py-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <FadeIn className="relative overflow-hidden rounded-3xl bg-linear-to-br from-sky-from to-sky-to px-6 py-16 text-center sm:px-12 sm:py-20">
+        <FadeIn className="relative overflow-hidden rounded-3xl bg-linear-to-br from-wash-from to-wash-to px-6 py-16 text-center sm:px-12 sm:py-20">
           <h2 className="mx-auto max-w-3xl text-4xl leading-tight font-semibold tracking-tight sm:text-5xl">
             Make your dream space <SerifAccent>a reality</SerifAccent>
           </h2>

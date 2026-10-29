@@ -79,7 +79,7 @@ export function RequestToRent({ property }: RequestToRentProps) {
       </Button>
       {sent && (
         <p className="flex items-center justify-center gap-2 text-sm">
-          <CircleCheck className="size-4 text-emerald-600 dark:text-emerald-400" aria-hidden />
+          <CircleCheck className="size-4 text-[#4a5f3c] dark:text-[#bccfab]" aria-hidden />
           Request sent.
           <Link href={TENANT_REQUESTS_PATH} className="font-medium underline underline-offset-4">
             View my requests

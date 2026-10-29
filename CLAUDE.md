@@ -100,18 +100,20 @@ RentNest frontend (Assignment 5): a Next.js App Router app for a rental marketpl
 - Empty states (no properties, no requests, no payments) have an illustration/icon, a sentence, and a next action.
 - Never show raw JSON, stack traces, or `undefined` in the UI.
 
-## Design system
+## Design system — "Quiet luxury" (redesign phase, see PLAN-REDESIGN.md)
 
-Reference: Dribbble "Real Estate Website" shots (Realteek / Estately style). Clean, airy, editorial.
+References live in `design-refs/` (Aurex Living dashboard, NestQuest, FIND, Hestia, Hilltop, prestige-living gallery). Dark ink + ivory, editorial, cinematic. Lots of air, few colors, big serif type.
 
-- **Colors:** ink `#171717` (text, primary buttons), accent `#ff291b` (used sparingly: active filter dot, price highlight, key CTA hover, notification badges), surface `#f8f9fa`, white `#ffffff`, muted text `#6b7280`, soft sky gradient for the hero (`#c9dcef` → `#eef4fa`), accent-serif blue `#5b8fd1` for italic words.
-- **Dark mode:** background `#0e0e0f`, surfaces `#171717`/`#1f1f21`, text `#f5f5f5`, same accent.
-- **Type:** Craftwork Grotesk is paid, so use **Hanken Grotesk** (Google, closest free match) for everything, and **Instrument Serif italic** for one emphasized word or phrase per heading ("Discover handpicked homes that *define elegance*"). Load both with `next/font/google`.
-- **Shapes:** pill buttons and chips (`rounded-full`), cards and images `rounded-2xl`/`rounded-3xl`, soft shadows only on floating elements (search bar, dialogs).
-- **Signature pieces:** floating pill search bar overlapping the hero's bottom edge (location · type · price · black "Find Property" button); horizontal category chip row with circular arrow buttons; property card = large image, title, pin + city, one-line description, price in bold italic; details page stat trio (big numbers: beds / baths / sqft) and black full-width "Request to Rent" button; stats cards overlapping a wide image; testimonial carousel with stars and `01/08` counter; rounded CTA banner.
-- **Status badges:** PENDING amber, APPROVED blue (shows "Pay Now"), REJECTED red, ACTIVE green (shows "Leave Review"), COMPLETED gray, CANCELLED gray outline.
-- **Motion** (`motion/react`): fade-up + stagger on scroll for sections and card grids; hero image slow scale (1.08 → 1); a tilted (≈ -10°) infinite marquee of property cards for the "Latest listings" section; card hover lift and image zoom; dialogs scale-in. Respect `prefers-reduced-motion` (`useReducedMotion`). Keep durations 0.3–0.6 s, ease-out.
-- Mobile first. Check 375 px, 768 px, 1280 px. Dashboards: sidebar on desktop, sheet drawer on mobile; tables become stacked cards under `md`.
+- **Palette (light):** background ivory `#F6F3EE`, cards `#FDFBF7`, sand `#E9E2D6` (secondary/chips), ink `#12100E` (text, primary buttons), espresso `#1C1815`, champagne `#C2A878` (`gold`: fills, lines, the key CTA, selection; **never small text on ivory**, 2:1), bronze `#806435` (`bronze`: gold-toned text on light; the plan's `#8A6D3B` is 4.4:1, so it was deepened to pass AA), stone `#6F685F` (muted text; OK on ivory/card/muted, not on sand). Dashboard canvas `#EFEDE8`/`surface`.
+- **Palette (dark, first-class):** background `#0C0B0A`, card `#161412`, popover/secondary espresso `#1C1815`, text `#F2EEE7`, muted `#A39A8E`, same champagne. Primary buttons are champagne on ink in dark.
+- **No red accent anywhere.** Destructive is a muted brick (`#9F3A2C` / `#E08F80`) used only for destructive actions and errors.
+- **Tokens:** shadcn tokens in `globals.css` (`:root` and `.dark`), plus `gold`, `gold-foreground`, `bronze`, `sand`, `surface`, `serif-accent`, `wash-from`/`wash-to` (ivory→sand section wash). Use tokens, not hex, in components.
+- **Type:** **Cormorant Garamond** (`font-heading`/`font-serif`; h1–h3 default to it) for headings: large, light (300–400), italic for one emphasized phrase per heading via `SerifAccent` (bronze in light, champagne in dark). **Manrope** (`font-sans`) for UI and body. Eyebrows: `text-xs tracking-[0.25em] uppercase text-bronze`. Wordmark "RENTNEST" in wide-tracked small caps.
+- **Shapes:** pill buttons and chips (`rounded-full`); cards `rounded-3xl` with hairline borders (`border-border` = ink/10); inputs/selects `rounded-2xl`; glass panels over images (`bg-white/10 backdrop-blur-xl border-white/20`); shadows only on floating things (dialogs, menus, nav pill).
+- **Components:** Button variants `default` (ink / champagne-on-ink), `outline` (hairline), `gold` (champagne both themes, one per view), `secondary`, `ghost`, `destructive`, `link`. Badge adds `gold`. Status badges use muted tones with the same meanings: PENDING ochre, APPROVED slate blue (shows "Pay Now"), REJECTED brick, ACTIVE sage (shows "Leave Review"), COMPLETED stone, CANCELLED stone outline. Stars are champagne.
+- **Motion:** Lenis smooth scroll, GSAP + ScrollTrigger (`@gsap/react` `useGSAP`) for scrubbed/pinned sections, CSS 3D (`perspective`, `rotateX/Y`, `translateZ`) for depth; `motion/react` for component transitions. No Three.js. Ease-out, 0.3–0.8 s for UI; scroll scenes scrub. Everything off under `prefers-reduced-motion` (there's a global CSS rule plus per-component checks); 3D and pinning simplified under 768 px; kill ScrollTriggers on unmount.
+- **Data honesty:** informational sections use real API data; no invented numbers, testimonials, people or claims.
+- Mobile first. Check 375, 768, 1024, 1440 px in both themes. Dashboards: bento layout with pill navigation (Aurex reference); tables become stacked cards under `md`.
 
 ## Git and commit rules
 

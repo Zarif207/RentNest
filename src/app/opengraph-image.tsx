@@ -17,8 +17,8 @@ export default function OpengraphImage() {
           flexDirection: "column",
           justifyContent: "space-between",
           padding: 80,
-          background: "linear-gradient(180deg, #c9dcef 0%, #eef4fa 100%)",
-          color: "#171717",
+          background: "linear-gradient(180deg, #e9e2d6 0%, #f6f3ee 100%)",
+          color: "#12100e",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
@@ -27,7 +27,7 @@ export default function OpengraphImage() {
               width: 72,
               height: 72,
               borderRadius: 20,
-              background: "#171717",
+              background: "#12100e",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -44,7 +44,7 @@ export default function OpengraphImage() {
           <div style={{ fontSize: 84, fontWeight: 700, lineHeight: 1.05, letterSpacing: -2 }}>
             Find. Request. Move in.
           </div>
-          <div style={{ fontSize: 34, color: "#4b5563" }}>
+          <div style={{ fontSize: 34, color: "#6f685f" }}>
             Handpicked rental homes across the United States.
           </div>
         </div>

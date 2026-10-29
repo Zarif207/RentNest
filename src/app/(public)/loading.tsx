@@ -6,7 +6,7 @@ export default function Loading() {
   return (
     <div aria-busy="true">
       <span className="sr-only">Loading…</span>
-      <div className="bg-linear-to-b from-sky-from to-sky-to pt-28 sm:pt-32">
+      <div className="bg-linear-to-b from-wash-from to-wash-to pt-28 sm:pt-32">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto flex max-w-3xl flex-col items-center gap-4">
             <Skeleton className="h-14 w-full max-w-xl rounded-2xl bg-background/60" />

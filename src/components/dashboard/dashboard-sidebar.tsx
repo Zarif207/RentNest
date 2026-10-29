@@ -54,7 +54,7 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                   <item.icon className="size-4.5 shrink-0" aria-hidden />
                   <span className="flex-1">{item.label}</span>
                   {badge > 0 && (
-                    <span className="grid h-5 min-w-5 place-items-center rounded-full bg-brand px-1.5 text-xs font-semibold text-brand-foreground">
+                    <span className="grid h-5 min-w-5 place-items-center rounded-full bg-gold px-1.5 text-xs font-semibold text-gold-foreground">
                       {badge}
                       <span className="sr-only"> pending</span>
                     </span>

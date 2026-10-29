@@ -17,7 +17,7 @@ export function StarRating({ rating, className }: { rating: number; className?: 
           aria-hidden
           className={cn(
             "size-[1em]",
-            index < filled ? "fill-amber-400 text-amber-400" : "text-muted-foreground/40",
+            index < filled ? "fill-gold text-gold" : "text-muted-foreground/40",
           )}
         />
       ))}

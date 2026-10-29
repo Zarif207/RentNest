@@ -28,7 +28,7 @@ export function LeaveReviewButton({ rental, size = "sm", className }: LeaveRevie
   if (reviews.data?.some((review) => review.bookingId === rental.id)) {
     return (
       <span className="inline-flex items-center gap-1.5 px-2 text-sm text-muted-foreground">
-        <CircleCheck className="size-4 text-emerald-600 dark:text-emerald-400" aria-hidden />
+        <CircleCheck className="size-4 text-[#4a5f3c] dark:text-[#bccfab]" aria-hidden />
         Reviewed
       </span>
     );

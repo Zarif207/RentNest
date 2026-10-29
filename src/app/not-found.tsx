@@ -10,7 +10,7 @@ export const metadata: Metadata = { title: "Page not found" };
 // Unmatched URLs anywhere in the app land here (inside the root layout only).
 export default function NotFound() {
   return (
-    <div className="flex min-h-svh flex-col bg-linear-to-b from-sky-from to-sky-to">
+    <div className="flex min-h-svh flex-col bg-linear-to-b from-wash-from to-wash-to">
       <header className="flex h-16 items-center justify-between px-4 sm:px-6">
         <Logo />
         <ThemeToggle />
