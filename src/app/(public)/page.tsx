@@ -5,13 +5,15 @@ import { CtaBanner } from "@/components/home/cta-banner";
 import { FeaturedCollection, type FeaturedHome } from "@/components/home/featured-collection";
 import { Hero, type HeroCard } from "@/components/home/hero";
 import type { HeroCity } from "@/components/home/hero-search";
+import { HomeFaq, type FaqItem } from "@/components/home/home-faq";
 import { HomeStatement } from "@/components/home/home-statement";
 import { HowItWorks } from "@/components/home/how-it-works";
 import type { MockListing } from "@/components/home/how-it-works-mocks";
 import { ListingsMarquee } from "@/components/home/listings-marquee";
 import { LiveStats, type LiveStat } from "@/components/home/live-stats";
 import { PropertyTypes, type TypeTile } from "@/components/home/property-types";
-import { Testimonials, type Testimonial } from "@/components/home/testimonials";
+import { Voices, type Voice, type VoicesSummary } from "@/components/home/voices";
+import { WhyRentNest } from "@/components/home/why-rentnest";
 import { EmptyState } from "@/components/shared/empty-state";
 import { FadeIn } from "@/components/shared/fade-in";
 import { SectionHeading } from "@/components/shared/section-heading";
@@ -37,31 +39,6 @@ const TYPE_DESCRIPTIONS: Record<PropertyType, string> = {
   VILLA: "Space, privacy and a pool for the long summer.",
 };
 
-// Shown only while there are fewer than three real reviews; worded as
-// typical feedback rather than attributed to real people.
-const GENERIC_TESTIMONIALS: Testimonial[] = [
-  {
-    id: "generic-1",
-    quote: "Requesting a place took two minutes, and I knew the landlord's answer the same day.",
-    name: "RentNest tenant",
-    detail: "Typical tenant feedback",
-    rating: 5,
-  },
-  {
-    id: "generic-2",
-    quote: "I list a unit, approve the right tenant and the payment lands through Stripe. No chasing.",
-    name: "RentNest landlord",
-    detail: "Typical landlord feedback",
-    rating: 5,
-  },
-  {
-    id: "generic-3",
-    quote: "Real photos, clear prices and reviews from people who actually lived there.",
-    name: "RentNest tenant",
-    detail: "Typical tenant feedback",
-    rating: 4,
-  },
-];
 
 /** Unique cities from real listings, for the hero's city picker. */
 function toHeroCities(properties: PropertyWithRelations[]): HeroCity[] {
@@ -183,22 +160,74 @@ function toLiveStats(
   return stats;
 }
 
-async function loadTestimonials(properties: PropertyWithRelations[]) {
+// Reviews are fetched per listing, so cap how many listings we ask about.
+const VOICE_SOURCES = 24;
+
+/** Real reviews across listings (newest first) plus the truthful summary shown without them. */
+async function loadVoices(properties: PropertyWithRelations[]) {
+  const sources = properties.slice(0, VOICE_SOURCES);
   const reviewLists = await Promise.all(
-    properties.map((property) => orNull(getPublicPropertyReviews(property.id))),
+    sources.map((property) => orNull(getPublicPropertyReviews(property.id))),
   );
 
-  const reviews: Testimonial[] = reviewLists.flatMap((reviews, index) =>
-    (reviews ?? []).map((review) => ({
+  const voices: Voice[] = reviewLists
+    .flatMap((reviews, index) => (reviews ?? []).map((review) => ({ review, property: sources[index] })))
+    .sort((a, b) => b.review.createdAt.localeCompare(a.review.createdAt))
+    .map(({ review, property }) => ({
       id: review.id,
       quote: review.comment,
       name: review.user.name,
-      detail: `Tenant · ${properties[index].title}`,
+      property: property.title,
+      propertyId: property.id,
       rating: review.rating,
-    })),
-  );
+    }));
 
-  return reviews.length >= 3 ? reviews.slice(0, 8) : GENERIC_TESTIMONIALS;
+  const summary: VoicesSummary = {
+    count: voices.length,
+    average: voices.length ? voices.reduce((sum, voice) => sum + voice.rating, 0) / voices.length : null,
+    cities: new Set(properties.map((property) => `${property.city}|${property.division}`)).size,
+    states: new Set(properties.map((property) => property.division)).size,
+  };
+
+  return { voices: voices.slice(0, 8), summary };
+}
+
+/** FAQ answers match how the app and backend actually behave. */
+function toFaq(cities: ExploreCity[]): FaqItem[] {
+  const cityList = cities.map((city) => city.label).join("; ");
+  return [
+    {
+      question: "How does requesting a home work?",
+      answer:
+        "Open a listing, pick a move-in date and lease length, and send your request. The landlord sees it in their dashboard and approves or rejects it, and you can follow its status in yours.",
+    },
+    {
+      question: "How does payment work?",
+      answer:
+        "Once your request is approved, a Pay now button appears. You pay the full lease total (monthly rent × lease months) in USD through Stripe Checkout, and the rental becomes active as soon as the payment is confirmed.",
+    },
+    {
+      question: "Are payments secure?",
+      answer:
+        "Yes. You enter your card on Stripe's own hosted checkout page, so your card details never reach RentNest. You're never charged before a landlord approves your request.",
+    },
+    {
+      question: "Can I cancel a request?",
+      answer:
+        "Requests can't be withdrawn from the app yet. Nothing is charged while a request is pending, though, and if you don't pay an approved request, it simply never becomes active.",
+    },
+    {
+      question: "How do landlords join RentNest?",
+      answer:
+        "Landlords sign up with a landlord account and can list homes right away. Admins can see every account and listing, and block any account that breaks the rules.",
+    },
+    {
+      question: "Which cities can I rent in?",
+      answer: cityList
+        ? `Homes are currently listed in ${cityList}. New cities appear as landlords list them.`
+        : "New cities appear as landlords list homes across the US.",
+    },
+  ];
 }
 
 export default async function HomePage() {
@@ -210,9 +239,10 @@ export default async function HomePage() {
     Promise.all(PROPERTY_TYPES.map((propertyType) => orNull(getPublicProperties({ propertyType, limit: 1 })))),
   ]);
 
-  const testimonials = await loadTestimonials(featured?.data ?? []);
+  const { voices, summary } = await loadVoices(all?.data ?? []);
   const featuredHomes = toFeaturedHomes(featured?.data ?? []);
   const exploreCities = toExploreCities(all?.data ?? []);
+  const mockListing = toMockListing(featured?.data ?? []);
 
   return (
     <>
@@ -302,23 +332,59 @@ export default async function HomePage() {
         </section>
       )}
 
-      <HowItWorks listing={toMockListing(featured?.data ?? [])} />
+      <HowItWorks listing={mockListing} />
 
       <section className="py-20 sm:py-28">
-        <div className="mx-auto grid max-w-7xl gap-10 px-4 sm:px-6 lg:grid-cols-[1fr_1.4fr] lg:items-center lg:px-8">
+        <div className="mx-auto max-w-7xl space-y-12 px-4 sm:px-6 lg:px-8">
           <FadeIn>
             <SectionHeading
-              eyebrow="Testimonials"
+              eyebrow="Why RentNest"
               title={
                 <>
-                  What people say <SerifAccent>after moving in</SerifAccent>
+                  Renting, <SerifAccent>without the runaround</SerifAccent>
                 </>
               }
-              description="Stories from tenants and landlords who use RentNest."
+            />
+          </FadeIn>
+          <WhyRentNest
+            rent={mockListing.rent}
+            photos={(all?.data ?? []).flatMap((property) => property.images.slice(0, 1)).slice(0, 3)}
+          />
+        </div>
+      </section>
+
+      <section className="bg-surface py-20 sm:py-28">
+        <div className="mx-auto max-w-7xl space-y-12 px-4 sm:px-6 lg:px-8">
+          <FadeIn>
+            <SectionHeading
+              eyebrow="Voices"
+              title={
+                <>
+                  In their <SerifAccent>own words</SerifAccent>
+                </>
+              }
+              description="Reviews come only from tenants who rented the home through RentNest."
+            />
+          </FadeIn>
+          <Voices items={voices} summary={summary} />
+        </div>
+      </section>
+
+      <section id="faq" className="scroll-mt-20 py-20 sm:py-28">
+        <div className="mx-auto grid max-w-7xl gap-12 px-4 sm:px-6 lg:grid-cols-[1fr_1.5fr] lg:px-8">
+          <FadeIn>
+            <SectionHeading
+              eyebrow="FAQ"
+              title={
+                <>
+                  Questions, <SerifAccent>answered</SerifAccent>
+                </>
+              }
+              description="Straight answers about requests, payments and listings."
             />
           </FadeIn>
           <FadeIn>
-            <Testimonials items={testimonials} />
+            <HomeFaq items={toFaq(exploreCities)} />
           </FadeIn>
         </div>
       </section>

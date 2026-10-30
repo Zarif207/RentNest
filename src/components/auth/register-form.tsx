@@ -29,7 +29,8 @@ export function RegisterForm() {
   const form = useForm<RegisterValues>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      role: "TENANT",
+      // "List your property" links here with ?role=LANDLORD.
+      role: searchParams.get("role") === "LANDLORD" ? "LANDLORD" : "TENANT",
       name: "",
       email: "",
       phone: "",

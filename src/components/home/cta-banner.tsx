@@ -1,32 +1,48 @@
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { FadeIn } from "@/components/shared/fade-in";
+import { Parallax } from "@/components/motion/parallax";
+import { Reveal } from "@/components/motion/reveal";
 import { SerifAccent } from "@/components/shared/serif-accent";
 import { Button } from "@/components/ui/button";
 
+const CTA_IMAGE = "https://images.unsplash.com/photo-1613977257363-707ba9348227";
+
+/** Closing call to action: full-width photo with parallax under a dark wash. */
 export function CtaBanner() {
   return (
-    <section className="py-20 sm:py-28">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <FadeIn className="relative overflow-hidden rounded-3xl bg-linear-to-br from-wash-from to-wash-to px-6 py-16 text-center sm:px-12 sm:py-20">
-          <h2 className="mx-auto max-w-3xl text-4xl leading-tight font-semibold tracking-tight sm:text-5xl">
-            Make your dream space <SerifAccent>a reality</SerifAccent>
+    <section className="px-2 pb-2 sm:px-3 sm:pb-3">
+      <div className="relative isolate overflow-hidden rounded-3xl bg-[#12100e] text-white">
+        {/* Taller than the frame so the parallax never shows an edge. */}
+        <Parallax speed={0.25} className="absolute -inset-y-24 inset-x-0 -z-10">
+          <Image src={CTA_IMAGE} alt="" fill sizes="100vw" className="object-cover" />
+        </Parallax>
+        <div aria-hidden className="absolute inset-0 -z-10 bg-linear-to-t from-black/85 via-black/55 to-black/35" />
+
+        <Reveal className="mx-auto flex min-h-[80svh] max-w-7xl flex-col items-center justify-center px-4 py-28 text-center sm:px-6 lg:px-8">
+          <p className="text-xs font-medium tracking-[0.3em] text-white/70 uppercase">Start today</p>
+          <h2 className="mt-6 max-w-4xl text-[clamp(2.75rem,8vw,6.5rem)] leading-[0.95] font-medium tracking-tighter">
+            Your next chapter starts <SerifAccent className="text-gold">here</SerifAccent>
           </h2>
-          <p className="mx-auto mt-4 max-w-xl text-muted-foreground sm:text-lg">
-            Create a free account to request your next home, or list a property and start
-            receiving requests today.
+          <p className="mt-6 max-w-xl text-lg text-white/75">
+            Find a home and request it in minutes, or list your property and start receiving requests.
           </p>
-          <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-            <Button asChild size="lg">
-              <Link href="/auth/register">
-                Get started <ArrowRight data-icon="inline-end" />
+          <div className="mt-10 flex w-full flex-col justify-center gap-3 sm:w-auto sm:flex-row">
+            <Button asChild size="lg" variant="gold">
+              <Link href="/properties">
+                Find a home <ArrowRight data-icon="inline-end" />
               </Link>
             </Button>
-            <Button asChild size="lg" variant="outline">
-              <Link href="/properties">Browse properties</Link>
+            <Button
+              asChild
+              size="lg"
+              variant="outline"
+              className="border-white/30 bg-white/10 text-white backdrop-blur-md hover:bg-white/20 hover:text-white"
+            >
+              <Link href="/auth/register?role=LANDLORD">List your property</Link>
             </Button>
           </div>
-        </FadeIn>
+        </Reveal>
       </div>
     </section>
   );
