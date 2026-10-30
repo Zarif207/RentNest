@@ -1,3 +1,4 @@
+import { PageShell } from "@/components/layout/page-shell";
 /** Simple long-form layout for the privacy and terms pages. */
 export function LegalPage({
   title,
@@ -9,7 +10,8 @@ export function LegalPage({
   sections: { heading: string; body: string }[];
 }) {
   return (
-    <article className="mx-auto max-w-3xl px-4 py-16 sm:px-6 sm:py-24">
+    <PageShell width="narrow">
+      <article>
       <p className="text-xs font-medium tracking-[0.25em] text-bronze uppercase">Legal</p>
       <h1 className="mt-4 text-5xl leading-[1.02] font-medium tracking-tighter sm:text-6xl">{title}</h1>
       <p className="mt-4 text-sm text-muted-foreground">Last updated {updated}</p>
@@ -21,6 +23,7 @@ export function LegalPage({
           </section>
         ))}
       </div>
-    </article>
+      </article>
+    </PageShell>
   );
 }

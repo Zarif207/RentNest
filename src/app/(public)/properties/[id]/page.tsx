@@ -16,6 +16,7 @@ import { formatDate, formatEnumLabel, formatNumber } from "@/lib/format";
 import { formatLocation } from "@/lib/us-states";
 import { isUuid } from "@/lib/utils";
 import type { PropertyWithRelations } from "@/types";
+import { PageShell } from "@/components/layout/page-shell";
 
 async function loadProperty(id: string) {
   // Skip the API call for ids that can't exist.
@@ -95,7 +96,7 @@ export default async function PropertyDetailsPage({ params }: PageProps<"/proper
   ];
 
   return (
-    <div className="pt-6 pb-20 sm:pt-10">
+    <PageShell width="full">
       <header className="mx-auto max-w-7xl space-y-5 px-4 sm:px-6 lg:px-8">
         <Link
           href="/properties"
@@ -198,6 +199,6 @@ export default async function PropertyDetailsPage({ params }: PageProps<"/proper
           <PropertyGrid properties={similar} />
         </section>
       )}
-    </div>
+    </PageShell>
   );
 }

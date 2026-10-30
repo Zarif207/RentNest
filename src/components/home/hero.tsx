@@ -1,9 +1,8 @@
 "use client";
 
-import { useId, useRef } from "react";
+import { useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Logo } from "@/components/brand/logo";
 import { HeroSearch, type HeroCity } from "@/components/home/hero-search";
 import { SplitText } from "@/components/motion/split-text";
 import { useDarkHero } from "@/hooks/use-dark-hero";
@@ -34,8 +33,8 @@ const CARD_LAYOUT = [
 
 /**
  * Cinematic first screen: full-viewport photo, split-line headline, glass
- * search, floating property cards at different depths and a slowly turning
- * badge. Scrolling scales the photo up while the copy lifts away and the
+ * search and floating property cards at different depths. Scrolling scales
+ * the photo up while the copy lifts away and the
  * cards fly outward (pinned briefly on desktop). Mobile keeps a lighter
  * version; reduced motion shows everything static.
  */
@@ -46,7 +45,6 @@ export function Hero({ cities, cards }: { cities: HeroCity[]; cards: HeroCard[] 
   const isDesktop = useIsDesktop();
   const finePointer = useFinePointer();
   const ready = useIntroDone();
-  const badgePathId = useId();
 
   // Entrance: plays once the intro curtain has lifted (CSS keeps it hidden until then).
   useGSAP(
@@ -87,7 +85,6 @@ export function Hero({ cities, cards }: { cities: HeroCity[]; cards: HeroCard[] 
           const { x, y } = CARD_LAYOUT[index].fly;
           tl.to(card, { x, y, scale: 1.25, opacity: 0 }, 0);
         });
-        tl.to("[data-hero-badge]", { opacity: 0, scale: 0.8 }, 0);
       }
     },
     { scope: sectionRef, dependencies: [motionOk, isDesktop] },
@@ -122,7 +119,6 @@ export function Hero({ cities, cards }: { cities: HeroCity[]; cards: HeroCard[] 
     <div>
       <section
         ref={sectionRef}
-        data-full-bleed
         className="relative h-svh min-h-160 overflow-hidden bg-[#12100e] text-white"
       >
         <div data-hero-media className="absolute inset-0 will-change-transform">
@@ -205,35 +201,6 @@ export function Hero({ cities, cards }: { cities: HeroCity[]; cards: HeroCard[] 
           </div>
         </div>
 
-        {/* Slowly turning badge; decorative. */}
-        <div
-          data-hero-badge
-          aria-hidden
-          className="absolute right-8 bottom-28 hidden size-32 place-items-center xl:grid"
-        >
-          <div data-enter className="relative grid size-full place-items-center rounded-full border border-white/15 bg-white/5 backdrop-blur-md">
-            <svg viewBox="0 0 120 120" className="absolute inset-0 size-full motion-safe:animate-[spin_24s_linear_infinite]">
-              <defs>
-                <path id={badgePathId} d="M60,60 m-45,0 a45,45 0 1,1 90,0 a45,45 0 1,1 -90,0" />
-              </defs>
-              <text fill="currentColor" fontSize="9" letterSpacing="2.6" className="uppercase opacity-80">
-                <textPath href={`#${badgePathId}`}>Premium rentals · United States · </textPath>
-              </text>
-            </svg>
-            <Logo size={38} className="text-gold" />
-          </div>
-        </div>
-
-        {/* Scroll cue, under the badge (the search owns the bottom-left). */}
-        <div
-          aria-hidden
-          className="absolute right-19 bottom-6 hidden flex-col items-center gap-2 text-[11px] tracking-[0.3em] text-white/60 uppercase xl:flex"
-        >
-          Scroll
-          <span className="relative h-10 w-px overflow-hidden bg-white/20">
-            <span className="absolute inset-x-0 top-0 h-1/2 bg-white motion-safe:animate-[scroll-cue_1.8s_ease-in-out_infinite]" />
-          </span>
-        </div>
       </section>
     </div>
   );

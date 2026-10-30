@@ -1,9 +1,10 @@
 import { PropertyGridSkeleton } from "@/components/properties/property-card-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PageShell } from "@/components/layout/page-shell";
 
 export default function Loading() {
   return (
-    <div className="mx-auto max-w-7xl px-4 pt-6 pb-20 sm:px-6 sm:pt-10 lg:px-8" aria-busy="true">
+    <PageShell aria-busy="true">
       <span className="sr-only">Loading properties…</span>
       <div className="flex flex-wrap items-end justify-between gap-8 border-b border-border pb-10">
         <div className="w-full max-w-2xl space-y-4">
@@ -30,6 +31,6 @@ export default function Loading() {
           <PropertyGridSkeleton />
         </div>
       </div>
-    </div>
+    </PageShell>
   );
 }

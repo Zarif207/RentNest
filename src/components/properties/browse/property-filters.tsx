@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useId } from "react";
-import { Search } from "lucide-react";
+import { useCallback, useId, useState } from "react";
+import { ChevronDown, Search } from "lucide-react";
 import { DebouncedInput } from "@/components/shared/debounced-input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -12,7 +12,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { formatAmenity, formatEnumLabel } from "@/lib/format";
 import { US_STATES } from "@/lib/us-states";
@@ -28,15 +27,66 @@ export type FilterOptions = {
   amenities: string[];
 };
 
-function FilterSection({ title, children }: { title: string; children: React.ReactNode }) {
+/**
+ * One collapsible filter group. Collapsing animates the height (grid rows);
+ * a collapsed group with active filters shows how many are set.
+ */
+function FilterSection({
+  title,
+  activeCount = 0,
+  defaultOpen = true,
+  children,
+}: {
+  title: string;
+  activeCount?: number;
+  defaultOpen?: boolean;
+  children: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  const panelId = useId();
+
   return (
-    <section className="space-y-3">
-      <h3 className="text-xs font-medium tracking-[0.2em] text-muted-foreground uppercase">{title}</h3>
-      {children}
+    <section className="border-b border-border last:border-b-0">
+      <h3>
+        <button
+          type="button"
+          aria-expanded={open}
+          aria-controls={panelId}
+          onClick={() => setOpen((value) => !value)}
+          className="flex w-full items-center justify-between gap-3 py-4 text-left text-xs font-medium tracking-[0.2em] text-muted-foreground uppercase outline-none hover:text-foreground focus-visible:text-foreground"
+        >
+          <span className="flex items-center gap-2">
+            {title}
+            {!open && activeCount > 0 && (
+              <span className="grid h-5 min-w-5 place-items-center rounded-full bg-gold px-1.5 text-[11px] tracking-normal text-gold-foreground">
+                {activeCount}
+                <span className="sr-only"> active</span>
+              </span>
+            )}
+          </span>
+          <ChevronDown
+            aria-hidden
+            className={cn("size-4 transition-transform duration-300", open && "rotate-180")}
+          />
+        </button>
+      </h3>
+      <div
+        id={panelId}
+        className={cn(
+          "grid transition-[grid-template-rows,opacity] duration-300 ease-out motion-reduce:transition-none",
+          open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0",
+        )}
+      >
+        {/* inert while collapsed, so hidden controls can't be tabbed to. */}
+        <div className="min-h-0 overflow-hidden" inert={!open}>
+          <div className="space-y-3 pb-5">{children}</div>
+        </div>
+      </div>
     </section>
   );
 }
 
+/** Filters update the results live (URL params); there's no Apply button. */
 export function PropertyFilters({ categories, amenities }: FilterOptions) {
   const { filters, setParams } = useBrowse();
   const id = useId();
@@ -51,9 +101,11 @@ export function PropertyFilters({ categories, amenities }: FilterOptions) {
     setParams({ amenities: next.join(",") });
   };
 
+  const rentActive = filters.minPrice !== null || filters.maxPrice !== null;
+
   return (
-    <div className="space-y-6">
-      <FilterSection title="Keyword">
+    <div>
+      <FilterSection title="Keyword" activeCount={filters.searchTerm ? 1 : 0}>
         <div className="relative">
           <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
           <DebouncedInput
@@ -67,7 +119,7 @@ export function PropertyFilters({ categories, amenities }: FilterOptions) {
         </div>
       </FilterSection>
 
-      <FilterSection title="Location">
+      <FilterSection title="Location" activeCount={Number(Boolean(filters.city)) + Number(Boolean(filters.division))}>
         <DebouncedInput
           aria-label="City"
           placeholder="City, e.g. Austin"
@@ -92,9 +144,7 @@ export function PropertyFilters({ categories, amenities }: FilterOptions) {
         </Select>
       </FilterSection>
 
-      <Separator />
-
-      <FilterSection title="Property type">
+      <FilterSection title="Property type" activeCount={filters.propertyType ? 1 : 0}>
         <div className="flex flex-wrap gap-2">
           {[null, ...PROPERTY_TYPES].map((type) => {
             const active = filters.propertyType === type;
@@ -118,7 +168,7 @@ export function PropertyFilters({ categories, amenities }: FilterOptions) {
         </div>
       </FilterSection>
 
-      <FilterSection title="Category">
+      <FilterSection title="Category" activeCount={filters.categoryId ? 1 : 0}>
         <Select
           value={filters.categoryId ?? ANY}
           onValueChange={(value) => setParams({ categoryId: value === ANY ? null : value })}
@@ -137,15 +187,11 @@ export function PropertyFilters({ categories, amenities }: FilterOptions) {
         </Select>
       </FilterSection>
 
-      <Separator />
-
-      <FilterSection title="Monthly rent">
+      <FilterSection title="Monthly rent" activeCount={rentActive ? 1 : 0}>
         <PriceRange />
       </FilterSection>
 
-      <Separator />
-
-      <FilterSection title="Amenities">
+      <FilterSection title="Amenities" activeCount={filters.amenities.length} defaultOpen={filters.amenities.length > 0}>
         <ul className="grid grid-cols-2 gap-x-3 gap-y-2.5 lg:grid-cols-1">
           {amenities.map((amenity) => {
             const checkboxId = `${id}-amenity-${amenity}`;
@@ -165,19 +211,19 @@ export function PropertyFilters({ categories, amenities }: FilterOptions) {
         </ul>
       </FilterSection>
 
-      <Separator />
-
-      <div className="flex items-center justify-between gap-3">
-        <Label htmlFor={`${id}-available`} className="flex-col items-start gap-0.5">
-          <span>Available only</span>
-          <span className="text-xs font-normal text-muted-foreground">Hide rented homes</span>
-        </Label>
-        <Switch
-          id={`${id}-available`}
-          checked={filters.availableOnly}
-          onCheckedChange={(checked) => setParams({ availabilityStatus: checked ? "AVAILABLE" : null })}
-        />
-      </div>
+      <FilterSection title="Availability" activeCount={filters.availableOnly ? 1 : 0}>
+        <div className="flex items-center justify-between gap-3">
+          <Label htmlFor={`${id}-available`} className="flex-col items-start gap-0.5">
+            <span>Available only</span>
+            <span className="text-xs font-normal text-muted-foreground">Hide rented homes</span>
+          </Label>
+          <Switch
+            id={`${id}-available`}
+            checked={filters.availableOnly}
+            onCheckedChange={(checked) => setParams({ availabilityStatus: checked ? "AVAILABLE" : null })}
+          />
+        </div>
+      </FilterSection>
     </div>
   );
 }

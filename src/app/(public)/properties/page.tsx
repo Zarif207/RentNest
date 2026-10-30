@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { SearchX } from "lucide-react";
 import { ActiveFilters } from "@/components/properties/browse/active-filters";
 import { BrowseProvider } from "@/components/properties/browse/browse-context";
-import { PropertyFilters } from "@/components/properties/browse/property-filters";
+import { FilterSidebar } from "@/components/properties/browse/filter-sidebar";
 import { ClearFiltersButton, ResultsShell } from "@/components/properties/browse/results-shell";
 import { ResultsToolbar } from "@/components/properties/browse/results-toolbar";
 import { PropertyGrid } from "@/components/properties/property-grid";
@@ -11,6 +11,7 @@ import { PaginationNav } from "@/components/shared/pagination-nav";
 import { SerifAccent } from "@/components/shared/serif-accent";
 import { getPublicCategories, getPublicProperties, orNull } from "@/lib/data/public";
 import { COMMON_AMENITIES, getActiveChips, readFilters, toPropertyQuery } from "@/lib/property-filters";
+import { PageShell } from "@/components/layout/page-shell";
 
 export const metadata: Metadata = {
   title: "Properties",
@@ -39,7 +40,7 @@ export default async function PropertiesPage({ searchParams }: PageProps<"/prope
   const hasFilters = getActiveChips(filters, filterOptions.categories).length > 0;
 
   return (
-    <div className="mx-auto max-w-7xl px-4 pt-6 pb-20 sm:px-6 sm:pt-10 lg:px-8">
+    <PageShell>
       <header className="flex flex-wrap items-end justify-between gap-8 border-b border-border pb-10">
         <div className="max-w-2xl space-y-4">
           <p className="text-xs font-medium tracking-[0.25em] text-bronze uppercase">Browse homes</p>
@@ -66,9 +67,7 @@ export default async function PropertiesPage({ searchParams }: PageProps<"/prope
       <BrowseProvider>
         <div className="mt-10 grid gap-8 lg:grid-cols-[17.5rem_1fr]">
           <aside className="hidden lg:block" aria-label="Filters">
-            <div className="sticky top-24 max-h-[calc(100svh-7rem)] overflow-y-auto rounded-3xl border border-border bg-card p-5 scrollbar-thin">
-              <PropertyFilters {...filterOptions} />
-            </div>
+            <FilterSidebar {...filterOptions} />
           </aside>
 
           <section className="min-w-0 space-y-6" aria-labelledby="results-title">
@@ -104,6 +103,6 @@ export default async function PropertiesPage({ searchParams }: PageProps<"/prope
           </section>
         </div>
       </BrowseProvider>
-    </div>
+    </PageShell>
   );
 }

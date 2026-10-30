@@ -16,10 +16,6 @@ export default function PublicLayout({ children }: LayoutProps<"/">) {
         <Suspense fallback={<SiteHeaderFallback />}>
           <SiteHeader />
         </Suspense>
-        {/* Room for the fixed header pill. Pages whose hero runs under the
-            header mark it data-full-bleed, and CSS hides this from the first
-            paint (no shift when the header hydrates). */}
-        <div aria-hidden className="h-24 [body:has([data-full-bleed])_&]:hidden" />
         <main id="main" className="flex-1">
           {children}
         </main>

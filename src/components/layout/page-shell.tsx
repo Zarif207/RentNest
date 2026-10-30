@@ -1,0 +1,23 @@
+import { cn } from "@/lib/utils";
+
+const WIDTHS = {
+  default: "mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8",
+  narrow: "mx-auto w-full max-w-3xl px-4 sm:px-6",
+  // For pages that lay out their own containers (e.g. a full-bleed gallery).
+  full: "w-full",
+};
+
+/**
+ * Wrapper for every public page except the home page (whose hero runs under
+ * the header). The floating header pill ends 72px from the top, so content
+ * starts at 112px (128px from sm) and always leaves the same gap before the
+ * footer. Owning the offset per page means nothing can slide under the
+ * navbar, whatever else is in the DOM.
+ */
+export function PageShell({
+  width = "default",
+  className,
+  ...props
+}: React.ComponentProps<"div"> & { width?: keyof typeof WIDTHS }) {
+  return <div className={cn("pt-28 pb-24 sm:pt-32 sm:pb-28", WIDTHS[width], className)} {...props} />;
+}

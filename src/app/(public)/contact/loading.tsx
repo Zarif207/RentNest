@@ -1,8 +1,9 @@
 import { Skeleton } from "@/components/ui/skeleton";
+import { PageShell } from "@/components/layout/page-shell";
 
 export default function Loading() {
   return (
-    <div className="mx-auto max-w-7xl px-4 pt-6 pb-24 sm:px-6 sm:pt-10 lg:px-8" aria-busy="true">
+    <PageShell aria-busy="true">
       <span className="sr-only">Loading contact page…</span>
       <div className="grid gap-12 lg:grid-cols-[1fr_1.1fr] lg:gap-16">
         <div className="space-y-5">
@@ -13,6 +14,6 @@ export default function Loading() {
         </div>
         <Skeleton className="h-130 w-full rounded-3xl" />
       </div>
-    </div>
+    </PageShell>
   );
 }

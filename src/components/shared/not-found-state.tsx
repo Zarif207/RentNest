@@ -16,11 +16,11 @@ type NotFoundStateProps = {
 export function NotFoundState({ title, description, actions, children, className }: NotFoundStateProps) {
   return (
     <div className={cn("mx-auto flex max-w-lg flex-col items-center px-4 py-24 text-center", className)}>
-      <p className="text-sm font-medium tracking-widest text-muted-foreground uppercase">Error 404</p>
-      <span className="mt-4 grid size-16 place-items-center rounded-full bg-secondary">
-        <SearchX className="size-7 text-muted-foreground" aria-hidden />
+      <p className="text-xs font-medium tracking-[0.25em] text-bronze uppercase">Error 404</p>
+      <span className="mt-4 grid size-16 place-items-center rounded-full border border-gold/40 bg-gold/15">
+        <SearchX className="size-7 text-bronze" aria-hidden />
       </span>
-      <h1 className="mt-6 text-3xl font-semibold tracking-tight sm:text-4xl">{title}</h1>
+      <h1 className="mt-6 text-4xl font-medium tracking-tighter sm:text-5xl">{title}</h1>
       <p className="mt-3 text-muted-foreground">{description}</p>
       {children}
       <div className="mt-8 flex flex-wrap justify-center gap-3">

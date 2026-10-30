@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, Geist } from "next/font/google";
+import Script from "next/script";
+import { INTRO_GATE_SCRIPT } from "@/components/motion/intro-gate";
 import { AuthProvider } from "@/components/providers/auth-provider";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { ThemeProvider } from "@/components/providers/theme-provider";
@@ -59,6 +61,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       suppressHydrationWarning
     >
       <body className="flex min-h-full flex-col">
+        {/* Decides before first paint whether the intro overlay should show. */}
+        <Script id="intro-gate" strategy="beforeInteractive">
+          {INTRO_GATE_SCRIPT}
+        </Script>
         <ThemeProvider>
           <QueryProvider>
             <AuthProvider>

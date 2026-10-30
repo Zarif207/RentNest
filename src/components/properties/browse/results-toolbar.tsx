@@ -53,7 +53,7 @@ export function ResultsToolbar({ total, ...options }: FilterOptions & { total: n
               <SheetTitle>Filters</SheetTitle>
               <SheetDescription>Results update as you change filters.</SheetDescription>
             </SheetHeader>
-            <div className="flex-1 overflow-y-auto p-4">
+            <div className="flex-1 overflow-y-auto overscroll-contain px-4" data-lenis-prevent>
               <PropertyFilters {...options} />
             </div>
             <SheetFooter className="flex-row border-t">

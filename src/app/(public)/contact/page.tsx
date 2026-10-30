@@ -5,6 +5,7 @@ import { ContactForm } from "@/components/contact/contact-form";
 import { Reveal } from "@/components/motion/reveal";
 import { SerifAccent } from "@/components/shared/serif-accent";
 import { formatAddress, SITE_CONTACT } from "@/lib/site-config";
+import { PageShell } from "@/components/layout/page-shell";
 
 export const metadata: Metadata = {
   title: "Contact",
@@ -33,7 +34,7 @@ export default function ContactPage() {
   ];
 
   return (
-    <div className="mx-auto max-w-7xl px-4 pt-6 pb-24 sm:px-6 sm:pt-10 lg:px-8">
+    <PageShell>
       <div className="grid gap-12 lg:grid-cols-[1fr_1.1fr] lg:gap-16">
         <Reveal className="space-y-10">
           <div className="space-y-5">
@@ -140,6 +141,6 @@ export default function ContactPage() {
           ))}
         </ul>
       </Reveal>
-    </div>
+    </PageShell>
   );
 }
