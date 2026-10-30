@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import { useMotionOk } from "@/hooks/use-motion";
+import { useIsDesktop, useMotionOk } from "@/hooks/use-motion";
 import { gsap, useGSAP } from "@/lib/gsap";
 import { cn } from "@/lib/utils";
 
@@ -23,8 +23,8 @@ export function SplitText({
   text: string;
   as?: Tag;
   /**
-   * "load" plays once `ready` (heroes; words start hidden in CSS so nothing
-   * flashes before hydration); "scroll" waits until it's in view.
+   * "load" plays once `ready` (heroes, md+ only; words start hidden in CSS so
+   * nothing flashes before hydration); "scroll" waits until it's in view.
    */
   trigger?: "load" | "scroll";
   ready?: boolean;
@@ -33,12 +33,14 @@ export function SplitText({
 }) {
   const ref = useRef<HTMLSpanElement>(null);
   const motionOk = useMotionOk();
+  const isDesktop = useIsDesktop();
   const words = text.split(" ");
 
   useGSAP(
     () => {
       const el = ref.current;
-      if (!motionOk || !ready || !el) return;
+      // Load reveals are desktop-only: on phones the hero text shows at once.
+      if (!motionOk || !ready || !el || (trigger === "load" && !isDesktop)) return;
       gsap.fromTo(
         el.querySelectorAll("[data-word]"),
         // y: 0 clears the CSS starting offset, which GSAP would read back as pixels.
@@ -54,7 +56,7 @@ export function SplitText({
         },
       );
     },
-    { scope: ref, dependencies: [motionOk, ready, trigger, delay, text] },
+    { scope: ref, dependencies: [motionOk, isDesktop, ready, trigger, delay, text] },
   );
 
   return (

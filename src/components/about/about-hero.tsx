@@ -14,7 +14,7 @@ export function AboutHero() {
   const ready = useIntroDone();
 
   return (
-    <section className="relative isolate flex h-[88svh] min-h-152 items-end overflow-hidden bg-[#12100e] text-white">
+    <section data-full-bleed className="relative isolate flex h-[88svh] min-h-152 items-end overflow-hidden bg-[#12100e] text-white">
       <Parallax speed={0.3} className="absolute -inset-y-28 inset-x-0 -z-10">
         <Image
           src={ABOUT_HERO_IMAGE}

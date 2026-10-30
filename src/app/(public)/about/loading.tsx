@@ -4,7 +4,7 @@ export default function Loading() {
   return (
     <div aria-busy="true">
       <span className="sr-only">Loading about page…</span>
-      <div className="flex h-[88svh] min-h-152 items-end bg-[#12100e]">
+      <div data-full-bleed className="flex h-[88svh] min-h-152 items-end bg-[#12100e]">
         <div className="mx-auto w-full max-w-7xl space-y-5 px-4 pb-16 sm:px-6 sm:pb-20 lg:px-8">
           <Skeleton className="h-4 w-36 bg-white/10" />
           <Skeleton className="h-20 w-full max-w-4xl bg-white/10" />

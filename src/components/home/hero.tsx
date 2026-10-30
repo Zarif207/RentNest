@@ -51,14 +51,15 @@ export function Hero({ cities, cards }: { cities: HeroCity[]; cards: HeroCard[] 
   // Entrance: plays once the intro curtain has lifted (CSS keeps it hidden until then).
   useGSAP(
     () => {
-      if (!motionOk || !ready) return;
+      // Phones skip the entrance (the CSS that hides [data-enter] is md+ only).
+      if (!motionOk || !ready || !isDesktop) return;
       gsap.fromTo(
         "[data-enter]",
         { opacity: 0, y: 24 },
         { opacity: 1, y: 0, duration: 0.9, ease: "power3.out", stagger: 0.08, delay: 0.35 },
       );
     },
-    { scope: sectionRef, dependencies: [motionOk, ready] },
+    { scope: sectionRef, dependencies: [motionOk, ready, isDesktop] },
   );
 
   // Scroll: "dolly into the building". Desktop pins for a moment; mobile just scrubs.
@@ -121,6 +122,7 @@ export function Hero({ cities, cards }: { cities: HeroCity[]; cards: HeroCard[] 
     <div>
       <section
         ref={sectionRef}
+        data-full-bleed
         className="relative h-svh min-h-160 overflow-hidden bg-[#12100e] text-white"
       >
         <div data-hero-media className="absolute inset-0 will-change-transform">
@@ -192,8 +194,9 @@ export function Hero({ cities, cards }: { cities: HeroCity[]; cards: HeroCard[] 
                 className="block font-serif font-normal tracking-[-0.02em] text-gold"
               />
             </h1>
-            <p data-enter className="mt-6 max-w-lg text-lg text-white/80">
-              Verified rentals in cities across the US. Request in minutes and pay securely once your
+            {/* Not animated: it's the LCP text on phones, so it paints right away (under the intro curtain). */}
+            <p className="mt-6 max-w-lg text-lg text-white/80">
+              Rental homes in cities across the US. Request in minutes and pay securely once your
               landlord says yes.
             </p>
             <div data-enter className="mt-8">

@@ -186,10 +186,51 @@ html[data-intro-seen] [data-intro] {
   display: none;
 }
 
+/* Intro preloader, all CSS so it runs before scripts load: the monogram
+   draws, a 000→100 counter runs, then the curtain lifts (see intro-preloader). */
+@keyframes intro-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes intro-lift {
+  to {
+    transform: translateY(-100%);
+  }
+}
+
+@property --intro-n {
+  syntax: "<integer>";
+  inherits: false;
+  initial-value: 0;
+}
+
+@counter-style intro-pad {
+  system: extends decimal;
+  pad: 3 "0";
+}
+
+@keyframes intro-count {
+  to {
+    --intro-n: 100;
+  }
+}
+
+.intro-count {
+  animation: intro-count 1000ms ease-in-out forwards;
+  counter-reset: intro-n var(--intro-n);
+}
+
+.intro-count::after {
+  content: counter(intro-n, intro-pad);
+}
+
 /* Above-the-fold reveals start hidden in CSS (no flash before hydration) and
-   GSAP plays them in. Only when motion is allowed; IntroGate's <noscript>
-   undoes this without JavaScript. */
-@media (prefers-reduced-motion: no-preference) {
+   GSAP plays them in. Only when motion is allowed and on md+ screens (phones
+   paint the hero text immediately, which keeps first paint fast); IntroGate's
+   <noscript> undoes this without JavaScript. */
+@media (prefers-reduced-motion: no-preference) and (min-width: 768px) {
   [data-split="load"] [data-word] {
     transform: translateY(110%);
   }

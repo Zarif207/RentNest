@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback } from "react";
-import { Building2, ExternalLink, Search } from "lucide-react";
+import { Building2, ExternalLink, Search, Shapes, ToggleRight } from "lucide-react";
+import { FilterPill } from "@/components/dashboard/bento";
 import { DataTable, type DataTableColumn } from "@/components/dashboard/data-table";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { PropertyCell } from "@/components/dashboard/property-cell";
@@ -10,13 +11,6 @@ import { DebouncedInput } from "@/components/shared/debounced-input";
 import { PaginationNav } from "@/components/shared/pagination-nav";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useAdminProperties } from "@/hooks/use-admin";
 import { useUrlParams } from "@/hooks/use-url-params";
 import { formatCurrency, formatDate, formatEnumLabel } from "@/lib/format";
@@ -98,52 +92,46 @@ export function AdminPropertiesView() {
   const properties = useAdminProperties(query);
   const commitSearch = useCallback((value: string) => setParams({ searchTerm: value }), [setParams]);
 
+  const toolbar = (
+    <>
+      <div className="relative w-full sm:w-72">
+        <Search className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
+        <DebouncedInput
+          type="search"
+          aria-label="Search listings"
+          placeholder="Search title, city or address…"
+          className="h-10 rounded-full bg-card pl-10"
+          value={query.searchTerm ?? ""}
+          onCommit={commitSearch}
+        />
+      </div>
+      <FilterPill
+        icon={Shapes}
+        label="Filter by type"
+        value={query.propertyType ?? ANY}
+        onValueChange={(value) => setParams({ propertyType: value === ANY ? null : value })}
+        options={[
+          { value: ANY, label: "All types" },
+          ...PROPERTY_TYPES.map((propertyType) => ({ value: propertyType, label: formatEnumLabel(propertyType) })),
+        ]}
+      />
+      <FilterPill
+        icon={ToggleRight}
+        label="Filter by availability"
+        value={query.availabilityStatus ?? ANY}
+        onValueChange={(value) => setParams({ availabilityStatus: value === ANY ? null : value })}
+        options={[
+          { value: ANY, label: "Any availability" },
+          { value: "AVAILABLE", label: "Available" },
+          { value: "RENTED", label: "Rented" },
+        ]}
+      />
+    </>
+  );
+
   return (
     <div className="space-y-6">
       <PageHeader title="Properties" description="Every listing on RentNest, from every landlord." />
-
-      <div className="flex flex-col gap-3 sm:flex-row">
-        <div className="relative flex-1">
-          <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
-          <DebouncedInput
-            type="search"
-            aria-label="Search listings"
-            placeholder="Search title, city or address…"
-            className="bg-card pl-9"
-            value={query.searchTerm ?? ""}
-            onCommit={commitSearch}
-          />
-        </div>
-        <Select
-          value={query.propertyType ?? ANY}
-          onValueChange={(value) => setParams({ propertyType: value === ANY ? null : value })}
-        >
-          <SelectTrigger aria-label="Filter by type" className="w-full bg-card sm:w-40">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={ANY}>All types</SelectItem>
-            {PROPERTY_TYPES.map((propertyType) => (
-              <SelectItem key={propertyType} value={propertyType}>
-                {formatEnumLabel(propertyType)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select
-          value={query.availabilityStatus ?? ANY}
-          onValueChange={(value) => setParams({ availabilityStatus: value === ANY ? null : value })}
-        >
-          <SelectTrigger aria-label="Filter by availability" className="w-full bg-card sm:w-44">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={ANY}>Any availability</SelectItem>
-            <SelectItem value="AVAILABLE">Available</SelectItem>
-            <SelectItem value="RENTED">Rented</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
 
       {properties.isError ? (
         <QueryError error={properties.error} onRetry={() => void properties.refetch()} />
@@ -151,6 +139,7 @@ export function AdminPropertiesView() {
         <div className={properties.isPlaceholderData ? "opacity-60 transition-opacity" : undefined}>
           <DataTable
             label="All properties"
+            toolbar={toolbar}
             columns={columns}
             rows={properties.data?.data}
             getRowKey={(property) => property.id}

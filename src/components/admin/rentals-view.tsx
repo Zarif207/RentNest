@@ -86,14 +86,13 @@ export function AdminRentalsView() {
         description="Every rental request across RentNest. Landlords and tenants manage their own; this view is read-only."
       />
 
-      <StatusTabs />
-
       {rentals.isError ? (
         <QueryError error={rentals.error} onRetry={() => void rentals.refetch()} />
       ) : (
         <div className={rentals.isPlaceholderData ? "opacity-60 transition-opacity" : undefined}>
           <DataTable
             label="All rentals"
+            toolbar={<StatusTabs />}
             columns={columns}
             rows={rentals.data?.data}
             getRowKey={(rental) => rental.id}

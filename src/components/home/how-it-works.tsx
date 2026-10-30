@@ -15,7 +15,7 @@ const STORIES = {
   tenants: {
     label: "For tenants",
     steps: [
-      { title: "Browse", text: "Search verified US listings by city, type and monthly price.", mock: "browse" },
+      { title: "Browse", text: "Search US listings by city, type and monthly price.", mock: "browse" },
       { title: "Request", text: "Pick a move-in date and lease length. The landlord sees it right away.", mock: "request" },
       { title: "Get approved", text: "Follow your request from pending to approved in your dashboard.", mock: "approved" },
       { title: "Pay securely", text: "Pay the lease through Stripe Checkout. Your card never touches our servers.", mock: "pay" },

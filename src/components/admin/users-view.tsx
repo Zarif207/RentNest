@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { Ban, Search, ShieldCheck, Users } from "lucide-react";
+import { Ban, Flag, Search, ShieldCheck, UserRound, Users } from "lucide-react";
+import { FilterPill } from "@/components/dashboard/bento";
 import { ConfirmDialog } from "@/components/dashboard/confirm-dialog";
 import { DataTable, type DataTableColumn } from "@/components/dashboard/data-table";
 import { PageHeader } from "@/components/dashboard/page-header";
@@ -11,13 +12,6 @@ import { DebouncedInput } from "@/components/shared/debounced-input";
 import { PaginationNav } from "@/components/shared/pagination-nav";
 import { UserAvatar } from "@/components/shared/user-avatar";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useAdminUsers, useUpdateUserStatus } from "@/hooks/use-admin";
 import { useAuth } from "@/hooks/use-auth";
 import { useUrlParams } from "@/hooks/use-url-params";
@@ -118,49 +112,43 @@ export function UsersView() {
 
   const targetBanned = target?.userStatus === "BLOCKED";
 
+  const toolbar = (
+    <>
+      <div className="relative w-full sm:w-72">
+        <Search className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
+        <DebouncedInput
+          type="search"
+          aria-label="Search users by name or email"
+          placeholder="Search by name or email…"
+          className="h-10 rounded-full bg-card pl-10"
+          value={query.searchTerm ?? ""}
+          onCommit={commitSearch}
+        />
+      </div>
+      <FilterPill
+        icon={UserRound}
+        label="Filter by role"
+        value={query.role ?? ANY}
+        onValueChange={(value) => setParams({ role: value === ANY ? null : value })}
+        options={[{ value: ANY, label: "All roles" }, ...USER_ROLES.map((role) => ({ value: role, label: formatEnumLabel(role) }))]}
+      />
+      <FilterPill
+        icon={Flag}
+        label="Filter by status"
+        value={query.userStatus ?? ANY}
+        onValueChange={(value) => setParams({ userStatus: value === ANY ? null : value })}
+        options={[
+          { value: ANY, label: "All statuses" },
+          { value: "ACTIVE", label: "Active" },
+          { value: "BLOCKED", label: "Banned" },
+        ]}
+      />
+    </>
+  );
+
   return (
     <div className="space-y-6">
       <PageHeader title="Users" description="Search everyone on RentNest and ban or unban accounts." />
-
-      <div className="flex flex-col gap-3 sm:flex-row">
-        <div className="relative flex-1">
-          <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
-          <DebouncedInput
-            type="search"
-            aria-label="Search users by name or email"
-            placeholder="Search by name or email…"
-            className="bg-card pl-9"
-            value={query.searchTerm ?? ""}
-            onCommit={commitSearch}
-          />
-        </div>
-        <Select value={query.role ?? ANY} onValueChange={(value) => setParams({ role: value === ANY ? null : value })}>
-          <SelectTrigger aria-label="Filter by role" className="w-full bg-card sm:w-40">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={ANY}>All roles</SelectItem>
-            {USER_ROLES.map((role) => (
-              <SelectItem key={role} value={role}>
-                {formatEnumLabel(role)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select
-          value={query.userStatus ?? ANY}
-          onValueChange={(value) => setParams({ userStatus: value === ANY ? null : value })}
-        >
-          <SelectTrigger aria-label="Filter by status" className="w-full bg-card sm:w-40">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={ANY}>All statuses</SelectItem>
-            <SelectItem value="ACTIVE">Active</SelectItem>
-            <SelectItem value="BLOCKED">Banned</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
 
       {users.isError ? (
         <QueryError error={users.error} onRetry={() => void users.refetch()} />
@@ -168,6 +156,7 @@ export function UsersView() {
         <div className={users.isPlaceholderData ? "opacity-60 transition-opacity" : undefined}>
           <DataTable
             label="Users"
+            toolbar={toolbar}
             columns={columns}
             rows={users.data?.data}
             getRowKey={(user) => user.id}

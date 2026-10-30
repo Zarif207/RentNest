@@ -71,7 +71,10 @@ export default async function PropertiesPage({ searchParams }: PageProps<"/prope
             </div>
           </aside>
 
-          <section className="min-w-0 space-y-6" aria-label="Results">
+          <section className="min-w-0 space-y-6" aria-labelledby="results-title">
+            <h2 id="results-title" className="sr-only">
+              Results
+            </h2>
             {/* Sticky glass bar: count, sort, mobile filters and the active chips. */}
             <div className="sticky top-20 z-20 space-y-3 rounded-3xl border border-border bg-background/70 p-3 backdrop-blur-xl sm:px-4">
               <ResultsToolbar total={result.meta.total} {...filterOptions} />

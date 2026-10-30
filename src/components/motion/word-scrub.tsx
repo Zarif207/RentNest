@@ -6,7 +6,7 @@ import { gsap, useGSAP } from "@/lib/gsap";
 import { cn } from "@/lib/utils";
 
 /**
- * A statement paragraph whose words go from 20% to 100% opacity as it scrolls
+ * A statement paragraph whose words go from 50% to 100% opacity as it scrolls
  * through the viewport (scrubbed, so scrolling back fades them again).
  */
 export function WordScrub({ text, className }: { text: string; className?: string }) {
@@ -20,7 +20,8 @@ export function WordScrub({ text, className }: { text: string; className?: strin
       if (!motionOk || !el) return;
       gsap.fromTo(
         el.querySelectorAll("[data-word]"),
-        { opacity: 0.2 },
+        // 50% keeps unread words at 3:1 contrast (large text) before they light up.
+        { opacity: 0.5 },
         {
           opacity: 1,
           ease: "none",

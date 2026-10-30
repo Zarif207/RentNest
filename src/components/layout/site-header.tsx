@@ -18,8 +18,8 @@ import { useScrolled } from "@/hooks/use-scrolled";
 import { isActiveLink, PUBLIC_NAV_LINKS, roleShortcut } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
 
-// Floating pill: 16px from the top, centered. Height 56px, so pages without a
-// full-bleed hero reserve 96px (pill + breathing room) with a spacer.
+// Floating pill: 16px from the top, centered. Height 56px; pages without a
+// full-bleed hero reserve 96px for it with the spacer in the public layout.
 const SHELL = "fixed inset-x-0 top-4 z-50 px-4 sm:px-6";
 const PILL = "mx-auto flex h-14 max-w-6xl items-center justify-between gap-3 rounded-full border pr-2 pl-5";
 
@@ -29,18 +29,13 @@ const PILL = "mx-auto flex h-14 max-w-6xl items-center justify-between gap-3 rou
  */
 export function SiteHeaderFallback() {
   return (
-    <>
-      <div aria-hidden className="h-24" />
-      <header className={SHELL}>
-        <div className={cn(PILL, "border-border bg-background/75 backdrop-blur-xl")}>
-          <BrandLogo size="sm" />
-        </div>
-      </header>
-    </>
+    <header className={SHELL}>
+      <div className={cn(PILL, "border-border bg-background/75 backdrop-blur-xl")}>
+        <BrandLogo size="sm" />
+      </div>
+    </header>
   );
 }
-
-const FULL_BLEED_PATHS = ["/", "/about"];
 
 export function SiteHeader() {
   const pathname = usePathname();
@@ -50,8 +45,6 @@ export function SiteHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { user, isLoading } = useAuth();
 
-  // Full-bleed heroes (home, about) run underneath the header; other pages get a spacer.
-  const fullBleed = FULL_BLEED_PATHS.includes(pathname);
   // Light text only while a dark hero is directly behind the transparent pill.
   const onDark = overDarkHero && !scrolled && !menuOpen;
   const hidden = hiddenByScroll && !menuOpen;
@@ -61,8 +54,6 @@ export function SiteHeader() {
 
   return (
     <>
-      {!fullBleed && <div aria-hidden className="h-24" />}
-
       <header
         className={cn(
           SHELL,
