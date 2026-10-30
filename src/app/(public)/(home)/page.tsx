@@ -4,7 +4,7 @@ import { CityExplorer, type ExploreCity } from "@/components/home/city-explorer"
 import { CtaBanner } from "@/components/home/cta-banner";
 import { FeaturedCollection, type FeaturedHome } from "@/components/home/featured-collection";
 import { Hero, type HeroCard } from "@/components/home/hero";
-import type { HeroCity } from "@/components/home/hero-search";
+import type { HeroSuggestion } from "@/components/home/hero-search";
 import { HomeFaq, type FaqItem } from "@/components/home/home-faq";
 import { HomeStatement } from "@/components/home/home-statement";
 import { HowItWorks } from "@/components/home/how-it-works";
@@ -19,11 +19,23 @@ import { FadeIn } from "@/components/shared/fade-in";
 import { SectionHeading } from "@/components/shared/section-heading";
 import { SerifAccent } from "@/components/shared/serif-accent";
 import { Button } from "@/components/ui/button";
-import { getPublicProperties, getPublicPropertyReviews, orNull } from "@/lib/data/public";
+import {
+  getPublicHomepage,
+  getPublicProperties,
+  getPublicPropertyReviews,
+  getPublicPropertyStates,
+  orNull,
+} from "@/lib/data/public";
 import { formatCurrency, formatEnumLabel } from "@/lib/format";
 import { toLiveStats } from "@/lib/live-stats";
 import { formatLocation } from "@/lib/us-states";
-import { PROPERTY_TYPES, type Paginated, type PropertyType, type PropertyWithRelations } from "@/types";
+import {
+  PROPERTY_TYPES,
+  type Paginated,
+  type PropertyStateCount,
+  type PropertyType,
+  type PropertyWithRelations,
+} from "@/types";
 
 // Used for a type tile only when no listing of that type has a photo yet.
 const TYPE_FALLBACK_IMAGES: Record<PropertyType, string> = {
@@ -41,18 +53,29 @@ const TYPE_DESCRIPTIONS: Record<PropertyType, string> = {
 };
 
 
-/** Unique cities from real listings, for the hero's city picker. */
-function toHeroCities(properties: PropertyWithRelations[]): HeroCity[] {
-  const byCity = new Map<string, string>();
+/**
+ * Hero search suggestions: every state with listings (from /properties/states)
+ * plus each distinct city, with how many homes each has.
+ */
+function toHeroSuggestions(
+  states: PropertyStateCount[],
+  properties: PropertyWithRelations[],
+): HeroSuggestion[] {
+  const cities = new Map<string, Extract<HeroSuggestion, { kind: "city" }>>();
   for (const { city, division } of properties) {
-    if (city && !byCity.has(city)) byCity.set(city, formatLocation(city, division));
+    if (!city) continue;
+    const key = `${city}|${division}`.toLowerCase();
+    const existing = cities.get(key);
+    if (existing) existing.count += 1;
+    else cities.set(key, { kind: "city", city, state: division, label: formatLocation(city, division), count: 1 });
   }
-  return [...byCity]
-    .map(([value, label]) => ({ value, label }))
-    .sort((a, b) => a.label.localeCompare(b.label));
+  return [
+    ...states.map((state) => ({ kind: "state" as const, state: state.state, count: state.propertyCount })),
+    ...cities.values(),
+  ];
 }
 
-/** The first three featured listings that have a photo. */
+/** Hero cards: the admin's picks, in order (only ones with a photo; up to three). */
 function toHeroCards(properties: PropertyWithRelations[]): HeroCard[] {
   return properties
     .filter((property) => property.images.length > 0)
@@ -209,12 +232,14 @@ function toFaq(cities: ExploreCity[]): FaqItem[] {
 }
 
 export default async function HomePage() {
-  const [featured, latest, available, all, typeTotals] = await Promise.all([
+  const [featured, latest, available, all, typeTotals, homepage, states] = await Promise.all([
     orNull(getPublicProperties({ limit: 8 })),
     orNull(getPublicProperties({ limit: 10, sortBy: "createdAt", sortOrder: "desc" })),
     orNull(getPublicProperties({ availabilityStatus: "AVAILABLE", limit: 1 })),
     orNull(getPublicProperties({ limit: 100 })),
     Promise.all(PROPERTY_TYPES.map((propertyType) => orNull(getPublicProperties({ propertyType, limit: 1 })))),
+    orNull(getPublicHomepage()),
+    orNull(getPublicPropertyStates()),
   ]);
 
   const { voices, summary } = await loadVoices(all?.data ?? []);
@@ -224,7 +249,11 @@ export default async function HomePage() {
 
   return (
     <>
-      <Hero cities={toHeroCities(all?.data ?? [])} cards={toHeroCards(featured?.data ?? [])} />
+      <Hero
+        suggestions={toHeroSuggestions(states ?? [], all?.data ?? [])}
+        // The admin's hero picks; if the settings can't load, the newest listings.
+        cards={toHeroCards(homepage?.hero.properties ?? featured?.data ?? [])}
+      />
 
       <HomeStatement />
 

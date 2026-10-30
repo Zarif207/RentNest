@@ -21,6 +21,9 @@ export type Property = {
   categoryId: string | null;
   amenities: string[];
   images: string[];
+  /** Map pin; null when the address couldn't be geocoded. */
+  latitude: number | null;
+  longitude: number | null;
   ownerId: string;
   createdAt: string;
   updatedAt: string;

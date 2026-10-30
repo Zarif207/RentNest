@@ -3,6 +3,7 @@ import { categoriesService } from "@/lib/api/categories";
 import { ApiError, getErrorMessage, isApiError } from "@/lib/api/client";
 import { propertiesService } from "@/lib/api/properties";
 import { reviewsService } from "@/lib/api/reviews";
+import { siteSettingsService } from "@/lib/api/site-settings";
 import type { PropertyQuery } from "@/types";
 
 // Cached reads for the public, server-rendered pages. With Cache Components,
@@ -16,6 +17,9 @@ export const PROPERTIES_TAG = "properties";
 
 /** Tag on the cached category list; expired when an admin changes categories. */
 export const CATEGORIES_TAG = "categories";
+
+/** Tag on the cached homepage settings; expired when an admin saves them. */
+export const HOMEPAGE_TAG = "homepage-settings";
 
 /** Cache tag for one property's reviews; expired after a tenant posts a review. */
 export function propertyReviewsTag(propertyId: string) {
@@ -62,6 +66,21 @@ async function cachedCategories() {
   return settle(categoriesService.getAll());
 }
 
+async function cachedHomepage() {
+  "use cache";
+  cacheLife(PUBLIC_CACHE);
+  // Featured/hero properties come from listings too, so either change expires it.
+  cacheTag(HOMEPAGE_TAG, PROPERTIES_TAG);
+  return settle(siteSettingsService.getHomepage());
+}
+
+async function cachedPropertyStates() {
+  "use cache";
+  cacheLife(PUBLIC_CACHE);
+  cacheTag(PROPERTIES_TAG);
+  return settle(propertiesService.getStates());
+}
+
 async function cachedPropertyReviews(propertyId: string) {
   "use cache";
   cacheLife(PUBLIC_CACHE);
@@ -86,6 +105,14 @@ export async function getPublicCategories() {
 
 export async function getPublicPropertyReviews(propertyId: string) {
   return unwrap(await cachedPropertyReviews(propertyId));
+}
+
+export async function getPublicHomepage() {
+  return unwrap(await cachedHomepage());
+}
+
+export async function getPublicPropertyStates() {
+  return unwrap(await cachedPropertyStates());
 }
 
 /** Resolves to null instead of throwing, so one failed section doesn't blank the page. */

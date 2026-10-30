@@ -5,4 +5,5 @@ export * from "./enums";
 export * from "./payment";
 export * from "./property";
 export * from "./review";
+export * from "./site-settings";
 export * from "./user";

@@ -3,7 +3,7 @@
 import { useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { HeroSearch, type HeroCity } from "@/components/home/hero-search";
+import { HeroSearch, type HeroSuggestion } from "@/components/home/hero-search";
 import { SplitText } from "@/components/motion/split-text";
 import { useDarkHero } from "@/hooks/use-dark-hero";
 import { useIntroDone } from "@/hooks/use-intro-done";
@@ -11,7 +11,7 @@ import { useFinePointer, useIsDesktop, useMotionOk } from "@/hooks/use-motion";
 import { gsap, useGSAP } from "@/lib/gsap";
 import { cn } from "@/lib/utils";
 
-/** A real featured listing shown as a floating glass card. */
+/** A listing the admin picked for the hero, shown as a floating glass card. */
 export type HeroCard = {
   id: string;
   title: string;
@@ -38,7 +38,7 @@ const CARD_LAYOUT = [
  * cards fly outward (pinned briefly on desktop). Mobile keeps a lighter
  * version; reduced motion shows everything static.
  */
-export function Hero({ cities, cards }: { cities: HeroCity[]; cards: HeroCard[] }) {
+export function Hero({ suggestions, cards }: { suggestions: HeroSuggestion[]; cards: HeroCard[] }) {
   useDarkHero();
   const sectionRef = useRef<HTMLElement>(null);
   const motionOk = useMotionOk();
@@ -196,7 +196,7 @@ export function Hero({ cities, cards }: { cities: HeroCity[]; cards: HeroCard[] 
               landlord says yes.
             </p>
             <div data-enter className="mt-8">
-              <HeroSearch cities={cities} />
+              <HeroSearch suggestions={suggestions} />
             </div>
           </div>
         </div>
