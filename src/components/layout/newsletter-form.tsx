@@ -16,7 +16,7 @@ export function NewsletterForm() {
   };
 
   return (
-    <form onSubmit={onSubmit} className="flex w-full max-w-sm gap-2">
+    <form onSubmit={onSubmit} className="flex w-full max-w-md gap-2">
       <label htmlFor="newsletter-email" className="sr-only">
         Email address
       </label>
@@ -26,10 +26,10 @@ export function NewsletterForm() {
         required
         autoComplete="email"
         placeholder="Your email"
-        className="rounded-full bg-background"
+        className="h-12 rounded-full bg-white/5 px-5"
       />
-      <Button type="submit" size="icon" aria-label="Subscribe" className="shrink-0">
-        <ArrowRight />
+      <Button type="submit" size="lg" variant="gold" className="h-12 shrink-0">
+        Subscribe <ArrowRight data-icon="inline-end" />
       </Button>
     </form>
   );
