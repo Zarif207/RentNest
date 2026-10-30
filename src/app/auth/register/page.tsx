@@ -9,8 +9,9 @@ export const metadata: Metadata = { title: "Create an account" };
 export default function RegisterPage() {
   return (
     <div className="space-y-8">
-      <div className="space-y-2">
-        <h1 className="text-4xl font-semibold tracking-tight">
+      <div className="space-y-3">
+        <p className="text-xs font-medium tracking-[0.25em] text-bronze uppercase">Create an account</p>
+        <h1 className="text-5xl leading-[0.98] font-medium tracking-tighter">
           Find your next <SerifAccent>home</SerifAccent>
         </h1>
         <p className="text-muted-foreground">

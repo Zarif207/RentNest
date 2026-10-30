@@ -4,10 +4,11 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
+import { FLOATING_INPUT, FloatingField } from "@/components/auth/floating-field";
+import { PasswordStrength } from "@/components/auth/password-strength";
 import { RolePicker } from "@/components/auth/role-picker";
 import { FormAlert } from "@/components/shared/form-alert";
-import { FormField } from "@/components/shared/form-field";
 import { PasswordInput } from "@/components/shared/password-input";
 import { Button } from "@/components/ui/button";
 import { FieldGroup } from "@/components/ui/field";
@@ -39,6 +40,7 @@ export function RegisterForm() {
     },
   });
   const { errors } = form.formState;
+  const [role, password] = useWatch({ control: form.control, name: ["role", "password"] });
 
   const onSubmit = ({ role, name, email, phone, password }: RegisterValues) => {
     registerUser.mutate(
@@ -69,34 +71,36 @@ export function RegisterForm() {
       <form onSubmit={form.handleSubmit(onSubmit)} noValidate className="space-y-6">
         <FormAlert message={errors.root?.server?.message} />
 
-        <RolePicker registration={form.register("role")} error={errors.role} />
+        <RolePicker registration={form.register("role")} value={role} error={errors.role} />
 
         <FieldGroup className="gap-5">
-          <FormField label="Full name" htmlFor="name" error={errors.name}>
+          <FloatingField label="Full name" htmlFor="name" error={errors.name}>
             <Input
               id="name"
               autoComplete="name"
-              placeholder="Jordan Miller"
+              placeholder=" "
+              className={FLOATING_INPUT}
               aria-invalid={Boolean(errors.name)}
               {...form.register("name")}
             />
-          </FormField>
+          </FloatingField>
 
-          <FormField label="Email" htmlFor="email" error={errors.email}>
+          <FloatingField label="Email" htmlFor="email" error={errors.email}>
             <Input
               id="email"
               type="email"
               autoComplete="email"
-              placeholder="you@example.com"
+              placeholder=" "
+              className={FLOATING_INPUT}
               aria-invalid={Boolean(errors.email)}
               {...form.register("email")}
             />
-          </FormField>
+          </FloatingField>
 
-          <FormField
+          <FloatingField
             label={
               <>
-                Phone <span className="font-normal text-muted-foreground">(optional)</span>
+                Phone <span className="text-muted-foreground/70">(optional)</span>
               </>
             }
             htmlFor="phone"
@@ -107,24 +111,26 @@ export function RegisterForm() {
               id="phone"
               type="tel"
               autoComplete="tel"
-              placeholder="+12125550101"
+              placeholder=" "
+              className={FLOATING_INPUT}
               aria-invalid={Boolean(errors.phone)}
               {...form.register("phone")}
             />
-          </FormField>
+          </FloatingField>
 
           <div className="grid gap-5 sm:grid-cols-2">
-            <FormField label="Password" htmlFor="password" error={errors.password}>
+            <FloatingField label="Password" htmlFor="password" error={errors.password}>
               <PasswordInput
                 id="password"
                 autoComplete="new-password"
-                placeholder="At least 6 characters"
+                placeholder=" "
+              className={FLOATING_INPUT}
                 aria-invalid={Boolean(errors.password)}
                 {...form.register("password")}
               />
-            </FormField>
+            </FloatingField>
 
-            <FormField
+            <FloatingField
               label="Confirm password"
               htmlFor="confirmPassword"
               error={errors.confirmPassword}
@@ -132,12 +138,14 @@ export function RegisterForm() {
               <PasswordInput
                 id="confirmPassword"
                 autoComplete="new-password"
-                placeholder="Repeat password"
+                placeholder=" "
+              className={FLOATING_INPUT}
                 aria-invalid={Boolean(errors.confirmPassword)}
                 {...form.register("confirmPassword")}
               />
-            </FormField>
+            </FloatingField>
           </div>
+          <PasswordStrength password={password} />
         </FieldGroup>
 
         <Button type="submit" size="lg" className="w-full" disabled={registerUser.isPending}>

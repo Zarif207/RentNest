@@ -212,6 +212,16 @@ html[data-intro-seen] [data-intro] {
   }
 }
 
+/* Auth image panel: a slow Ken Burns push-in. */
+@keyframes ken-burns {
+  from {
+    transform: scale(1) translate3d(0, 0, 0);
+  }
+  to {
+    transform: scale(1.14) translate3d(-2%, -1.5%, 0);
+  }
+}
+
 /* Why-RentNest bento: a gentle float, and two badges trading places. */
 @keyframes soft-float {
   0%,

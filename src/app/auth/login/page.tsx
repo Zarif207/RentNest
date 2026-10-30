@@ -9,8 +9,9 @@ export const metadata: Metadata = { title: "Log in" };
 export default function LoginPage() {
   return (
     <div className="space-y-8">
-      <div className="space-y-2">
-        <h1 className="text-4xl font-semibold tracking-tight">
+      <div className="space-y-3">
+        <p className="text-xs font-medium tracking-[0.25em] text-bronze uppercase">Log in</p>
+        <h1 className="text-5xl leading-[0.98] font-medium tracking-tighter">
           Welcome <SerifAccent>back</SerifAccent>
         </h1>
         <p className="text-muted-foreground">

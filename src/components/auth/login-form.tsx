@@ -5,8 +5,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
+import { FLOATING_INPUT, FloatingField } from "@/components/auth/floating-field";
 import { FormAlert } from "@/components/shared/form-alert";
-import { FormField } from "@/components/shared/form-field";
 import { PasswordInput } from "@/components/shared/password-input";
 import { Button } from "@/components/ui/button";
 import { FieldGroup } from "@/components/ui/field";
@@ -61,26 +61,28 @@ export function LoginForm() {
         <FormAlert message={errors.root?.server?.message} />
 
         <FieldGroup className="gap-5">
-          <FormField label="Email" htmlFor="email" error={errors.email}>
+          <FloatingField label="Email" htmlFor="email" error={errors.email}>
             <Input
               id="email"
               type="email"
               autoComplete="email"
-              placeholder="you@example.com"
+              placeholder=" "
+              className={FLOATING_INPUT}
               aria-invalid={Boolean(errors.email)}
               {...form.register("email")}
             />
-          </FormField>
+          </FloatingField>
 
-          <FormField label="Password" htmlFor="password" error={errors.password}>
+          <FloatingField label="Password" htmlFor="password" error={errors.password}>
             <PasswordInput
               id="password"
               autoComplete="current-password"
-              placeholder="Your password"
+              placeholder=" "
+              className={FLOATING_INPUT}
               aria-invalid={Boolean(errors.password)}
               {...form.register("password")}
             />
-          </FormField>
+          </FloatingField>
         </FieldGroup>
 
         <Button type="submit" size="lg" className="w-full" disabled={login.isPending}>
@@ -89,15 +91,16 @@ export function LoginForm() {
         </Button>
       </form>
 
-      <div className="space-y-3 rounded-3xl bg-surface p-4">
-        <p className="text-sm font-medium">Demo accounts</p>
-        <div className="flex flex-wrap gap-2">
+      <div className="space-y-3 rounded-3xl border border-dashed border-border p-5">
+        <p className="text-xs font-medium tracking-[0.2em] text-muted-foreground uppercase">Demo accounts</p>
+        <div className="grid grid-cols-3 gap-2">
           {DEMO_ACCOUNTS.map(({ label, email, password }) => (
             <Button
               key={label}
               type="button"
               variant="outline"
               size="sm"
+              className="w-full"
               onClick={() => form.reset({ email, password })}
             >
               {label}
