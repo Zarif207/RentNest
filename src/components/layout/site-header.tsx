@@ -40,6 +40,8 @@ export function SiteHeaderFallback() {
   );
 }
 
+const FULL_BLEED_PATHS = ["/", "/about"];
+
 export function SiteHeader() {
   const pathname = usePathname();
   const scrolled = useScrolled(24);
@@ -48,8 +50,8 @@ export function SiteHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { user, isLoading } = useAuth();
 
-  // The home hero runs underneath the header; other pages get a spacer.
-  const isHome = pathname === "/";
+  // Full-bleed heroes (home, about) run underneath the header; other pages get a spacer.
+  const fullBleed = FULL_BLEED_PATHS.includes(pathname);
   // Light text only while a dark hero is directly behind the transparent pill.
   const onDark = overDarkHero && !scrolled && !menuOpen;
   const hidden = hiddenByScroll && !menuOpen;
@@ -59,7 +61,7 @@ export function SiteHeader() {
 
   return (
     <>
-      {!isHome && <div aria-hidden className="h-24" />}
+      {!fullBleed && <div aria-hidden className="h-24" />}
 
       <header
         className={cn(

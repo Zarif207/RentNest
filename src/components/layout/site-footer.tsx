@@ -31,7 +31,7 @@ const FOOTER_COLUMNS: { title: string; links: NavLink[] }[] = [
   {
     title: "Company",
     links: [
-      { href: "/#about", label: "About" },
+      { href: "/about", label: "About" },
       { href: "/#how-it-works", label: "How it works" },
       { href: "#contact", label: "Contact" },
     ],

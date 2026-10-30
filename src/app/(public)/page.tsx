@@ -10,7 +10,7 @@ import { HomeStatement } from "@/components/home/home-statement";
 import { HowItWorks } from "@/components/home/how-it-works";
 import type { MockListing } from "@/components/home/how-it-works-mocks";
 import { ListingsMarquee } from "@/components/home/listings-marquee";
-import { LiveStats, type LiveStat } from "@/components/home/live-stats";
+import { LiveStats } from "@/components/home/live-stats";
 import { PropertyTypes, type TypeTile } from "@/components/home/property-types";
 import { Voices, type Voice, type VoicesSummary } from "@/components/home/voices";
 import { WhyRentNest } from "@/components/home/why-rentnest";
@@ -21,6 +21,7 @@ import { SerifAccent } from "@/components/shared/serif-accent";
 import { Button } from "@/components/ui/button";
 import { getPublicProperties, getPublicPropertyReviews, orNull } from "@/lib/data/public";
 import { formatCurrency, formatEnumLabel } from "@/lib/format";
+import { toLiveStats } from "@/lib/live-stats";
 import { formatLocation } from "@/lib/us-states";
 import { PROPERTY_TYPES, type Paginated, type PropertyType, type PropertyWithRelations } from "@/types";
 
@@ -136,29 +137,6 @@ function toMockListing(properties: PropertyWithRelations[]): MockListing {
   };
 }
 
-/**
- * Platform numbers, only the ones we can count truthfully: totals come from
- * `meta.total`; cities and landlords only when every listing was fetched.
- */
-function toLiveStats(
-  all: Paginated<PropertyWithRelations> | null,
-  available: Paginated<PropertyWithRelations> | null,
-): LiveStat[] {
-  const stats: LiveStat[] = [];
-  if (all) {
-    stats.push({ value: all.meta.total, label: "Homes listed", description: "Apartments, houses, studios and villas." });
-  }
-  if (available) {
-    stats.push({ value: available.meta.total, label: "Available now", description: "Ready to request today." });
-  }
-  if (all && all.data.length === all.meta.total) {
-    const cities = new Set(all.data.map((property) => `${property.city}|${property.division}`));
-    const landlords = new Set(all.data.map((property) => property.ownerId));
-    stats.push({ value: cities.size, label: "Cities covered", description: "Across different US states." });
-    stats.push({ value: landlords.size, label: "Landlords listing", description: "Each one managing their own homes." });
-  }
-  return stats;
-}
 
 // Reviews are fetched per listing, so cap how many listings we ask about.
 const VOICE_SOURCES = 24;

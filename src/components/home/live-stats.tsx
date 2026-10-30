@@ -1,12 +1,7 @@
 import { Counter } from "@/components/motion/counter";
 import { Reveal } from "@/components/motion/reveal";
+import type { LiveStat } from "@/lib/live-stats";
 import { cn } from "@/lib/utils";
-
-export type LiveStat = {
-  value: number;
-  label: string;
-  description: string;
-};
 
 /**
  * Real platform numbers from the API. The caller leaves out anything it can't

@@ -6,12 +6,12 @@ export type NavLink = {
   label: string;
 };
 
-// About and Contact are sections, not pages: the home page's "about" block
-// and the contact details in the footer (present on every public page).
+// Contact is a section, not a page: the contact details in the footer
+// (present on every public page).
 export const PUBLIC_NAV_LINKS: NavLink[] = [
   { href: "/", label: "Home" },
   { href: "/properties", label: "Properties" },
-  { href: "/#about", label: "About" },
+  { href: "/about", label: "About" },
   { href: "#contact", label: "Contact" },
 ];
 
