@@ -8,6 +8,7 @@ import { Magnetic } from "@/components/motion/magnetic";
 import { Marquee } from "@/components/motion/marquee";
 import { SerifAccent } from "@/components/shared/serif-accent";
 import type { NavLink } from "@/lib/navigation";
+import { formatAddress, SITE_CONTACT } from "@/lib/site-config";
 
 const FOOTER_COLUMNS: { title: string; links: NavLink[] }[] = [
   {
@@ -33,7 +34,7 @@ const FOOTER_COLUMNS: { title: string; links: NavLink[] }[] = [
     links: [
       { href: "/about", label: "About" },
       { href: "/#how-it-works", label: "How it works" },
-      { href: "#contact", label: "Contact" },
+      { href: "/contact", label: "Contact" },
     ],
   },
   {
@@ -58,9 +59,9 @@ function GitHubIcon(props: React.ComponentProps<"svg">) {
 }
 
 const SOCIALS = [
-  { href: "https://github.com/Zarif207/RentNest", label: "RentNest on GitHub", icon: GitHubIcon },
-  { href: "mailto:support@rentnest.com", label: "Email RentNest", icon: Mail },
-  { href: "tel:+12125550100", label: "Call RentNest", icon: Phone },
+  { href: SITE_CONTACT.github, label: "RentNest on GitHub", icon: GitHubIcon },
+  { href: `mailto:${SITE_CONTACT.email}`, label: "Email RentNest", icon: Mail },
+  { href: SITE_CONTACT.phone.href, label: "Call RentNest", icon: Phone },
 ];
 
 // Cache Components can't prerender a bare `new Date()`; cache it for a day.
@@ -148,20 +149,20 @@ export function SiteFooter() {
               </div>
             ))}
 
-            <div id="contact" className="col-span-2 min-w-0 scroll-mt-24 space-y-4 sm:col-span-1">
+            <div className="col-span-2 min-w-0 space-y-4 sm:col-span-1">
               <h2 className="text-xs font-medium tracking-[0.2em] text-white/50 uppercase">Contact</h2>
               <address className="space-y-3 text-sm text-white/80 not-italic">
                 <p className="flex gap-2">
                   <MapPin className="mt-0.5 size-4 shrink-0 text-gold" aria-hidden />
-                  350 Fifth Avenue, New York, NY 10118
+                  {formatAddress()}
                 </p>
-                <a href="mailto:support@rentnest.com" className="flex gap-2 transition-colors hover:text-gold">
+                <a href={`mailto:${SITE_CONTACT.email}`} className="flex gap-2 transition-colors hover:text-gold">
                   <Mail className="mt-0.5 size-4 shrink-0 text-gold" aria-hidden />
-                  <span className="min-w-0 break-all">support@rentnest.com</span>
+                  <span className="min-w-0 break-all">{SITE_CONTACT.email}</span>
                 </a>
-                <a href="tel:+12125550100" className="flex gap-2 transition-colors hover:text-gold">
+                <a href={SITE_CONTACT.phone.href} className="flex gap-2 transition-colors hover:text-gold">
                   <Phone className="mt-0.5 size-4 shrink-0 text-gold" aria-hidden />
-                  +1 (212) 555-0100
+                  {SITE_CONTACT.phone.display}
                 </a>
               </address>
             </div>

@@ -6,13 +6,11 @@ export type NavLink = {
   label: string;
 };
 
-// Contact is a section, not a page: the contact details in the footer
-// (present on every public page).
 export const PUBLIC_NAV_LINKS: NavLink[] = [
   { href: "/", label: "Home" },
   { href: "/properties", label: "Properties" },
   { href: "/about", label: "About" },
-  { href: "#contact", label: "Contact" },
+  { href: "/contact", label: "Contact" },
 ];
 
 /** Shortcut shown next to the main links for signed-in tenants and landlords. */
