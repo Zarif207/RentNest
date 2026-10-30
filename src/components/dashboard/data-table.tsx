@@ -56,6 +56,8 @@ type DataTableProps<T> = {
   mobileTitle?: (row: T) => React.ReactNode;
   /** Accessible name for the table. */
   label: string;
+  /** Pill filters/search shown above the rows, inside the same container. */
+  toolbar?: React.ReactNode;
 };
 
 /** A table from md up; stacked cards on small screens. */
@@ -68,25 +70,35 @@ export function DataTable<T>({
   empty,
   mobileTitle,
   label,
+  toolbar,
 }: DataTableProps<T>) {
   if (!isLoading && rows && rows.length === 0) {
-    return <EmptyState {...empty} className={cn("bg-card", empty.className)} />;
+    return (
+      <div className="space-y-3">
+        {toolbar && <div className="flex flex-wrap items-center gap-2">{toolbar}</div>}
+        <EmptyState {...empty} className={cn("bg-card", empty.className)} />
+      </div>
+    );
   }
 
   const mobileColumns = columns.filter((column) => !column.hideOnMobile);
   const skeletons = Array.from({ length: skeletonRows }, (_, index) => index);
 
   return (
-    <div aria-busy={isLoading || undefined}>
-      <div className="hidden overflow-hidden rounded-3xl border bg-card md:block">
+    <div aria-busy={isLoading || undefined} className="space-y-3 md:space-y-0">
+      {toolbar && (
+        <div className="flex flex-wrap items-center gap-2 md:hidden">{toolbar}</div>
+      )}
+      <div className="hidden overflow-hidden rounded-3xl border border-border bg-card p-2 md:block">
+        {toolbar && <div className="flex flex-wrap items-center gap-2 p-3 pb-4">{toolbar}</div>}
         <Table aria-label={label}>
           <TableHeader>
-            <TableRow className="hover:bg-transparent">
+            <TableRow className="border-none hover:bg-transparent">
               {columns.map((column) => (
                 <TableHead
                   key={column.key}
                   aria-sort={ariaSort(column)}
-                  className={cn("h-12 px-4", column.className)}
+                  className={cn("h-11 px-4 text-sm font-normal tracking-normal normal-case", column.className)}
                 >
                   <SortableHeader column={column} />
                 </TableHead>
@@ -105,9 +117,12 @@ export function DataTable<T>({
                   </TableRow>
                 ))
               : rows?.map((row) => (
-                  <TableRow key={getRowKey(row)}>
+                  <TableRow
+                    key={getRowKey(row)}
+                    className="border-border/60 transition-colors hover:bg-foreground/[0.03] [&>td:first-child]:rounded-l-2xl [&>td:last-child]:rounded-r-2xl"
+                  >
                     {columns.map((column) => (
-                      <TableCell key={column.key} className={cn("px-4 py-3", column.className)}>
+                      <TableCell key={column.key} className={cn("px-4 py-3.5", column.className)}>
                         {column.cell(row)}
                       </TableCell>
                     ))}
@@ -120,14 +135,14 @@ export function DataTable<T>({
       <ul className="space-y-3 md:hidden" aria-label={label}>
         {isLoading
           ? skeletons.slice(0, 3).map((index) => (
-              <li key={index} className="space-y-3 rounded-3xl border bg-card p-4">
+              <li key={index} className="space-y-3 rounded-3xl border border-border bg-card p-4">
                 <Skeleton className="h-6 w-2/3" />
                 <Skeleton className="h-4 w-full" />
                 <Skeleton className="h-4 w-1/2" />
               </li>
             ))
           : rows?.map((row) => (
-              <li key={getRowKey(row)} className="space-y-3 rounded-3xl border bg-card p-4">
+              <li key={getRowKey(row)} className="space-y-3 rounded-3xl border border-border bg-card p-4 shadow-[inset_0_1px_0_rgb(255_255_255/0.6)] dark:shadow-none">
                 {mobileTitle?.(row)}
                 <dl className="space-y-2 text-sm">
                   {mobileColumns.map((column) => (

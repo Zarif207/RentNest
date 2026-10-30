@@ -1,12 +1,13 @@
 import type { VariantProps } from "class-variance-authority";
 import { Badge, type badgeVariants } from "@/components/ui/badge";
 import { formatEnumLabel } from "@/lib/format";
+import { cn } from "@/lib/utils";
 import type { BookingStatus, PaymentStatus } from "@/types";
 
 type BadgeVariant = NonNullable<VariantProps<typeof badgeVariants>["variant"]>;
 
-// Colors from CLAUDE.md: PENDING amber, APPROVED blue, REJECTED red,
-// ACTIVE green, COMPLETED gray, CANCELLED gray outline. Payments reuse them.
+// Muted tones from CLAUDE.md: PENDING ochre, APPROVED slate blue, REJECTED
+// brick, ACTIVE sage, COMPLETED stone, CANCELLED stone outline. Payments reuse them.
 const STATUS_VARIANT: Record<BookingStatus | PaymentStatus, BadgeVariant> = {
   PENDING: "pending",
   APPROVED: "approved",
@@ -18,6 +19,15 @@ const STATUS_VARIANT: Record<BookingStatus | PaymentStatus, BadgeVariant> = {
   FAILED: "rejected",
 };
 
-export function StatusBadge({ status }: { status: BookingStatus | PaymentStatus }) {
-  return <Badge variant={STATUS_VARIANT[status]}>{formatEnumLabel(status)}</Badge>;
+/** Pastel status pill with a leading dot (Aurex style); text carries the meaning. */
+export function StatusPill({ status, className }: { status: BookingStatus | PaymentStatus; className?: string }) {
+  return (
+    <Badge variant={STATUS_VARIANT[status]} className={cn("h-7 gap-1.5 px-3", className)}>
+      <span aria-hidden className="size-1.5 rounded-full bg-current opacity-70" />
+      {formatEnumLabel(status)}
+    </Badge>
+  );
 }
+
+/** Kept for existing pages; same as StatusPill. */
+export const StatusBadge = StatusPill;

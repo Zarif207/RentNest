@@ -15,6 +15,7 @@
   --color-bronze: var(--bronze);
   --color-sand: var(--sand);
   --color-surface: var(--surface);
+  --color-canvas: var(--canvas);
   --color-serif-accent: var(--serif-accent);
   --color-wash-from: var(--wash-from);
   --color-wash-to: var(--wash-to);
@@ -106,6 +107,7 @@
   --bronze: #806435; /* gold-toned text on light surfaces */
   --sand: #e9e2d6;
   --surface: #efebe4;
+  --canvas: #efede8; /* dashboard background */
   --serif-accent: #806435;
   --wash-from: #e9e2d6;
   --wash-to: #f6f3ee;
@@ -150,6 +152,7 @@
   --bronze: #c2a878; /* on ink, champagne itself reads as the gold text */
   --sand: #2a241e;
   --surface: #161412;
+  --canvas: #0c0b0a;
   --serif-accent: #c2a878;
   --wash-from: #1c1815;
   --wash-to: #0c0b0a;
