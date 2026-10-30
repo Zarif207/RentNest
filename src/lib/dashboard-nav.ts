@@ -4,6 +4,7 @@ import {
   CreditCard,
   Inbox,
   LayoutDashboard,
+  LayoutTemplate,
   PlusCircle,
   Star,
   Tags,
@@ -40,6 +41,7 @@ export const DASHBOARD_NAV: Record<UserRole, DashboardNavItem[]> = {
     { href: "/dashboard/admin/properties", label: "Properties", icon: Building2 },
     { href: "/dashboard/admin/rentals", label: "Rentals", icon: ClipboardList },
     { href: "/dashboard/admin/categories", label: "Categories", icon: Tags },
+    { href: "/dashboard/admin/homepage", label: "Homepage", icon: LayoutTemplate },
     { href: "/dashboard/admin/profile", label: "Profile", icon: UserRound },
   ],
 };

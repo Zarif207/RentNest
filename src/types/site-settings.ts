@@ -47,3 +47,20 @@ export type HomepageSettings = {
   isDefault: boolean;
   updatedAt: string | null;
 };
+
+/** The raw homepage config the admin edits (ids, not properties). */
+export type HomepageConfig = {
+  hero: { propertyIds: string[] };
+  featured: { enabled: boolean; title?: string; propertyIds: string[] };
+  states: { enabled: boolean; items: { state: string; imageUrl: string }[] };
+  propertyTypes: { enabled: boolean; items: { type: PropertyType; imageUrl?: string }[] };
+  latest: { enabled: boolean; count: number };
+  sectionOrder: HomepageSection[];
+};
+
+/** GET/PUT /admin/site-settings/homepage. */
+export type HomepageConfigResponse = {
+  config: HomepageConfig;
+  isDefault: boolean;
+  updatedAt: string | null;
+};

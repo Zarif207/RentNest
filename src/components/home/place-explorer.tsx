@@ -6,30 +6,35 @@ import Link from "next/link";
 import { ArrowUpRight, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-/** One city, aggregated on the server from real listings. */
-export type ExploreCity = {
-  city: string;
-  label: string;
-  count: number;
-  startingPrice: string;
+/** One place (a state) with its live listing summary, prepared on the server. */
+export type ExplorePlace = {
+  key: string;
+  name: string;
+  /** Small line above the name, e.g. "NY · United States". */
+  caption: string;
+  /** Line under the name, e.g. "2 homes available · from $3,200/mo". */
+  detail: string;
   image: string | null;
+  href: string;
+  /** Whether it has homes available now (the first such tile opens by default). */
+  hasHomes: boolean;
 };
 
 /**
- * Accordion row of tall city tiles: hovering or focusing a tile grows it
+ * Accordion row of tall place tiles: hovering or focusing a tile grows it
  * (flex-grow) and reveals its details. Under 768px the tiles stack, each
  * fully open.
  */
-export function CityExplorer({ cities }: { cities: ExploreCity[] }) {
-  const [active, setActive] = useState(0);
+export function PlaceExplorer({ places }: { places: ExplorePlace[] }) {
+  const [active, setActive] = useState(() => Math.max(places.findIndex((place) => place.hasHomes), 0));
 
   return (
     <ul className="flex flex-col gap-3 md:h-136 md:flex-row">
-      {cities.map((city, index) => {
+      {places.map((place, index) => {
         const open = index === active;
         return (
           <li
-            key={city.city}
+            key={place.key}
             onPointerEnter={() => setActive(index)}
             className={cn(
               "relative h-72 overflow-hidden rounded-3xl bg-muted transition-[flex-grow] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none md:h-auto md:min-w-0",
@@ -37,13 +42,13 @@ export function CityExplorer({ cities }: { cities: ExploreCity[] }) {
             )}
           >
             <Link
-              href={`/properties?city=${encodeURIComponent(city.city)}`}
+              href={place.href}
               onFocus={() => setActive(index)}
               className="group absolute inset-0 block text-white outline-none focus-visible:ring-3 focus-visible:ring-gold/60 focus-visible:ring-inset"
             >
-              {city.image && (
+              {place.image && (
                 <Image
-                  src={city.image}
+                  src={place.image}
                   alt=""
                   fill
                   sizes="(min-width: 768px) 50vw, 100vw"
@@ -69,7 +74,7 @@ export function CityExplorer({ cities }: { cities: ExploreCity[] }) {
                   open ? "opacity-0" : "opacity-100 delay-200",
                 )}
               >
-                {city.city}
+                {place.name}
               </span>
 
               <span
@@ -82,13 +87,13 @@ export function CityExplorer({ cities }: { cities: ExploreCity[] }) {
               >
                 <span className="min-w-0">
                   <span className="flex items-center gap-1.5 text-sm text-white/75">
-                    <MapPin className="size-4" aria-hidden /> {city.label}
+                    <MapPin className="size-4" aria-hidden /> {place.caption}
                   </span>
                   <span className="mt-1 block truncate text-3xl font-medium tracking-tighter sm:text-4xl">
-                    {city.city}
+                    {place.name}
                   </span>
                   <span className="mt-2 block text-sm text-white/80">
-                    {city.count} {city.count === 1 ? "home" : "homes"} · from {city.startingPrice}/mo
+                    {place.detail}
                   </span>
                 </span>
                 <span className="flex shrink-0 items-center gap-1.5 rounded-full border border-white/25 bg-white/10 px-4 py-2 text-sm font-medium backdrop-blur-md transition-colors group-hover:bg-white/20">

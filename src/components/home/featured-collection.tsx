@@ -32,7 +32,7 @@ const pad = (n: number) => String(n).padStart(2, "0");
  * reduced motion it's a native swipe carousel with arrow buttons. Both modes
  * drive the same progress bar and "01 / 08" counter.
  */
-export function FeaturedCollection({ homes }: { homes: FeaturedHome[] }) {
+export function FeaturedCollection({ homes, title }: { homes: FeaturedHome[]; title?: string | null }) {
   const sectionRef = useRef<HTMLElement>(null);
   const trackRef = useRef<HTMLUListElement>(null);
   const barRef = useRef<HTMLSpanElement>(null);
@@ -132,7 +132,7 @@ export function FeaturedCollection({ homes }: { homes: FeaturedHome[] }) {
           <div className="space-y-3">
             <p className="text-xs font-medium tracking-[0.25em] text-bronze uppercase">Featured collection</p>
             <h2 id="featured-title" className="text-4xl leading-[1.02] font-medium tracking-tighter sm:text-5xl lg:text-6xl">
-              Homes worth the move
+              {title ?? "Homes worth the move"}
             </h2>
           </div>
           <div className="flex items-center gap-3">

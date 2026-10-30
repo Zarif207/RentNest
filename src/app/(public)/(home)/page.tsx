@@ -1,6 +1,4 @@
-import Link from "next/link";
-import { House } from "lucide-react";
-import { CityExplorer, type ExploreCity } from "@/components/home/city-explorer";
+import { Fragment } from "react";
 import { CtaBanner } from "@/components/home/cta-banner";
 import { FeaturedCollection, type FeaturedHome } from "@/components/home/featured-collection";
 import { Hero, type HeroCard } from "@/components/home/hero";
@@ -11,14 +9,13 @@ import { HowItWorks } from "@/components/home/how-it-works";
 import type { MockListing } from "@/components/home/how-it-works-mocks";
 import { ListingsMarquee } from "@/components/home/listings-marquee";
 import { LiveStats } from "@/components/home/live-stats";
+import { PlaceExplorer, type ExplorePlace } from "@/components/home/place-explorer";
 import { PropertyTypes, type TypeTile } from "@/components/home/property-types";
 import { Voices, type Voice, type VoicesSummary } from "@/components/home/voices";
 import { WhyRentNest } from "@/components/home/why-rentnest";
-import { EmptyState } from "@/components/shared/empty-state";
 import { FadeIn } from "@/components/shared/fade-in";
 import { SectionHeading } from "@/components/shared/section-heading";
 import { SerifAccent } from "@/components/shared/serif-accent";
-import { Button } from "@/components/ui/button";
 import {
   getPublicHomepage,
   getPublicProperties,
@@ -28,10 +25,12 @@ import {
 } from "@/lib/data/public";
 import { formatCurrency, formatEnumLabel } from "@/lib/format";
 import { toLiveStats } from "@/lib/live-stats";
-import { formatLocation } from "@/lib/us-states";
+import { formatLocation, US_STATES } from "@/lib/us-states";
 import {
+  HOMEPAGE_SECTIONS,
   PROPERTY_TYPES,
-  type Paginated,
+  type HomepageSection,
+  type HomepageSettings,
   type PropertyStateCount,
   type PropertyType,
   type PropertyWithRelations,
@@ -104,48 +103,81 @@ function toFeaturedHomes(properties: PropertyWithRelations[]): FeaturedHome[] {
   }));
 }
 
-/** Real listings grouped by city: the six with the most homes. */
-function toExploreCities(properties: PropertyWithRelations[]): ExploreCity[] {
-  const byCity = new Map<string, ExploreCity & { minRent: number }>();
-  for (const property of properties) {
-    const key = `${property.city}|${property.division}`;
-    const rent = Number(property.rentAmount);
-    const entry = byCity.get(key);
-    if (entry) {
-      entry.count += 1;
-      entry.minRent = Math.min(entry.minRent, rent);
-      entry.image ??= property.images[0] ?? null;
-    } else {
-      byCity.set(key, {
-        city: property.city,
-        label: formatLocation(property.city, property.division),
-        count: 1,
-        minRent: rent,
-        startingPrice: "",
-        image: property.images[0] ?? null,
-      });
-    }
-  }
-  return [...byCity.values()]
-    .sort((a, b) => b.count - a.count || a.city.localeCompare(b.city))
-    .slice(0, 6)
-    .map(({ minRent, ...city }) => ({ ...city, startingPrice: formatCurrency(minRent) }));
+/** State tiles from the admin's picks, with live counts and starting prices. */
+function toExplorePlaces(items: HomepageSettings["states"]["items"]): ExplorePlace[] {
+  return items.map((item) => {
+    const code = US_STATES.find((state) => state.name === item.state)?.code;
+    const homes = `${item.propertyCount} ${item.propertyCount === 1 ? "home" : "homes"} available`;
+    return {
+      key: item.state,
+      name: item.state,
+      caption: code ? `${code} · United States` : "United States",
+      detail:
+        item.propertyCount === 0 || item.startingPrice === null
+          ? "No homes available right now"
+          : `${homes} · from ${formatCurrency(item.startingPrice)}/mo`,
+      image: item.imageUrl,
+      href: `/properties?division=${encodeURIComponent(item.state)}`,
+      hasHomes: item.propertyCount > 0,
+    };
+  });
 }
 
-/** One tile per property type: count from `meta.total`, photo from a real listing. */
-function toTypeTiles(
-  properties: PropertyWithRelations[],
-  totals: (Paginated<PropertyWithRelations> | null)[],
-): TypeTile[] {
-  return PROPERTY_TYPES.map((type, index) => ({
-    type,
-    label: formatEnumLabel(type),
-    description: TYPE_DESCRIPTIONS[type],
-    count: totals[index]?.meta.total ?? null,
-    image:
-      properties.find((property) => property.propertyType === type && property.images.length > 0)?.images[0] ??
-      TYPE_FALLBACK_IMAGES[type],
+/** Property type tiles: the admin's images (or a listing photo) and live counts. */
+function toTypeTiles(items: HomepageSettings["propertyTypes"]["items"]): TypeTile[] {
+  return items.map((item) => ({
+    type: item.type,
+    label: formatEnumLabel(item.type),
+    description: TYPE_DESCRIPTIONS[item.type],
+    count: item.propertyCount,
+    image: item.imageUrl ?? TYPE_FALLBACK_IMAGES[item.type],
   }));
+}
+
+/**
+ * Used only if the homepage settings can't be loaded: the same defaults the
+ * backend uses, built from the listings already fetched (newest first).
+ */
+function fallbackHomepage(properties: PropertyWithRelations[]): HomepageSettings {
+  const byState = new Map<string, { count: number; minRent: number | null; image: string | null }>();
+  for (const property of properties) {
+    const entry = byState.get(property.division) ?? { count: 0, minRent: null, image: null };
+    entry.image ??= property.images[0] ?? null;
+    if (property.availabilityStatus === "AVAILABLE") {
+      entry.count += 1;
+      const rent = Number(property.rentAmount);
+      entry.minRent = entry.minRent === null ? rent : Math.min(entry.minRent, rent);
+    }
+    byState.set(property.division, entry);
+  }
+  const states = [...byState.entries()]
+    .filter(([, entry]) => entry.image)
+    .sort((a, b) => b[1].count - a[1].count)
+    .slice(0, 8)
+    .map(([state, entry]) => ({
+      state,
+      imageUrl: entry.image as string,
+      propertyCount: entry.count,
+      startingPrice: entry.minRent === null ? null : String(entry.minRent),
+    }));
+
+  return {
+    hero: { properties: properties.slice(0, 3) },
+    featured: { enabled: true, title: null, properties: properties.slice(0, 8) },
+    states: { enabled: states.length > 0, items: states },
+    propertyTypes: {
+      enabled: true,
+      items: PROPERTY_TYPES.map((type) => ({
+        type,
+        imageUrl: properties.find((property) => property.propertyType === type)?.images[0] ?? null,
+        propertyCount: properties.filter((property) => property.propertyType === type).length,
+      })),
+    },
+    latest: { enabled: true, count: 8, properties: properties.slice(0, 8) },
+    sectionOrder: [...HOMEPAGE_SECTIONS],
+    isDefault: true,
+    updatedAt: null,
+  };
 }
 
 /** The real listing the how-it-works mocks are dressed with. */
@@ -194,8 +226,10 @@ async function loadVoices(properties: PropertyWithRelations[]) {
 }
 
 /** FAQ answers match how the app and backend actually behave. */
-function toFaq(cities: ExploreCity[]): FaqItem[] {
-  const cityList = cities.map((city) => city.label).join("; ");
+function toFaq(properties: PropertyWithRelations[]): FaqItem[] {
+  const cityList = [...new Set(properties.map((property) => formatLocation(property.city, property.division)))]
+    .sort()
+    .join("; ");
   return [
     {
       question: "How does requesting a home work?",
@@ -232,94 +266,71 @@ function toFaq(cities: ExploreCity[]): FaqItem[] {
 }
 
 export default async function HomePage() {
-  const [featured, latest, available, all, typeTotals, homepage, states] = await Promise.all([
-    orNull(getPublicProperties({ limit: 8 })),
-    orNull(getPublicProperties({ limit: 10, sortBy: "createdAt", sortOrder: "desc" })),
+  const [available, all, homepage, states] = await Promise.all([
     orNull(getPublicProperties({ availabilityStatus: "AVAILABLE", limit: 1 })),
     orNull(getPublicProperties({ limit: 100 })),
-    Promise.all(PROPERTY_TYPES.map((propertyType) => orNull(getPublicProperties({ propertyType, limit: 1 })))),
     orNull(getPublicHomepage()),
     orNull(getPublicPropertyStates()),
   ]);
 
-  const { voices, summary } = await loadVoices(all?.data ?? []);
-  const featuredHomes = toFeaturedHomes(featured?.data ?? []);
-  const exploreCities = toExploreCities(all?.data ?? []);
-  const mockListing = toMockListing(featured?.data ?? []);
+  const listings = all?.data ?? [];
+  // The admin's homepage config (revalidated every 60 s and on save).
+  const settings = homepage ?? fallbackHomepage(listings);
+  const { voices, summary } = await loadVoices(listings);
+  const featuredHomes = toFeaturedHomes(settings.featured.properties);
+  const places = toExplorePlaces(settings.states.items);
+  const mockListing = toMockListing(settings.featured.properties.length > 0 ? settings.featured.properties : listings);
+  const stats = toLiveStats(all, available);
 
-  return (
-    <>
-      <Hero
-        suggestions={toHeroSuggestions(states ?? [], all?.data ?? [])}
-        // The admin's hero picks; if the settings can't load, the newest listings.
-        cards={toHeroCards(homepage?.hero.properties ?? featured?.data ?? [])}
-      />
-
-      <HomeStatement />
-
-      <LiveStats stats={toLiveStats(all, available)} />
-
-      {featuredHomes.length > 0 ? (
-        <FeaturedCollection homes={featuredHomes} />
-      ) : (
-        <section className="bg-surface py-24">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <EmptyState
-              icon={House}
-              title={featured ? "No homes listed yet" : "Listings are unavailable right now"}
-              description={
-                featured
-                  ? "New properties will appear here as soon as landlords list them."
-                  : "We couldn't load properties. Please try again in a moment."
-              }
-              action={
-                <Button asChild variant="outline">
-                  <Link href="/properties">Browse properties</Link>
-                </Button>
-              }
-            />
-          </div>
-        </section>
-      )}
-
-      {exploreCities.length > 0 && (
+  // Each section renders only when enabled and when it has something to show.
+  const sections: Record<HomepageSection, () => React.ReactNode> = {
+    statement: () => <HomeStatement />,
+    stats: () => (stats.length > 0 ? <LiveStats stats={stats} /> : null),
+    featured: () =>
+      settings.featured.enabled && featuredHomes.length > 0 ? (
+        <FeaturedCollection homes={featuredHomes} title={settings.featured.title} />
+      ) : null,
+    states: () =>
+      settings.states.enabled && places.length > 0 ? (
         <section className="py-20 sm:py-28">
           <div className="mx-auto max-w-7xl space-y-12 px-4 sm:px-6 lg:px-8">
             <FadeIn>
               <SectionHeading
-                eyebrow="Explore by city"
+                eyebrow="Explore by state"
                 title={
                   <>
                     Homes across <SerifAccent>the country</SerifAccent>
                   </>
                 }
-                description="Pick a city to see every home listed there."
+                description="Pick a state to see every home available there."
               />
             </FadeIn>
             <FadeIn>
-              <CityExplorer cities={exploreCities} />
+              <PlaceExplorer places={places} />
             </FadeIn>
           </div>
         </section>
-      )}
-
-      <section className="pb-20 sm:pb-28">
-        <div className="mx-auto max-w-7xl space-y-12 px-4 sm:px-6 lg:px-8">
-          <FadeIn>
-            <SectionHeading
-              eyebrow="Property types"
-              title={
-                <>
-                  A place for <SerifAccent>every chapter</SerifAccent>
-                </>
-              }
-            />
-          </FadeIn>
-          <PropertyTypes types={toTypeTiles(all?.data ?? [], typeTotals)} />
-        </div>
-      </section>
-
-      {latest && latest.data.length > 0 && (
+      ) : null,
+    propertyTypes: () =>
+      settings.propertyTypes.enabled && settings.propertyTypes.items.length > 0 ? (
+        <section className="py-20 sm:py-28">
+          <div className="mx-auto max-w-7xl space-y-12 px-4 sm:px-6 lg:px-8">
+            <FadeIn>
+              <SectionHeading
+                eyebrow="Property types"
+                title={
+                  <>
+                    A place for <SerifAccent>every chapter</SerifAccent>
+                  </>
+                }
+              />
+            </FadeIn>
+            <PropertyTypes types={toTypeTiles(settings.propertyTypes.items)} />
+          </div>
+        </section>
+      ) : null,
+    latest: () =>
+      settings.latest.enabled && settings.latest.properties.length > 0 ? (
         <section className="overflow-hidden py-20 sm:py-28">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <FadeIn>
@@ -334,13 +345,12 @@ export default async function HomePage() {
             </FadeIn>
           </div>
           <div className="mt-16 sm:mt-24">
-            <ListingsMarquee properties={latest.data} />
+            <ListingsMarquee properties={settings.latest.properties} />
           </div>
         </section>
-      )}
-
-      <HowItWorks listing={mockListing} />
-
+      ) : null,
+    howItWorks: () => <HowItWorks listing={mockListing} />,
+    whyUs: () => (
       <section className="py-20 sm:py-28">
         <div className="mx-auto max-w-7xl space-y-12 px-4 sm:px-6 lg:px-8">
           <FadeIn>
@@ -355,11 +365,12 @@ export default async function HomePage() {
           </FadeIn>
           <WhyRentNest
             rent={mockListing.rent}
-            photos={(all?.data ?? []).flatMap((property) => property.images.slice(0, 1)).slice(0, 3)}
+            photos={listings.flatMap((property) => property.images.slice(0, 1)).slice(0, 3)}
           />
         </div>
       </section>
-
+    ),
+    reviews: () => (
       <section className="bg-surface py-20 sm:py-28">
         <div className="mx-auto max-w-7xl space-y-12 px-4 sm:px-6 lg:px-8">
           <FadeIn>
@@ -376,7 +387,8 @@ export default async function HomePage() {
           <Voices items={voices} summary={summary} />
         </div>
       </section>
-
+    ),
+    faq: () => (
       <section id="faq" className="scroll-mt-20 py-20 sm:py-28">
         <div className="mx-auto grid max-w-7xl gap-12 px-4 sm:px-6 lg:grid-cols-[1fr_1.5fr] lg:px-8">
           <FadeIn>
@@ -391,10 +403,24 @@ export default async function HomePage() {
             />
           </FadeIn>
           <FadeIn>
-            <HomeFaq items={toFaq(exploreCities)} />
+            <HomeFaq items={toFaq(listings)} />
           </FadeIn>
         </div>
       </section>
+    ),
+  };
+
+  return (
+    <>
+      <Hero
+        suggestions={toHeroSuggestions(states ?? [], listings)}
+        cards={toHeroCards(settings.hero.properties)}
+      />
+
+      {/* Sections in the admin's order; anything left out of the order is hidden. */}
+      {settings.sectionOrder.map((id) => (
+        <Fragment key={id}>{sections[id]()}</Fragment>
+      ))}
 
       <CtaBanner />
     </>

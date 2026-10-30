@@ -64,5 +64,7 @@ export const queryKeys = {
       list: (query: AdminRentalQuery = {}) =>
         ["admin", "rentals", "list", query] as const,
     },
+    homepage: ["admin", "site-settings", "homepage"] as const,
   },
+  propertyStates: ["properties", "states"] as const,
 };
