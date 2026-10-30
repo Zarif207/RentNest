@@ -94,7 +94,7 @@ export function EarningsChart({ data }: { data: MonthTotal[] }) {
                                 {compactCurrency.format(month.total)}
                               </span>
                             )}
-                            <span className="h-full w-full rounded-t-[4px] bg-chart-2 transition-opacity group-hover:opacity-80" />
+                            <span className="h-full w-full rounded-t-[4px] bg-foreground transition-opacity group-hover:opacity-80" />
                           </span>
                         </button>
                       </TooltipTrigger>

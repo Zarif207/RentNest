@@ -114,14 +114,13 @@ export function LandlordRequestsView() {
         description="Approve or reject new requests, and close out leases when tenants move out."
       />
 
-      <StatusTabs />
-
       {requests.isError ? (
         <QueryError error={requests.error} onRetry={() => void requests.refetch()} />
       ) : (
         <div className={requests.isPlaceholderData ? "opacity-60 transition-opacity" : undefined}>
           <DataTable
             label="Rental requests"
+            toolbar={<StatusTabs />}
             columns={columns}
             rows={requests.data}
             getRowKey={(request) => request.id}

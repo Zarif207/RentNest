@@ -45,41 +45,59 @@ export function LandlordReviewsView() {
           className="bg-card"
         />
       ) : (
-        <>
-          <div className="flex items-center gap-5 rounded-3xl border bg-card p-6">
-            <p className="text-5xl font-semibold tracking-tight">{average.toFixed(1)}</p>
-            <div className="space-y-1">
-              <StarRating rating={average} className="text-lg" />
-              <p className="text-sm text-muted-foreground">
-                Average across {total} {total === 1 ? "review" : "reviews"}
+        <div className="grid gap-4 lg:grid-cols-[20rem_1fr] lg:items-start">
+          <section className="space-y-6 rounded-3xl border border-border bg-card p-6 lg:sticky lg:top-28">
+            <div>
+              <p className="text-sm text-muted-foreground">Average rating</p>
+              <p className="mt-1 font-serif text-7xl leading-none">{average.toFixed(1)}</p>
+              <StarRating rating={average} className="mt-3 text-lg" />
+              <p className="mt-2 text-sm text-muted-foreground">
+                Across {total} {total === 1 ? "review" : "reviews"}
               </p>
             </div>
-          </div>
-
-          <ul className="space-y-4">
-            {list.map((review) => (
-              <li key={review.id} className="space-y-3 rounded-3xl border bg-card p-5">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <UserAvatar name={review.user.name} className="size-10" />
-                    <div>
-                      <p className="font-medium">{review.user.name}</p>
-                      <p className="text-xs text-muted-foreground">{formatDate(review.createdAt)}</p>
-                    </div>
+            {/* How many reviews gave each star rating. */}
+            <dl className="space-y-2 border-t border-border pt-5">
+              {[5, 4, 3, 2, 1].map((stars) => {
+                const n = list.filter((review) => review.rating === stars).length;
+                return (
+                  <div key={stars} className="grid grid-cols-[2.5rem_1fr_1.5rem] items-center gap-3 text-sm">
+                    <dt className="text-muted-foreground">{stars} ★</dt>
+                    <dd className="h-2 overflow-hidden rounded-full bg-foreground/8">
+                      <span className="block h-full rounded-full bg-gold" style={{ width: `${(n / list.length) * 100}%` }} />
+                    </dd>
+                    <dd className="text-right tabular-nums">{n}</dd>
                   </div>
+                );
+              })}
+            </dl>
+          </section>
+
+          <ul className="grid gap-4 sm:grid-cols-2">
+            {list.map((review) => (
+              <li key={review.id}>
+                <figure className="flex h-full flex-col gap-5 rounded-3xl border border-border bg-card p-6">
                   <StarRating rating={review.rating} />
-                </div>
-                <p className="leading-relaxed text-muted-foreground">{review.comment}</p>
-                <Link
-                  href={`/properties/${review.property.id}`}
-                  className="inline-block text-sm font-medium underline-offset-4 hover:underline"
-                >
-                  {review.property.title}
-                </Link>
+                  <blockquote className="flex-1 font-serif text-2xl leading-snug">“{review.comment}”</blockquote>
+                  <figcaption className="space-y-3 border-t border-border pt-4">
+                    <div className="flex items-center gap-3">
+                      <UserAvatar name={review.user.name} className="size-10" />
+                      <div className="min-w-0">
+                        <p className="truncate font-medium">{review.user.name}</p>
+                        <p className="text-xs text-muted-foreground">{formatDate(review.createdAt)}</p>
+                      </div>
+                    </div>
+                    <Link
+                      href={`/properties/${review.property.id}`}
+                      className="inline-block text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                    >
+                      {review.property.title}
+                    </Link>
+                  </figcaption>
+                </figure>
               </li>
             ))}
           </ul>
-        </>
+        </div>
       )}
     </div>
   );

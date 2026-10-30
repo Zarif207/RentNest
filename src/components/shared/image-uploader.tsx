@@ -239,10 +239,20 @@ export function ImageUploader({ value, onChange, max = 8, invalid, id }: ImageUp
       </div>
 
       {(value.length > 0 || uploads.length > 0) && (
-        <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4" aria-label="Selected images">
+        // Bento: the cover photo takes a 2×2 tile, the rest fill around it.
+        <ul className="grid auto-rows-[7rem] grid-cols-2 gap-3 sm:auto-rows-[8.5rem] sm:grid-cols-4" aria-label="Selected images">
           {value.map((url, index) => (
-            <li key={url} className="group relative aspect-4/3 overflow-hidden rounded-2xl bg-muted">
-              <Image src={url} alt={`Property photo ${index + 1}`} fill sizes="240px" className="object-cover" />
+            <li
+              key={url}
+              className={cn("group relative overflow-hidden rounded-2xl bg-muted", index === 0 && "col-span-2 row-span-2")}
+            >
+              <Image
+                src={url}
+                alt={`Property photo ${index + 1}`}
+                fill
+                sizes={index === 0 ? "(min-width: 640px) 360px, 100vw" : "200px"}
+                className="object-cover"
+              />
               {index === 0 && (
                 <span className="absolute bottom-2 left-2 rounded-full bg-background/90 px-2.5 py-1 text-xs font-medium shadow-sm">
                   Cover
@@ -276,7 +286,7 @@ export function ImageUploader({ value, onChange, max = 8, invalid, id }: ImageUp
           ))}
 
           {uploads.map((upload) => (
-            <li key={upload.id} className="relative aspect-4/3 overflow-hidden rounded-2xl bg-muted">
+            <li key={upload.id} className="relative overflow-hidden rounded-2xl bg-muted">
               {/* Blob previews can't go through the image loader. */}
               <Image src={upload.preview} alt="" fill unoptimized className="object-cover opacity-50" />
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-background/40 p-3 text-center">

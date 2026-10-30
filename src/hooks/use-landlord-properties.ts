@@ -17,6 +17,7 @@ import type {
   AvailabilityStatus,
   Paginated,
   PropertyInput,
+  PropertyQuery,
   PropertyUpdateInput,
   PropertyWithRelations,
 } from "@/types";
@@ -31,11 +32,13 @@ function afterPropertyChange(queryClient: QueryClient) {
   void refreshPublicListings();
 }
 
-export function useLandlordProperties(page: number) {
+export type LandlordPropertyFilters = Pick<PropertyQuery, "availabilityStatus" | "propertyType">;
+
+export function useLandlordProperties(page: number, filters: LandlordPropertyFilters = {}) {
   return useQuery({
-    queryKey: queryKeys.landlord.properties.list({ page }),
+    queryKey: queryKeys.landlord.properties.list({ page, ...filters }),
     queryFn: () =>
-      landlordService.getProperties({ page, limit: PAGE_SIZE, sortBy: "createdAt", sortOrder: "desc" }),
+      landlordService.getProperties({ page, limit: PAGE_SIZE, sortBy: "createdAt", sortOrder: "desc", ...filters }),
     placeholderData: keepPreviousData,
   });
 }
