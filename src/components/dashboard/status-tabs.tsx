@@ -28,7 +28,7 @@ export function StatusTabs() {
         router.replace(value === ALL ? pathname : `${pathname}?status=${value}`, { scroll: false })
       }
     >
-      <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+      <div className="max-w-full overflow-x-auto scrollbar-none">
         <TabsList>
           {TABS.map((value) => (
             <TabsTrigger key={value} value={value}>

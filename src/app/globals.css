@@ -10,6 +10,8 @@
   --font-sans: var(--font-geist);
   --font-heading: var(--font-geist);
   --font-serif: var(--font-cormorant);
+  /* Cormorant defaults to old-style figures (a "1" reads like "I"); use lining digits. */
+  --font-serif--font-feature-settings: "lnum";
   --color-gold: var(--gold);
   --color-gold-foreground: var(--gold-foreground);
   --color-bronze: var(--bronze);

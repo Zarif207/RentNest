@@ -58,14 +58,13 @@ export function RequestsView() {
         }
       />
 
-      <StatusTabs />
-
       {rentals.isError ? (
         <QueryError error={rentals.error} onRetry={() => void rentals.refetch()} />
       ) : (
         <div className={rentals.isPlaceholderData ? "opacity-60 transition-opacity" : undefined}>
           <DataTable
             label="Rental requests"
+            toolbar={<StatusTabs />}
             columns={columns}
             rows={rentals.data}
             getRowKey={(rental) => rental.id}

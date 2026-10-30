@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { CreditCard } from "lucide-react";
+import { CalendarCheck, CircleDollarSign, CreditCard, Receipt } from "lucide-react";
+import { MetricCard } from "@/components/dashboard/bento";
 import { DataTable, type DataTableColumn } from "@/components/dashboard/data-table";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { PropertyCell } from "@/components/dashboard/property-cell";
@@ -11,7 +12,7 @@ import { CopyButton } from "@/components/shared/copy-button";
 import { Button } from "@/components/ui/button";
 import { useMyPayments } from "@/hooks/use-payments";
 import { TENANT_REQUESTS_PATH } from "@/hooks/use-rentals";
-import { formatCurrency, formatDateTime } from "@/lib/format";
+import { formatCurrency, formatDate, formatDateTime, formatNumber } from "@/lib/format";
 import type { PaymentWithBooking } from "@/types";
 
 /** "cs_test_a1B2c3…x9Y8" — enough to recognize a Stripe session. */
@@ -55,6 +56,12 @@ const columns: DataTableColumn<PaymentWithBooking>[] = [
 
 export function PaymentsView() {
   const payments = useMyPayments();
+  const paid = (payments.data ?? []).filter((payment) => payment.paymentStatus === "PAID");
+  const totalPaid = paid.reduce((sum, payment) => sum + Number(payment.amount), 0);
+  const lastPaid = paid
+    .map((payment) => payment.paymentDate ?? payment.createdAt)
+    .sort()
+    .at(-1);
 
   return (
     <div className="space-y-6">
@@ -62,6 +69,33 @@ export function PaymentsView() {
         title="Payments"
         description="Every Stripe payment for your rentals, in US dollars."
       />
+
+      {!payments.isError && (
+        <div className="grid gap-3 sm:grid-cols-3 sm:gap-4">
+          <MetricCard
+            label="Total paid"
+            value={formatCurrency(totalPaid)}
+            hint="Successful payments, USD"
+            icon={CircleDollarSign}
+            isLoading={payments.isPending}
+          />
+          <MetricCard
+            label="Payments"
+            value={formatNumber(payments.data?.length ?? 0)}
+            hint={`${formatNumber(paid.length)} paid`}
+            icon={Receipt}
+            isLoading={payments.isPending}
+          />
+          <MetricCard
+            label="Last payment"
+            value={lastPaid ? formatDate(lastPaid) : "—"}
+            hint={lastPaid ? "Most recent successful payment" : "No payments yet"}
+            icon={CalendarCheck}
+            isLoading={payments.isPending}
+            className="[&_p.font-serif]:text-3xl"
+          />
+        </div>
+      )}
 
       {payments.isError ? (
         <QueryError error={payments.error} onRetry={() => void payments.refetch()} />

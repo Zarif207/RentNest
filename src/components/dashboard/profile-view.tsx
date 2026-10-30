@@ -54,9 +54,9 @@ function ProfileForm({ user }: { user: User }) {
   };
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} noValidate className="space-y-6 rounded-3xl border bg-card p-5 sm:p-6">
+    <form onSubmit={form.handleSubmit(onSubmit)} noValidate className="space-y-6 rounded-3xl border border-border bg-card p-5 sm:p-8">
       <div>
-        <h2 className="font-semibold tracking-tight">Personal details</h2>
+        <h2 className="text-lg font-medium tracking-tight">Personal details</h2>
         <p className="text-sm text-muted-foreground">Landlords and tenants see your name and contact details on requests.</p>
       </div>
 
@@ -86,7 +86,7 @@ function ProfileForm({ user }: { user: User }) {
         </FormField>
       </div>
 
-      <div className="flex justify-end gap-3 border-t pt-5">
+      <div className="flex justify-end gap-3 border-t border-border pt-5">
         <Button type="button" variant="outline" disabled={!isDirty || updateProfile.isPending} onClick={() => form.reset()}>
           Discard
         </Button>
@@ -108,30 +108,35 @@ export function ProfileView() {
       <PageHeader title="Profile" description="Your account details on RentNest." />
 
       {!user ? (
-        <div className="space-y-6" aria-busy="true">
-          <Skeleton className="h-36 rounded-3xl" />
-          <Skeleton className="h-72 rounded-3xl" />
+        <div className="grid gap-4 lg:grid-cols-[22rem_1fr]" aria-busy="true">
+          <Skeleton className="h-80 rounded-3xl" />
+          <Skeleton className="h-80 rounded-3xl" />
         </div>
       ) : (
-        <>
-          <section className="flex flex-col gap-5 rounded-3xl border bg-card p-5 sm:flex-row sm:items-center sm:p-6">
-            <UserAvatar name={user.name} className="size-20 text-2xl" />
-            <div className="min-w-0 flex-1 space-y-2">
-              <p className="truncate text-2xl font-semibold tracking-tight">{user.name}</p>
-              <div className="flex flex-wrap items-center gap-2">
-                <RoleBadge role={user.role} />
-                <UserStatusBadge status={user.userStatus} />
+        <div className="grid gap-4 lg:grid-cols-[22rem_1fr] lg:items-start">
+          <section className="flex flex-col gap-8 rounded-3xl bg-[#12100e] p-6 text-white sm:p-8">
+            <div className="flex items-center gap-4 lg:flex-col lg:items-start">
+              <UserAvatar name={user.name} className="size-20" fallbackClassName="bg-gold text-2xl text-gold-foreground" />
+              <div className="min-w-0 space-y-2">
+                <p className="truncate text-2xl font-medium tracking-tight">{user.name}</p>
+                <p className="truncate text-sm text-white/60">{user.email}</p>
+                <div className="flex flex-wrap items-center gap-2">
+                  <RoleBadge role={user.role} />
+                  <UserStatusBadge status={user.userStatus} />
+                </div>
               </div>
             </div>
-            <dl className="grid gap-2 text-sm sm:text-right">
-              <div className="flex items-center gap-2 sm:justify-end">
-                <CalendarDays className="size-4 text-muted-foreground" aria-hidden />
-                <dt className="text-muted-foreground">Member since</dt>
+            <dl className="grid gap-3 border-t border-white/15 pt-6 text-sm">
+              <div className="flex items-center justify-between gap-3">
+                <dt className="flex items-center gap-2 text-white/60">
+                  <CalendarDays className="size-4" aria-hidden /> Member since
+                </dt>
                 <dd className="font-medium">{formatDate(user.createdAt)}</dd>
               </div>
-              <div className="flex items-center gap-2 sm:justify-end">
-                <ShieldCheck className="size-4 text-muted-foreground" aria-hidden />
-                <dt className="text-muted-foreground">Account</dt>
+              <div className="flex items-center justify-between gap-3">
+                <dt className="flex items-center gap-2 text-white/60">
+                  <ShieldCheck className="size-4" aria-hidden /> Account
+                </dt>
                 <dd className="font-medium">{user.userStatus === "ACTIVE" ? "In good standing" : "Banned"}</dd>
               </div>
             </dl>
@@ -139,7 +144,7 @@ export function ProfileView() {
 
           {/* key: start from the saved values again after each successful save */}
           <ProfileForm key={user.updatedAt} user={user} />
-        </>
+        </div>
       )}
     </div>
   );

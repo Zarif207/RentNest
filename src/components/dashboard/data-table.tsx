@@ -75,7 +75,7 @@ export function DataTable<T>({
   if (!isLoading && rows && rows.length === 0) {
     return (
       <div className="space-y-3">
-        {toolbar && <div className="flex flex-wrap items-center gap-2">{toolbar}</div>}
+        {toolbar && <div className="flex flex-wrap items-center gap-2 *:max-w-full *:min-w-0">{toolbar}</div>}
         <EmptyState {...empty} className={cn("bg-card", empty.className)} />
       </div>
     );
@@ -87,10 +87,10 @@ export function DataTable<T>({
   return (
     <div aria-busy={isLoading || undefined} className="space-y-3 md:space-y-0">
       {toolbar && (
-        <div className="flex flex-wrap items-center gap-2 md:hidden">{toolbar}</div>
+        <div className="flex flex-wrap items-center gap-2 *:max-w-full *:min-w-0 md:hidden">{toolbar}</div>
       )}
       <div className="hidden overflow-hidden rounded-3xl border border-border bg-card p-2 md:block">
-        {toolbar && <div className="flex flex-wrap items-center gap-2 p-3 pb-4">{toolbar}</div>}
+        {toolbar && <div className="flex flex-wrap items-center gap-2 p-3 pb-4 *:max-w-full *:min-w-0">{toolbar}</div>}
         <Table aria-label={label}>
           <TableHeader>
             <TableRow className="border-none hover:bg-transparent">
