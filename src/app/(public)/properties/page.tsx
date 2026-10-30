@@ -10,7 +10,7 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { PaginationNav } from "@/components/shared/pagination-nav";
 import { SerifAccent } from "@/components/shared/serif-accent";
 import { getPublicCategories, getPublicProperties, orNull } from "@/lib/data/public";
-import { COMMON_AMENITIES, readFilters, toPropertyQuery } from "@/lib/property-filters";
+import { COMMON_AMENITIES, getActiveChips, readFilters, toPropertyQuery } from "@/lib/property-filters";
 
 export const metadata: Metadata = {
   title: "Properties",
@@ -36,30 +36,47 @@ export default async function PropertiesPage({ searchParams }: PageProps<"/prope
     ]),
   ].sort();
   const filterOptions = { categories: categories ?? [], amenities };
+  const hasFilters = getActiveChips(filters, filterOptions.categories).length > 0;
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
-      <header className="max-w-2xl space-y-3">
-        <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
-          Find your next <SerifAccent>home</SerifAccent>
-        </h1>
-        <p className="text-muted-foreground sm:text-lg">
-          Filter by location, budget, type and amenities. Every filter is saved in the
-          link, so you can share a search or come back to it.
+    <div className="mx-auto max-w-7xl px-4 pt-6 pb-20 sm:px-6 sm:pt-10 lg:px-8">
+      <header className="flex flex-wrap items-end justify-between gap-8 border-b border-border pb-10">
+        <div className="max-w-2xl space-y-4">
+          <p className="text-xs font-medium tracking-[0.25em] text-bronze uppercase">Browse homes</p>
+          <h1 className="text-5xl leading-[0.98] font-medium tracking-tighter sm:text-6xl lg:text-7xl">
+            Find your next <SerifAccent>home</SerifAccent>
+          </h1>
+          <p className="text-muted-foreground sm:text-lg">
+            Filter by location, budget, type and amenities. Every filter is saved in the link, so you can
+            share a search or come back to it.
+          </p>
+        </div>
+        <p className="flex items-baseline gap-3" aria-hidden>
+          <span className="font-serif text-7xl leading-none lining-nums tabular-nums sm:text-8xl">
+            {String(result.meta.total).padStart(2, "0")}
+          </span>
+          <span className="text-sm text-muted-foreground">
+            {result.meta.total === 1 ? "home" : "homes"}
+            <br />
+            {hasFilters ? "match" : "listed"}
+          </span>
         </p>
       </header>
 
       <BrowseProvider>
-        <div className="mt-10 grid gap-10 lg:grid-cols-[17rem_1fr]">
+        <div className="mt-10 grid gap-8 lg:grid-cols-[17.5rem_1fr]">
           <aside className="hidden lg:block" aria-label="Filters">
-            <div className="sticky top-24 max-h-[calc(100svh-7rem)] overflow-y-auto pr-3 pb-6 scrollbar-thin">
+            <div className="sticky top-24 max-h-[calc(100svh-7rem)] overflow-y-auto rounded-3xl border border-border bg-card p-5 scrollbar-thin">
               <PropertyFilters {...filterOptions} />
             </div>
           </aside>
 
           <section className="min-w-0 space-y-6" aria-label="Results">
-            <ResultsToolbar total={result.meta.total} {...filterOptions} />
-            <ActiveFilters categories={filterOptions.categories} />
+            {/* Sticky glass bar: count, sort, mobile filters and the active chips. */}
+            <div className="sticky top-20 z-20 space-y-3 rounded-3xl border border-border bg-background/70 p-3 backdrop-blur-xl sm:px-4">
+              <ResultsToolbar total={result.meta.total} {...filterOptions} />
+              <ActiveFilters categories={filterOptions.categories} />
+            </div>
 
             <ResultsShell>
               {result.data.length > 0 ? (

@@ -20,10 +20,10 @@ type ErrorStateProps = {
 export function ErrorState({ icon: Icon, title, description, retry, action, className }: ErrorStateProps) {
   return (
     <div role="alert" className={cn("mx-auto flex max-w-lg flex-col items-center px-4 py-24 text-center", className)}>
-      <span className="grid size-16 place-items-center rounded-full bg-secondary">
-        <Icon className="size-7 text-muted-foreground" aria-hidden />
+      <span className="grid size-16 place-items-center rounded-full border border-gold/40 bg-gold/15">
+        <Icon className="size-7 text-bronze" aria-hidden />
       </span>
-      <h1 className="mt-6 text-3xl font-semibold tracking-tight">{title}</h1>
+      <h1 className="mt-6 text-4xl font-medium tracking-tighter">{title}</h1>
       <p className="mt-3 text-muted-foreground">{description}</p>
       <div className="mt-8 flex flex-wrap justify-center gap-3">
         <Button onClick={retry}>

@@ -1,5 +1,6 @@
+import { formatAmenity, formatCurrency, formatEnumLabel } from "@/lib/format";
 import { isUuid } from "@/lib/utils";
-import { PROPERTY_TYPES, type PropertyQuery, type PropertyType } from "@/types";
+import { PROPERTY_TYPES, type Category, type PropertyQuery, type PropertyType } from "@/types";
 
 // URL search params <-> browse filters. Shared by the server page (to query
 // the API) and the client filter UI (to show and update the current state).
@@ -113,4 +114,52 @@ export function toPropertyQuery(filters: BrowseFilters): PropertyQuery {
     page: filters.page,
     limit: PAGE_SIZE,
   };
+}
+
+/** The filters currently applied, as removable chips (shared by the chips row and the page). */
+export type FilterChip = { key: string; label: string; clear: Record<string, string | null> };
+
+export function getActiveChips(filters: BrowseFilters, categories: Category[]): FilterChip[] {
+  const chips: FilterChip[] = [];
+
+  if (filters.searchTerm) {
+    chips.push({ key: "searchTerm", label: `“${filters.searchTerm}”`, clear: { searchTerm: null } });
+  }
+  if (filters.city) chips.push({ key: "city", label: filters.city, clear: { city: null } });
+  if (filters.division) {
+    chips.push({ key: "division", label: filters.division, clear: { division: null } });
+  }
+  if (filters.propertyType) {
+    chips.push({
+      key: "propertyType",
+      label: formatEnumLabel(filters.propertyType),
+      clear: { propertyType: null },
+    });
+  }
+  if (filters.categoryId) {
+    const category = categories.find((item) => item.id === filters.categoryId);
+    chips.push({
+      key: "categoryId",
+      label: category ? category.name : "Category",
+      clear: { categoryId: null },
+    });
+  }
+  if (filters.minPrice !== null || filters.maxPrice !== null) {
+    const label =
+      filters.minPrice !== null && filters.maxPrice !== null
+        ? `${formatCurrency(filters.minPrice)} – ${formatCurrency(filters.maxPrice)}`
+        : filters.minPrice !== null
+          ? `From ${formatCurrency(filters.minPrice)}`
+          : `Up to ${formatCurrency(filters.maxPrice)}`;
+    chips.push({ key: "price", label, clear: { minPrice: null, maxPrice: null } });
+  }
+  for (const amenity of filters.amenities) {
+    const rest = filters.amenities.filter((item) => item !== amenity).join(",");
+    chips.push({ key: `amenity-${amenity}`, label: formatAmenity(amenity), clear: { amenities: rest } });
+  }
+  if (filters.availableOnly) {
+    chips.push({ key: "available", label: "Available only", clear: { availabilityStatus: null } });
+  }
+
+  return chips;
 }

@@ -31,7 +31,7 @@ export type FilterOptions = {
 function FilterSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="space-y-3">
-      <h3 className="text-sm font-semibold">{title}</h3>
+      <h3 className="text-xs font-medium tracking-[0.2em] text-muted-foreground uppercase">{title}</h3>
       {children}
     </section>
   );

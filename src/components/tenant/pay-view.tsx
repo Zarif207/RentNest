@@ -151,7 +151,7 @@ export function PayView({ rentalId }: { rentalId: string }) {
             ))}
             <div className="flex justify-between gap-4 border-t pt-3 text-base">
               <dt className="font-semibold">Total due (USD)</dt>
-              <dd className="text-xl font-bold italic">{formatCurrency(booking.totalRent)}</dd>
+              <dd className="text-xl font-semibold tracking-tight">{formatCurrency(booking.totalRent)}</dd>
             </div>
           </dl>
 

@@ -3,25 +3,29 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Loading() {
   return (
-    <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8" aria-busy="true">
+    <div className="mx-auto max-w-7xl px-4 pt-6 pb-20 sm:px-6 sm:pt-10 lg:px-8" aria-busy="true">
       <span className="sr-only">Loading properties…</span>
-      <div className="max-w-2xl space-y-3">
-        <Skeleton className="h-12 w-80 max-w-full" />
-        <Skeleton className="h-6 w-full" />
+      <div className="flex flex-wrap items-end justify-between gap-8 border-b border-border pb-10">
+        <div className="w-full max-w-2xl space-y-4">
+          <Skeleton className="h-4 w-32" />
+          <Skeleton className="h-16 w-full max-w-xl" />
+          <Skeleton className="h-6 w-full" />
+        </div>
+        <Skeleton className="h-20 w-36" />
       </div>
-      <div className="mt-10 grid gap-10 lg:grid-cols-[17rem_1fr]">
-        <div className="hidden space-y-6 lg:block">
+      <div className="mt-10 grid gap-8 lg:grid-cols-[17.5rem_1fr]">
+        <div className="hidden space-y-6 rounded-3xl border border-border bg-card p-5 lg:block">
           {Array.from({ length: 5 }, (_, index) => (
             <div key={index} className="space-y-3">
-              <Skeleton className="h-4 w-24" />
-              <Skeleton className="h-10 w-full rounded-xl" />
+              <Skeleton className="h-3 w-24" />
+              <Skeleton className="h-10 w-full rounded-2xl" />
             </div>
           ))}
         </div>
         <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <Skeleton className="h-7 w-44" />
-            <Skeleton className="h-10 w-48 rounded-xl" />
+          <div className="flex items-center justify-between rounded-3xl border border-border p-3">
+            <Skeleton className="h-5 w-36" />
+            <Skeleton className="h-10 w-48 rounded-full" />
           </div>
           <PropertyGridSkeleton />
         </div>

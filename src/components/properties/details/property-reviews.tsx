@@ -35,28 +35,30 @@ export function PropertyReviews({ reviews }: { reviews: ReviewWithUser[] | null 
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4 rounded-3xl bg-surface p-5">
-        <p className="text-5xl font-semibold tracking-tight">{average.toFixed(1)}</p>
+      <div className="flex items-center gap-5 border-b border-border pb-6">
+        <p className="font-serif text-7xl leading-none lining-nums tabular-nums">{average.toFixed(1)}</p>
         <div className="space-y-1">
           <StarRating rating={average} className="text-lg" />
           <p className="text-sm text-muted-foreground">
-            Based on {reviews.length} {reviews.length === 1 ? "review" : "reviews"}
+            Based on {reviews.length} {reviews.length === 1 ? "review" : "reviews"} from tenants who rented here
           </p>
         </div>
       </div>
 
-      <ul className="divide-y">
+      <ul className="grid gap-4 sm:grid-cols-2">
         {reviews.map((review) => (
-          <li key={review.id} className="py-5 first:pt-0">
-            <div className="flex items-center gap-3">
-              <UserAvatar name={review.user.name} className="size-10" />
-              <div className="min-w-0 flex-1">
-                <p className="truncate font-medium">{review.user.name}</p>
-                <p className="text-xs text-muted-foreground">{formatDate(review.createdAt)}</p>
-              </div>
+          <li key={review.id}>
+            <figure className="flex h-full flex-col gap-5 rounded-3xl border border-border bg-card p-6">
               <StarRating rating={review.rating} />
-            </div>
-            <p className="mt-3 leading-relaxed text-muted-foreground">{review.comment}</p>
+              <blockquote className="flex-1 font-serif text-2xl leading-snug">“{review.comment}”</blockquote>
+              <figcaption className="flex items-center gap-3 border-t border-border pt-4">
+                <UserAvatar name={review.user.name} className="size-10" />
+                <div className="min-w-0">
+                  <p className="truncate font-medium">{review.user.name}</p>
+                  <p className="text-xs text-muted-foreground">{formatDate(review.createdAt)}</p>
+                </div>
+              </figcaption>
+            </figure>
           </li>
         ))}
       </ul>

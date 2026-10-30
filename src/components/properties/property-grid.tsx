@@ -19,7 +19,9 @@ export function PropertyGrid({
 
   return (
     <motion.ul
-      className="grid gap-x-6 gap-y-10 sm:grid-cols-2 xl:grid-cols-3"
+      // A new result set remounts the list, so the stagger plays again.
+      key={properties.map((property) => property.id).join()}
+      className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3"
       variants={container}
       // Reduced motion: render in place, no fade or stagger.
       initial={reduceMotion ? false : "hidden"}

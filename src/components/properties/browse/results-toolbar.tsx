@@ -20,8 +20,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { formatNumber } from "@/lib/format";
-import { SORT_OPTIONS } from "@/lib/property-filters";
-import { getActiveChips } from "./active-filters";
+import { getActiveChips, SORT_OPTIONS } from "@/lib/property-filters";
 import { useBrowse } from "./browse-context";
 import { PropertyFilters, type FilterOptions } from "./property-filters";
 
@@ -31,7 +30,7 @@ export function ResultsToolbar({ total, ...options }: FilterOptions & { total: n
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-3">
-      <p className="text-lg font-semibold tracking-tight" aria-live="polite">
+      <p className="pl-1 text-sm font-medium" aria-live="polite">
         {formatNumber(total)} {total === 1 ? "property" : "properties"} found
       </p>
 
@@ -39,7 +38,7 @@ export function ResultsToolbar({ total, ...options }: FilterOptions & { total: n
         {/* Below lg the sidebar is hidden; the same filters open in a sheet. */}
         <Sheet>
           <SheetTrigger asChild>
-            <Button variant="outline" className="lg:hidden">
+            <Button variant="outline" className="rounded-full lg:hidden">
               <SlidersHorizontal data-icon="inline-start" />
               Filters
               {activeCount > 0 && (
@@ -69,7 +68,7 @@ export function ResultsToolbar({ total, ...options }: FilterOptions & { total: n
         </Sheet>
 
         <Select value={filters.sort} onValueChange={(value) => setParams({ sort: value === "newest" ? null : value })}>
-          <SelectTrigger aria-label="Sort properties" className="w-48">
+          <SelectTrigger aria-label="Sort properties" className="w-48 rounded-full">
             <SelectValue />
           </SelectTrigger>
           <SelectContent align="end">

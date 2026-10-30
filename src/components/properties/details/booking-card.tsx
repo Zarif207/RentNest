@@ -1,11 +1,10 @@
-import { Mail, Phone } from "lucide-react";
-import { UserAvatar } from "@/components/shared/user-avatar";
+import { ShieldCheck } from "lucide-react";
 import { RequestToRent } from "@/components/rentals/request-to-rent";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency, formatNumber } from "@/lib/format";
 import type { PropertyWithRelations } from "@/types";
 
-/** Sticky side card: price, stat trio, request button and landlord contact. */
+/** Sticky glass panel: price, a serif stat trio and the request button. */
 export function BookingCard({ property }: { property: PropertyWithRelations }) {
   const available = property.availabilityStatus === "AVAILABLE";
   const stats = [
@@ -15,59 +14,33 @@ export function BookingCard({ property }: { property: PropertyWithRelations }) {
   ];
 
   return (
-    <div className="space-y-6 rounded-3xl border bg-card p-6 shadow-xl shadow-black/5">
+    <div className="space-y-6 rounded-3xl border border-border bg-card/70 p-6 shadow-2xl shadow-black/5 backdrop-blur-xl dark:shadow-black/30">
       <div className="flex items-start justify-between gap-3">
-        <p className="text-3xl font-bold tracking-tight italic">
-          {formatCurrency(property.rentAmount)}
-          <span className="text-base font-normal text-muted-foreground not-italic"> /month</span>
-        </p>
-        <Badge variant={available ? "active" : "completed"}>
-          {available ? "Available" : "Rented"}
-        </Badge>
+        <div>
+          <p className="text-xs font-medium tracking-[0.2em] text-muted-foreground uppercase">Monthly rent</p>
+          <p className="mt-1 text-4xl font-medium tracking-tighter">
+            {formatCurrency(property.rentAmount)}
+            <span className="text-base font-normal tracking-normal text-muted-foreground"> /month</span>
+          </p>
+        </div>
+        <Badge variant={available ? "active" : "completed"}>{available ? "Available" : "Rented"}</Badge>
       </div>
 
-      <dl className="grid grid-cols-3 divide-x rounded-2xl bg-surface py-4 text-center">
+      <dl className="grid grid-cols-3 divide-x divide-border border-y border-border py-5 text-center">
         {stats.map((stat) => (
           <div key={stat.label} className="flex flex-col-reverse gap-1 px-2">
-            <dt className="text-xs tracking-wide text-muted-foreground uppercase">{stat.label}</dt>
-            <dd className="text-3xl font-semibold tracking-tight">{stat.value}</dd>
+            <dt className="text-xs tracking-[0.15em] text-muted-foreground uppercase">{stat.label}</dt>
+            <dd className="font-serif text-4xl leading-none lining-nums tabular-nums">{stat.value}</dd>
           </div>
         ))}
       </dl>
 
       <RequestToRent property={property} />
 
-      <div className="space-y-4 border-t pt-6">
-        <div className="flex items-center gap-3">
-          <UserAvatar name={property.owner.name} className="size-12" />
-          <div className="min-w-0">
-            <p className="truncate font-semibold">{property.owner.name}</p>
-            <p className="text-sm text-muted-foreground">Landlord</p>
-          </div>
-        </div>
-        <ul className="space-y-2 text-sm">
-          <li>
-            <a
-              href={`mailto:${property.owner.email}`}
-              className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
-            >
-              <Mail className="size-4 shrink-0" aria-hidden />
-              <span className="truncate">{property.owner.email}</span>
-            </a>
-          </li>
-          {property.owner.phone && (
-            <li>
-              <a
-                href={`tel:${property.owner.phone}`}
-                className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <Phone className="size-4 shrink-0" aria-hidden />
-                {property.owner.phone}
-              </a>
-            </li>
-          )}
-        </ul>
-      </div>
+      <p className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+        <ShieldCheck className="size-4 text-bronze" aria-hidden />
+        Nothing is charged until the landlord approves and you pay.
+      </p>
     </div>
   );
 }

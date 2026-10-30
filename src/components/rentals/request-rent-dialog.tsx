@@ -170,7 +170,7 @@ export function RequestRentDialog({ open, onOpenChange, property, onSent }: Requ
             </div>
             <div className="flex justify-between gap-4 border-t pt-2 text-base font-semibold">
               <dt>Total</dt>
-              <dd className="italic">{formatCurrency(total)}</dd>
+              <dd className="font-semibold">{formatCurrency(total)}</dd>
             </div>
             <p className="pt-1 text-xs text-muted-foreground">
               You&apos;ll only pay after the landlord approves your request.
