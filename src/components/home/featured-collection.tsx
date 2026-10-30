@@ -4,6 +4,7 @@ import { useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, ArrowUpRight, Bath, BedDouble, House, Ruler } from "lucide-react";
+import { FavoriteButton } from "@/components/properties/favorite-button";
 import { Button } from "@/components/ui/button";
 import { useIsDesktop, useMotionOk } from "@/hooks/use-motion";
 import { formatNumber } from "@/lib/format";
@@ -167,7 +168,7 @@ export function FeaturedCollection({ homes, title }: { homes: FeaturedHome[]; ti
         >
           {homes.map((home, index) => (
             <li key={home.id} data-card className="w-[82vw] shrink-0 snap-start sm:w-[60vw] md:w-[min(34rem,46vw)]">
-              <div data-card-inner className="h-full transform-3d">
+              <div data-card-inner className="relative h-full transform-3d">
                 <Link
                   href={`/properties/${home.id}`}
                   className="group flex h-full flex-col rounded-3xl border border-border bg-card p-3 outline-none focus-visible:ring-3 focus-visible:ring-ring/40"
@@ -218,6 +219,7 @@ export function FeaturedCollection({ homes, title }: { homes: FeaturedHome[]; ti
                     </span>
                   </span>
                 </Link>
+                <FavoriteButton propertyId={home.id} title={home.title} className="absolute top-6 right-6 z-10 translate-z-6" />
               </div>
             </li>
           ))}

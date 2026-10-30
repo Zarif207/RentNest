@@ -13,7 +13,7 @@ const PROPERTY_CARD_IMAGE_SIZES =
 
 /**
  * Listing card: photo with zoom, gold price tag, availability and a
- * favorite heart (local only). The whole card is one link (stretched over
+ * favorite heart. The whole card is one link (stretched over
  * the card) with the heart layered above it; it tilts in 3D on desktop.
  */
 export function PropertyCard({
@@ -93,9 +93,14 @@ export function PropertyCard({
             />
           </div>
         </div>
-
-        <FavoriteButton title={property.title} className="absolute top-5 right-5 z-10" />
       </article>
+      {/* Outside the article and lifted in 3D: when the card tilts, the photo
+          would otherwise cover the heart and swallow its clicks. */}
+      <FavoriteButton
+        propertyId={property.id}
+        title={property.title}
+        className="absolute top-5 right-5 z-10 translate-z-6"
+      />
     </TiltCard>
   );
 }

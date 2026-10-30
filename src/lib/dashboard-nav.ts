@@ -2,6 +2,7 @@ import {
   Building2,
   ClipboardList,
   CreditCard,
+  Heart,
   Inbox,
   LayoutDashboard,
   LayoutTemplate,
@@ -24,6 +25,7 @@ export const DASHBOARD_NAV: Record<UserRole, DashboardNavItem[]> = {
   TENANT: [
     { href: "/dashboard/tenant", label: "Overview", icon: LayoutDashboard },
     { href: "/dashboard/tenant/requests", label: "My Requests", icon: ClipboardList },
+    { href: "/dashboard/tenant/favorites", label: "Saved", icon: Heart },
     { href: "/dashboard/tenant/payments", label: "Payments", icon: CreditCard },
     { href: "/dashboard/tenant/profile", label: "Profile", icon: UserRound },
   ],

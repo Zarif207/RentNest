@@ -7,6 +7,7 @@ import { BookingCard } from "@/components/properties/details/booking-card";
 import { PropertyGallery } from "@/components/properties/details/property-gallery";
 import { LandlordCard } from "@/components/properties/details/landlord-card";
 import { PropertyReviews } from "@/components/properties/details/property-reviews";
+import { FavoriteButton } from "@/components/properties/favorite-button";
 import { PropertyGrid } from "@/components/properties/property-grid";
 import { SerifAccent } from "@/components/shared/serif-accent";
 import { Badge } from "@/components/ui/badge";
@@ -121,6 +122,7 @@ export default async function PropertyDetailsPage({ params }: PageProps<"/proper
               {property.address}, {location}
             </p>
           </div>
+          <FavoriteButton propertyId={property.id} title={property.title} size="lg" />
         </div>
       </header>
 

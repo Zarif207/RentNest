@@ -28,6 +28,11 @@ export const queryKeys = {
     list: (status?: BookingStatus) => ["rentals", "list", status ?? "ALL"] as const,
     detail: (id: string) => ["rentals", "detail", id] as const,
   },
+  favorites: {
+    all: ["favorites"] as const,
+    ids: ["favorites", "ids"] as const,
+    list: ["favorites", "list"] as const,
+  },
   payments: {
     all: ["payments"] as const,
     detail: (id: string) => ["payments", "detail", id] as const,

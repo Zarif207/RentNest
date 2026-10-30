@@ -22,6 +22,7 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/use-auth";
+import { SAVED_HOMES_PATH, useFavoriteIds } from "@/hooks/use-favorites";
 import { useMyPayments } from "@/hooks/use-payments";
 import { TENANT_REQUESTS_PATH, useMyRentals } from "@/hooks/use-rentals";
 import { formatCurrency, formatDate, formatNumber } from "@/lib/format";
@@ -207,6 +208,7 @@ function RequestTimeline({ list }: { list: BookingWithProperty[] }) {
 export function TenantOverview() {
   const rentals = useMyRentals();
   const payments = useMyPayments();
+  const favoriteIds = useFavoriteIds();
 
   const list = rentals.data ?? [];
   const count = (...statuses: string[]) => list.filter((rental) => statuses.includes(rental.bookingStatus)).length;
@@ -237,37 +239,44 @@ export function TenantOverview() {
         )}
       </BentoCard>
 
-      <MetricCard
-        label="Total requests"
-        value={formatNumber(list.length)}
-        icon={ClipboardList}
-        isLoading={rentals.isPending}
-        className="md:col-span-3 lg:col-span-3"
-      />
-      <MetricCard
-        label="Pending"
-        value={formatNumber(count("PENDING"))}
-        hint="Waiting for the landlord"
-        icon={Hourglass}
-        isLoading={rentals.isPending}
-        className="md:col-span-3 lg:col-span-3"
-      />
-      <MetricCard
-        label="Active rentals"
-        value={formatNumber(count("ACTIVE"))}
-        hint="Paid and moved in"
-        icon={KeyRound}
-        isLoading={rentals.isPending}
-        className="md:col-span-3 lg:col-span-3"
-      />
-      <MetricCard
-        label="Total paid"
-        value={payments.isError ? "—" : formatCurrency(totalPaid)}
-        hint="Successful Stripe payments"
-        icon={CircleDollarSign}
-        isLoading={payments.isPending}
-        className="md:col-span-3 lg:col-span-3"
-      />
+      {/* Five metrics share one full-width row on desktop. */}
+      <div className="grid gap-3 sm:grid-cols-2 sm:gap-4 md:col-span-6 lg:col-span-12 lg:grid-cols-5">
+        <MetricCard
+          label="Total requests"
+          value={formatNumber(list.length)}
+          icon={ClipboardList}
+          isLoading={rentals.isPending}
+        />
+        <MetricCard
+          label="Pending"
+          value={formatNumber(count("PENDING"))}
+          hint="Waiting for the landlord"
+          icon={Hourglass}
+          isLoading={rentals.isPending}
+        />
+        <MetricCard
+          label="Active rentals"
+          value={formatNumber(count("ACTIVE"))}
+          hint="Paid and moved in"
+          icon={KeyRound}
+          isLoading={rentals.isPending}
+        />
+        <MetricCard
+          label="Total paid"
+          value={payments.isError ? "—" : formatCurrency(totalPaid)}
+          hint="Successful Stripe payments"
+          icon={CircleDollarSign}
+          isLoading={payments.isPending}
+        />
+        <MetricCard
+          label="Saved homes"
+          value={favoriteIds.isError ? "—" : formatNumber(favoriteIds.data?.length ?? 0)}
+          hint="Homes you hearted"
+          href={SAVED_HOMES_PATH}
+          isLoading={favoriteIds.isPending}
+          className="sm:col-span-2 lg:col-span-1"
+        />
+      </div>
 
       {!rentals.isPending && !rentals.isError && <ActiveHomeCard rental={activeRental} />}
 

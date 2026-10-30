@@ -2,6 +2,7 @@ export * from "./api";
 export * from "./booking";
 export * from "./category";
 export * from "./enums";
+export * from "./favorite";
 export * from "./payment";
 export * from "./property";
 export * from "./review";
