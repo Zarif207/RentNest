@@ -254,7 +254,7 @@ export function DashboardTopbar() {
         <header className="mx-auto flex h-16 max-w-7xl items-center gap-3 rounded-full border border-border bg-card/80 pr-3 pl-5 shadow-lg shadow-black/5 backdrop-blur-xl dark:shadow-black/30">
           <div className="flex flex-1 items-center">
             <BrandLogo href={role ? DASHBOARD_NAV[role][0].href : "/"} className="xl:hidden" variant="mark" />
-            <BrandLogo href={role ? DASHBOARD_NAV[role][0].href : "/"} className="hidden xl:inline-flex" />
+            <BrandLogo href={role ? DASHBOARD_NAV[role][0].href : "/"} size="sm" className="hidden xl:inline-flex" />
           </div>
           <PillNav variant="inline" />
           <div className="flex flex-1 items-center justify-end gap-1.5">

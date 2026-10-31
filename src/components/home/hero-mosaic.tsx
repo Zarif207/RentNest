@@ -171,7 +171,7 @@ export function HeroMosaic({ cards, className }: { cards: HeroCard[]; className?
     // boxes would otherwise swallow clicks meant for pieces further back.
     <div
       data-enter
-      className={cn("pointer-events-none relative aspect-[100/91] perspective-[1200px]", className)}
+      className={cn("pointer-events-none relative aspect-100/91 perspective-distant", className)}
     >
       <div className="size-full transform-3d motion-safe:animate-[hero-bob_7s_ease-in-out_infinite]">
         <ul data-mosaic-tilt aria-label="Featured homes" className="relative size-full transform-3d">

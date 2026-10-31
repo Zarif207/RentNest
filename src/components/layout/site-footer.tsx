@@ -109,7 +109,7 @@ export function SiteFooter() {
 
         <div className="grid gap-12 py-14 lg:grid-cols-[1fr_3.2fr]">
           <div className="space-y-6">
-            <BrandLogo />
+            <BrandLogo size="lg" />
             <p className="max-w-xs text-muted-foreground">
               Rental homes across the US, with secure Stripe payments and reviews from real tenants.
             </p>

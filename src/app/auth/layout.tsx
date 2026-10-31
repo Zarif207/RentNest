@@ -33,7 +33,7 @@ export default function AuthLayout({ children }: LayoutProps<"/auth">) {
           <div aria-hidden className="absolute inset-0 bg-linear-to-t from-black/75 via-black/15 to-black/35" />
 
           <div className="absolute top-8 left-8">
-            <BrandLogo className="text-white" />
+            <BrandLogo className="text-white [--logo-accent:var(--gold)]" />
           </div>
 
           <figure className="absolute inset-x-8 bottom-8 max-w-lg rounded-3xl border border-white/20 bg-white/10 p-8 backdrop-blur-xl">
@@ -55,7 +55,7 @@ export default function AuthLayout({ children }: LayoutProps<"/auth">) {
           <KenBurnsImage sizes="100vw" />
           <div aria-hidden className="absolute inset-0 bg-linear-to-b from-black/50 via-black/20 to-background" />
           <div className="absolute inset-x-4 top-4 flex items-center justify-between sm:inset-x-8">
-            <BrandLogo className="text-white" />
+            <BrandLogo className="text-white [--logo-accent:var(--gold)]" />
             <ThemeToggle className="text-white hover:bg-white/15 hover:text-white" />
           </div>
         </div>

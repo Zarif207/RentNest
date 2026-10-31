@@ -66,7 +66,7 @@ export function SiteHeader() {
             PILL,
             "transition-[background-color,border-color,color,box-shadow] duration-500",
             onDark
-              ? "border-white/15 bg-white/10 text-white backdrop-blur-md"
+              ? "border-white/15 bg-white/10 text-white backdrop-blur-md [--logo-accent:var(--gold)]"
               : scrolled
                 ? "border-border bg-background/75 text-foreground shadow-lg shadow-black/5 backdrop-blur-xl"
                 : "border-border/70 bg-background/40 text-foreground backdrop-blur-md",

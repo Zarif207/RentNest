@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Cormorant_Garamond, Geist } from "next/font/google";
+import { Cormorant_Garamond, Geist, Jost } from "next/font/google";
 import Script from "next/script";
 import { CookieConsent } from "@/components/consent/cookie-consent";
 import { INTRO_GATE_SCRIPT } from "@/components/motion/intro-gate";
@@ -17,14 +17,21 @@ const geist = Geist({
   subsets: ["latin"],
 });
 
-// Upright serif for accent phrases; the italic is only for the logo wordmark.
+// Upright serif for accent phrases.
 const cormorant = Cormorant_Garamond({
   variable: "--font-cormorant",
   subsets: ["latin"],
   weight: ["400", "500"],
-  style: ["normal", "italic"],
-  // Secondary face (accents, wordmark): don't compete with Geist for preload.
+  // Secondary face (accents): don't compete with Geist for preload.
   preload: false,
+});
+
+// The "RentNest" wordmark only: it's in the navbar on every page, so it preloads.
+const jost = Jost({
+  variable: "--font-jost",
+  subsets: ["latin"],
+  weight: "500",
+  display: "swap",
 });
 
 const description =
@@ -59,7 +66,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${geist.variable} ${cormorant.variable} h-full antialiased`}
+      className={`${geist.variable} ${cormorant.variable} ${jost.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <body className="flex min-h-full flex-col">

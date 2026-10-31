@@ -10,6 +10,7 @@
   --font-sans: var(--font-geist);
   --font-heading: var(--font-geist);
   --font-serif: var(--font-cormorant);
+  --font-wordmark: var(--font-jost);
   /* Cormorant defaults to old-style figures (a "1" reads like "I"); use lining digits. */
   --font-serif--font-feature-settings: "lnum";
   --color-gold: var(--gold);
@@ -106,6 +107,9 @@
   /* RentNest brand tokens */
   --gold: #c2a878; /* champagne: fills and lines, never small text on ivory */
   --gold-foreground: #12100e;
+  /* The egg in the logo: bronze reads better than champagne on ivory. */
+  --logo-accent: #8a6d3b;
+  --logo-tracking: 0.22em;
   --bronze: #806435; /* gold-toned text on light surfaces */
   --sand: #e9e2d6;
   --surface: #efebe4;
@@ -151,6 +155,7 @@
 
   --gold: #c2a878;
   --gold-foreground: #12100e;
+  --logo-accent: #c2a878;
   --bronze: #c2a878; /* on ink, champagne itself reads as the gold text */
   --sand: #2a241e;
   --surface: #161412;
@@ -186,11 +191,31 @@ html[data-intro-seen] [data-intro] {
   display: none;
 }
 
-/* Intro preloader, all CSS so it runs before scripts load: the monogram
-   draws, a 000→100 counter runs, then the curtain lifts (see intro-preloader). */
-@keyframes intro-draw {
+/* Intro preloader, all CSS so it runs before scripts load: the egg drops
+   into the nest, the letters fade in, a 000→100 counter runs, then the
+   curtain lifts (see intro-preloader). */
+@keyframes logo-egg-drop {
+  from {
+    opacity: 0;
+    transform: translateY(-26px);
+  }
+  65% {
+    opacity: 1;
+    transform: translateY(1.5px);
+  }
+  82% {
+    transform: translateY(-0.75px);
+  }
   to {
-    stroke-dashoffset: 0;
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes logo-letters-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.15em);
   }
 }
 

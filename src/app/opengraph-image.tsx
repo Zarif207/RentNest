@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { cacheLife } from "next/cache";
 import { ImageResponse } from "next/og";
-import { MARK_PATHS } from "@/components/brand/logo";
+import { NEST_MARK } from "@/components/brand/brand-logo";
 
 // Default social preview for every page that doesn't set its own image.
 // The font files come from node_modules.
@@ -11,22 +11,26 @@ export const alt = "RentNest — Find a home worth coming home to";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-const FONT_DIR = join(process.cwd(), "node_modules/@fontsource/cormorant-garamond/files");
+const FONT_DIR = join(process.cwd(), "node_modules/@fontsource/jost/files");
 
 // Cached so the image is prerendered once at build time (Cache Components).
 async function loadFonts() {
   "use cache";
   cacheLife("max");
-  const [italic, light] = await Promise.all([
-    readFile(join(FONT_DIR, "cormorant-garamond-latin-500-italic.woff")),
-    readFile(join(FONT_DIR, "cormorant-garamond-latin-300-normal.woff")),
+  const [medium, regular] = await Promise.all([
+    readFile(join(FONT_DIR, "jost-latin-500-normal.woff")),
+    readFile(join(FONT_DIR, "jost-latin-400-normal.woff")),
   ]);
-  return { italic: new Uint8Array(italic), light: new Uint8Array(light) };
+  return { medium: new Uint8Array(medium), regular: new Uint8Array(regular) };
 }
 
+// The wordmark's size; the mark and spacing follow the logo's em proportions.
+const FONT_SIZE = 92;
+const TRACKING = 0.22 * FONT_SIZE;
+
 export default async function OpengraphImage() {
-  const { italic, light } = await loadFonts();
-  const { circle, roof, letter } = MARK_PATHS;
+  const { medium, regular } = await loadFonts();
+  const { egg, twigs } = NEST_MARK;
 
   return new ImageResponse(
     (
@@ -38,19 +42,33 @@ export default async function OpengraphImage() {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          gap: 36,
+          gap: 44,
           background: "#12100e",
           color: "#f2eee7",
-          fontFamily: "Cormorant",
+          fontFamily: "Jost",
         }}
       >
-        <svg width="168" height="168" viewBox="0 0 48 48" fill="none" stroke="#c2a878" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx={circle.cx} cy={circle.cy} r={circle.r} strokeWidth={0.6} />
-          <path d={roof.d} strokeWidth={1.2} />
-          <path d={letter.d} strokeWidth={1.6} />
-        </svg>
-        <div style={{ fontSize: 64, fontStyle: "italic", fontWeight: 500, color: "#c2a878" }}>RentNest</div>
-        <div style={{ fontSize: 46, fontWeight: 300, letterSpacing: 0.5 }}>Find a home worth coming home to</div>
+        <div style={{ display: "flex", alignItems: "flex-end", fontSize: FONT_SIZE, fontWeight: 500, lineHeight: 1 }}>
+          <span style={{ letterSpacing: TRACKING }}>RENT</span>
+          <svg
+            width={FONT_SIZE * 1.5}
+            height={FONT_SIZE * 1.15}
+            viewBox={NEST_MARK.viewBox}
+            style={{ margin: `0 ${FONT_SIZE * 0.1}px`, position: "relative", top: FONT_SIZE * 0.06 }}
+          >
+            <ellipse cx={egg.cx} cy={egg.cy} rx={egg.rx} ry={egg.ry} fill="#c2a878" />
+            <g fill="none" stroke="#f2eee7" strokeWidth={2} strokeLinecap="round">
+              {twigs.map((d) => (
+                <path key={d} d={d} />
+              ))}
+            </g>
+          </svg>
+          {/* No tracking after the last letter, so the lockup stays centered. */}
+          <span style={{ letterSpacing: TRACKING, marginRight: -TRACKING }}>NEST</span>
+        </div>
+        <div style={{ fontSize: 30, fontWeight: 400, letterSpacing: 0.3 * 30, color: "#c2a878" }}>
+          Find a home worth coming home to
+        </div>
         <div
           style={{
             position: "absolute",
@@ -67,8 +85,8 @@ export default async function OpengraphImage() {
     {
       ...size,
       fonts: [
-        { name: "Cormorant", data: italic.buffer, style: "italic", weight: 500 },
-        { name: "Cormorant", data: light.buffer, style: "normal", weight: 300 },
+        { name: "Jost", data: medium.buffer, style: "normal", weight: 500 },
+        { name: "Jost", data: regular.buffer, style: "normal", weight: 400 },
       ],
     },
   );
