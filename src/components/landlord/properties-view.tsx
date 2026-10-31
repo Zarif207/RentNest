@@ -35,7 +35,8 @@ import {
   type LandlordPropertyFilters,
 } from "@/hooks/use-landlord-properties";
 import { useLandlordAccess } from "@/hooks/use-landlord-access";
-import { formatCurrency, formatEnumLabel } from "@/lib/format";
+import { formatEnumLabel } from "@/lib/format";
+import { formatListingPrice, listingPriceLabel } from "@/lib/listing";
 import { formatLocation } from "@/lib/us-states";
 import { cn } from "@/lib/utils";
 import { PROPERTY_TYPES, type AvailabilityStatus, type PropertyType, type PropertyWithRelations } from "@/types";
@@ -151,7 +152,7 @@ export function PropertiesView() {
     {
       key: "rent",
       header: "Rent",
-      cell: (property) => <span className="font-semibold">{formatCurrency(property.rentAmount)}/mo</span>,
+      cell: (property) => <span className="font-semibold">{listingPriceLabel(property)}</span>,
     },
     { key: "status", header: "Status", cell: (property) => <AvailabilityBadge property={property} /> },
     { key: "availability", header: "Listed as available", cell: availabilitySwitch },
@@ -251,8 +252,10 @@ export function PropertiesView() {
                       <AvailabilityBadge property={property} />
                     </span>
                     <span className="absolute bottom-3 left-3 rounded-full bg-gold px-3 py-1 text-sm font-semibold text-gold-foreground">
-                      {formatCurrency(property.rentAmount)}
-                      <span className="font-normal opacity-80">/mo</span>
+                      {formatListingPrice(property).amount}
+                      {formatListingPrice(property).suffix && (
+                        <span className="font-normal opacity-80">{formatListingPrice(property).suffix}</span>
+                      )}
                     </span>
                   </div>
                   <div className="flex flex-1 flex-col gap-3 px-3 pt-4 pb-3">

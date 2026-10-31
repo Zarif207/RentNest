@@ -1,6 +1,6 @@
 import { formatAmenity, formatCurrency, formatEnumLabel } from "@/lib/format";
 import { isUuid } from "@/lib/utils";
-import { PROPERTY_TYPES, type Category, type PropertyQuery, type PropertyType } from "@/types";
+import { PROPERTY_TYPES, type Category, type ListingType, type PropertyQuery, type PropertyType } from "@/types";
 
 // URL search params <-> browse filters. Shared by the server page (to query
 // the API) and the client filter UI (to show and update the current state).
@@ -9,13 +9,22 @@ import { PROPERTY_TYPES, type Category, type PropertyQuery, type PropertyType } 
 export const PAGE_SIZE = 9;
 
 export const PRICE_MIN = 0;
-export const PRICE_MAX = 10_000;
-export const PRICE_STEP = 100;
 
+/**
+ * The price filter for each listing type: monthly rent up to $10k, or a sale
+ * price up to $5M (the top of the slider means "and up"). Browsing both types
+ * has no price filter, since one range can't fit both.
+ */
+export const PRICE_RANGES = {
+  RENT: { max: 10_000, step: 100, title: "Monthly rent", noun: "monthly rent" },
+  SALE: { max: 5_000_000, step: 25_000, title: "Price", noun: "price" },
+} as const satisfies Record<ListingType, { max: number; step: number; title: string; noun: string }>;
+
+// "price" sorts by rent for rentals and by sale price for homes for sale.
 export const SORT_OPTIONS = [
   { value: "newest", label: "Newest", sortBy: "createdAt", sortOrder: "desc" },
-  { value: "price-asc", label: "Price: low to high", sortBy: "rentAmount", sortOrder: "asc" },
-  { value: "price-desc", label: "Price: high to low", sortBy: "rentAmount", sortOrder: "desc" },
+  { value: "price-asc", label: "Price: low to high", sortBy: "price", sortOrder: "asc" },
+  { value: "price-desc", label: "Price: high to low", sortBy: "price", sortOrder: "desc" },
   { value: "largest", label: "Largest", sortBy: "area", sortOrder: "desc" },
 ] as const;
 
@@ -59,14 +68,15 @@ function positiveNumber(value: string) {
   return value !== "" && Number.isFinite(number) && number > 0 ? number : null;
 }
 
-export function readFilters(params: RawParams): BrowseFilters {
+/** `listingType` is the page's (fixed) type; without one, price filters are ignored. */
+export function readFilters(params: RawParams, listingType: ListingType | null = null): BrowseFilters {
   const propertyType = first(params.propertyType).toUpperCase();
   const categoryId = first(params.categoryId);
   const sort = first(params.sort);
   const page = Number.parseInt(first(params.page), 10);
 
-  let minPrice = positiveNumber(first(params.minPrice));
-  let maxPrice = positiveNumber(first(params.maxPrice));
+  let minPrice = listingType ? positiveNumber(first(params.minPrice)) : null;
+  let maxPrice = listingType ? positiveNumber(first(params.maxPrice)) : null;
   // The backend rejects min > max; swap instead of failing.
   if (minPrice !== null && maxPrice !== null && minPrice > maxPrice) {
     [minPrice, maxPrice] = [maxPrice, minPrice];
@@ -96,10 +106,11 @@ export function readFilters(params: RawParams): BrowseFilters {
   };
 }
 
-export function toPropertyQuery(filters: BrowseFilters): PropertyQuery {
+export function toPropertyQuery(filters: BrowseFilters, listingType: ListingType | null = null): PropertyQuery {
   const sort = SORT_OPTIONS.find((option) => option.value === filters.sort) ?? SORT_OPTIONS[0];
 
   return {
+    listingType: listingType ?? undefined,
     searchTerm: filters.searchTerm || undefined,
     city: filters.city || undefined,
     division: filters.division || undefined,

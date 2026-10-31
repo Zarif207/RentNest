@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ArrowRight, MapPin } from "lucide-react";
+import { ArrowLeft, ArrowRight, BadgeCheck, MapPin, Signature } from "lucide-react";
 import { AmenityChip } from "@/components/properties/details/amenity-chip";
 import { BookingCard } from "@/components/properties/details/booking-card";
 import { PropertyGallery } from "@/components/properties/details/property-gallery";
 import { PropertyLocation } from "@/components/properties/details/property-location";
 import { LandlordCard } from "@/components/properties/details/landlord-card";
+import { MortgageCalculator } from "@/components/properties/details/mortgage-calculator";
+import { SaleCard } from "@/components/properties/details/sale-card";
 import { PropertyReviews } from "@/components/properties/details/property-reviews";
 import { FavoriteButton } from "@/components/properties/favorite-button";
 import { PropertyGrid } from "@/components/properties/property-grid";
@@ -15,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getPublicMapProperties, getPublicProperties, getPublicProperty, getPublicPropertyReviews, orNull } from "@/lib/data/public";
 import { formatDate, formatEnumLabel, formatNumber } from "@/lib/format";
+import { LISTING_LABELS, LISTING_PATHS } from "@/lib/listing";
 import { formatLocation } from "@/lib/us-states";
 import { isUuid } from "@/lib/utils";
 import type { PropertyWithRelations } from "@/types";
@@ -71,12 +74,16 @@ export async function generateMetadata({
   };
 }
 
-/** Up to three other homes: same city first, then the same type, then the newest. */
+/**
+ * Up to three other homes of the same listing type (rent or sale): same city
+ * first, then the same property type, then the newest.
+ */
 async function loadSimilar(property: PropertyWithRelations) {
+  const { listingType } = property;
   const [sameCity, sameType, newest] = await Promise.all([
-    orNull(getPublicProperties({ city: property.city, limit: 4 })),
-    orNull(getPublicProperties({ propertyType: property.propertyType, limit: 4 })),
-    orNull(getPublicProperties({ limit: 4, sortBy: "createdAt", sortOrder: "desc" })),
+    orNull(getPublicProperties({ listingType, city: property.city, limit: 4 })),
+    orNull(getPublicProperties({ listingType, propertyType: property.propertyType, limit: 4 })),
+    orNull(getPublicProperties({ listingType, limit: 4, sortBy: "createdAt", sortOrder: "desc" })),
   ]);
   const seen = new Set([property.id]);
   const similar: PropertyWithRelations[] = [];
@@ -101,6 +108,8 @@ export default async function PropertyDetailsPage({ params }: PageProps<"/proper
   ]);
   const location = formatLocation(property.city, property.division);
   const typeLabel = formatEnumLabel(property.propertyType);
+  const forSale = property.listingType === "SALE";
+  const browsePath = LISTING_PATHS[property.listingType];
 
   const details = [
     { label: "Property type", value: typeLabel },
@@ -113,14 +122,15 @@ export default async function PropertyDetailsPage({ params }: PageProps<"/proper
     <PageShell width="full">
       <header className="mx-auto max-w-7xl space-y-5 px-4 sm:px-6 lg:px-8">
         <Link
-          href="/properties"
+          href={browsePath}
           className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
-          <ArrowLeft className="size-4" aria-hidden /> Back to properties
+          <ArrowLeft className="size-4" aria-hidden /> Back to homes {forSale ? "for sale" : "for rent"}
         </Link>
         <div className="flex flex-wrap items-end justify-between gap-6">
           <div className="max-w-4xl space-y-4">
             <div className="flex flex-wrap gap-2">
+              <Badge>{LISTING_LABELS[property.listingType]}</Badge>
               <Badge variant="gold">{typeLabel}</Badge>
               {/* Seeded categories often match the type ("Villa"); skip the duplicate. */}
               {property.category && property.category.name.toLowerCase() !== typeLabel.toLowerCase() && (
@@ -138,6 +148,29 @@ export default async function PropertyDetailsPage({ params }: PageProps<"/proper
           <FavoriteButton propertyId={property.id} title={property.title} size="lg" />
         </div>
       </header>
+
+      {forSale && property.availabilityStatus !== "AVAILABLE" && (
+        <div className="mx-auto mt-6 max-w-7xl px-4 sm:px-6 lg:px-8">
+          <p
+            role="status"
+            className="flex items-start gap-3 rounded-3xl border border-gold/40 bg-gold/10 px-5 py-4 text-sm"
+          >
+            {property.availabilityStatus === "SOLD" ? (
+              <BadgeCheck className="mt-0.5 size-5 shrink-0 text-bronze" aria-hidden />
+            ) : (
+              <Signature className="mt-0.5 size-5 shrink-0 text-bronze" aria-hidden />
+            )}
+            <span>
+              <span className="font-medium">
+                {property.availabilityStatus === "SOLD" ? "Sold." : "Under contract."}
+              </span>{" "}
+              {property.availabilityStatus === "SOLD"
+                ? "This home has been sold and is no longer taking offers."
+                : "A buyer's deposit has been paid, so this home isn't taking new offers."}
+            </span>
+          </p>
+        </div>
+      )}
 
       {/* Full-bleed: the gallery runs nearly edge to edge. */}
       <div className="mt-8 px-2 sm:px-3">
@@ -178,6 +211,18 @@ export default async function PropertyDetailsPage({ params }: PageProps<"/proper
             )}
           </section>
 
+          {forSale && Number(property.salePrice) > 0 && (
+            <section aria-labelledby="mortgage-heading" className="space-y-5">
+              <div className="space-y-1">
+                <h2 id="mortgage-heading" className="text-3xl font-medium tracking-tighter">
+                  Estimate your payment
+                </h2>
+                <p className="text-muted-foreground">Try your own down payment, rate and term.</p>
+              </div>
+              <MortgageCalculator price={Number(property.salePrice)} />
+            </section>
+          )}
+
           <section aria-labelledby="location-heading" className="space-y-5">
             <div className="space-y-1">
               <h2 id="location-heading" className="text-3xl font-medium tracking-tighter">
@@ -203,7 +248,7 @@ export default async function PropertyDetailsPage({ params }: PageProps<"/proper
         </div>
 
         <aside className="lg:sticky lg:top-24">
-          <BookingCard property={property} />
+          {forSale ? <SaleCard property={property} /> : <BookingCard property={property} />}
         </aside>
       </div>
 
@@ -215,10 +260,12 @@ export default async function PropertyDetailsPage({ params }: PageProps<"/proper
               <h2 id="similar-heading" className="text-4xl leading-[1.02] font-medium tracking-tighter sm:text-5xl">
                 Similar <SerifAccent>homes</SerifAccent>
               </h2>
-              <p className="text-muted-foreground">Same city first, then the same type, then the newest listings.</p>
+              <p className="text-muted-foreground">
+                Other homes {forSale ? "for sale" : "for rent"}: same city first, then the same type, then the newest.
+              </p>
             </div>
             <Button asChild variant="outline">
-              <Link href="/properties">
+              <Link href={browsePath}>
                 View all <ArrowRight data-icon="inline-end" />
               </Link>
             </Button>

@@ -27,6 +27,7 @@ import { useLandlordReviews } from "@/hooks/use-landlord-reviews";
 import { useLandlordAccess } from "@/hooks/use-landlord-access";
 import { useDecideRequest, useLandlordRequests } from "@/hooks/use-landlord-requests";
 import { formatCurrency, formatDate, formatNumber } from "@/lib/format";
+import { listingPriceLabel } from "@/lib/listing";
 import { formatLocation } from "@/lib/us-states";
 import { cn } from "@/lib/utils";
 import type { LandlordBooking, PropertyWithRelations } from "@/types";
@@ -69,7 +70,7 @@ function PropertyObject({ property }: { property: PropertyWithRelations }) {
       <div className="space-y-1 px-2 pt-3 pb-1">
         <div className="flex items-start justify-between gap-2">
           <p className="truncate text-sm font-medium">{property.title}</p>
-          <p className="shrink-0 text-sm font-semibold">{formatCurrency(property.rentAmount)}</p>
+          <p className="shrink-0 text-sm font-semibold">{listingPriceLabel(property)}</p>
         </div>
         <p className="truncate text-xs text-muted-foreground">{formatLocation(property.city, property.division)}</p>
         <label className="flex items-center justify-between gap-2 pt-2 text-xs text-muted-foreground">

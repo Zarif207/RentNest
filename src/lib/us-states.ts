@@ -58,6 +58,16 @@ const CODE_BY_NAME = new Map<string, string>(
   US_STATES.map(({ code, name }) => [name.toLowerCase(), code]),
 );
 
+/** "New York" → "new-york" (state landing page URLs). */
+export function stateSlug(name: string) {
+  return name.trim().toLowerCase().replace(/\s+/g, "-");
+}
+
+/** "new-york" → "New York"; null when the slug isn't a US state. */
+export function stateFromSlug(slug: string) {
+  return US_STATES.find((state) => stateSlug(state.name) === slug.toLowerCase())?.name ?? null;
+}
+
 /** "texas" or "TX" → "Texas"; null when the text isn't a US state. */
 export function matchUsState(text: string) {
   const key = text.trim().toLowerCase();

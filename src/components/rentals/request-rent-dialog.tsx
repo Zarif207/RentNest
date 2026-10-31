@@ -38,7 +38,7 @@ import {
 type RequestRentDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  property: { id: string; title: string; rentAmount: string };
+  property: { id: string; title: string; rentAmount: string | null };
   onSent: () => void;
 };
 
@@ -58,7 +58,7 @@ export function RequestRentDialog({ open, onOpenChange, property, onSent }: Requ
     name: ["moveInDate", "leaseMonths"],
   });
 
-  const monthlyRent = Number(property.rentAmount);
+  const monthlyRent = Number(property.rentAmount ?? 0);
   const total = leaseMonths ? monthlyRent * leaseMonths : null;
 
   const onSubmit = (values: RentalRequestValues) => {

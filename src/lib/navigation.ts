@@ -6,13 +6,11 @@ export type NavLink = {
   label: string;
 };
 
-/**
- * Left of the navbar's roof peak. Buy and Sell join these once their pages
- * exist (PLAN-FINAL C1); until then Rent is the browse page.
- */
+/** Left of the navbar's roof peak. Sell joins these with its landing page (PLAN-FINAL C3). */
 export const PRIMARY_NAV_LINKS: NavLink[] = [
   { href: "/", label: "Home" },
-  { href: "/properties", label: "Rent" },
+  { href: "/rent", label: "Rent" },
+  { href: "/buy", label: "Buy" },
 ];
 
 /** Right of the peak (inside "More" between 1024 and 1279 px). */

@@ -133,7 +133,7 @@ export function Hero({ suggestions, cards }: { suggestions: HeroSuggestion[]; ca
         <div className="relative z-10 mx-auto flex min-h-[inherit] max-w-7xl flex-col justify-end px-4 pt-28 pb-20 sm:px-6 md:pb-24 lg:px-8 lg:pt-42 lg:pb-16">
           <div data-hero-copy className="max-w-4xl">
             <p data-enter className="text-xs font-medium tracking-[0.3em] text-white/75 uppercase">
-              Rental homes across the United States
+              Homes to rent and buy across the US
             </p>
             <h1 className="mt-5 text-[clamp(3.25rem,9vw,7.5rem)] leading-[0.92] font-medium tracking-tighter">
               <SplitText as="span" trigger="load" ready={ready} text="Live somewhere" className="block" />
@@ -155,8 +155,8 @@ export function Hero({ suggestions, cards }: { suggestions: HeroSuggestion[]; ca
           <div data-hero-copy className="max-w-4xl">
             {/* Not animated: it's the LCP text on phones, so it paints right away (under the intro curtain). */}
             <p className="mt-4 max-w-lg text-lg text-white/80 md:mt-6">
-              Rental homes in cities across the US. Request in minutes and pay securely once your
-              landlord says yes.
+              Rent or buy in cities across the US. Request a rental or make an offer in minutes, and pay
+              securely when the answer is yes.
             </p>
             <div data-enter className="mt-8">
               <HeroSearch suggestions={suggestions} />

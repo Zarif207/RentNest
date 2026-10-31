@@ -1,4 +1,4 @@
-import type { AvailabilityStatus, PropertyType } from "./enums";
+import type { AvailabilityStatus, ListingType, PropertyType } from "./enums";
 
 /** A saved property (POST /favorites). */
 export type Favorite = {
@@ -15,8 +15,10 @@ export type FavoriteWithProperty = Favorite & {
     title: string;
     city: string;
     division: string;
-    /** Prisma Decimal, serialized as a string. */
-    rentAmount: string;
+    listingType: ListingType;
+    /** Prisma Decimals as strings; only the one for the listing type is set. */
+    rentAmount: string | null;
+    salePrice: string | null;
     availabilityStatus: AvailabilityStatus;
     propertyType: PropertyType;
     bedrooms: number;

@@ -7,7 +7,7 @@ import { HomeFaq, type FaqItem } from "@/components/home/home-faq";
 import { HomeStatement } from "@/components/home/home-statement";
 import { HowItWorks } from "@/components/home/how-it-works";
 import type { MockListing } from "@/components/home/how-it-works-mocks";
-import { ListingsMarquee } from "@/components/home/listings-marquee";
+import { LatestListings } from "@/components/home/latest-listings";
 import { LiveStats } from "@/components/home/live-stats";
 import { PlaceExplorer, type ExplorePlace } from "@/components/home/place-explorer";
 import { PropertyTypes, type TypeTile } from "@/components/home/property-types";
@@ -24,8 +24,9 @@ import {
   orNull,
 } from "@/lib/data/public";
 import { formatCurrency, formatEnumLabel } from "@/lib/format";
+import { listingPriceLabel } from "@/lib/listing";
 import { toLiveStats } from "@/lib/live-stats";
-import { formatLocation, US_STATES } from "@/lib/us-states";
+import { formatLocation, stateSlug, US_STATES } from "@/lib/us-states";
 import {
   HOMEPAGE_SECTIONS,
   PROPERTY_TYPES,
@@ -83,7 +84,7 @@ function toHeroCards(properties: PropertyWithRelations[]): HeroCard[] {
       id: property.id,
       title: property.title,
       image: property.images[0],
-      price: `${formatCurrency(property.rentAmount)}/mo`,
+      price: listingPriceLabel(property),
       location: formatLocation(property.city, property.division),
     }));
 }
@@ -94,7 +95,7 @@ function toFeaturedHomes(properties: PropertyWithRelations[]): FeaturedHome[] {
     id: property.id,
     title: property.title,
     image: property.images[0] ?? null,
-    price: `${formatCurrency(property.rentAmount)}/mo`,
+    price: listingPriceLabel(property),
     location: formatLocation(property.city, property.division),
     type: formatEnumLabel(property.propertyType),
     bedrooms: property.bedrooms,
@@ -103,22 +104,29 @@ function toFeaturedHomes(properties: PropertyWithRelations[]): FeaturedHome[] {
   }));
 }
 
-/** State tiles from the admin's picks, with live counts and starting prices. */
+/**
+ * State tiles from the admin's picks, with live counts and starting prices
+ * for both listing types. A tile opens the state's rent page, or its buy
+ * page when the state only has homes for sale.
+ */
 function toExplorePlaces(items: HomepageSettings["states"]["items"]): ExplorePlace[] {
   return items.map((item) => {
     const code = US_STATES.find((state) => state.name === item.state)?.code;
-    const homes = `${item.propertyCount} ${item.propertyCount === 1 ? "home" : "homes"} available`;
+    const parts = [
+      item.rent.count > 0 &&
+        `${item.rent.count} for rent${item.rent.startingPrice ? ` from ${formatCurrency(item.rent.startingPrice)}/mo` : ""}`,
+      item.sale.count > 0 &&
+        `${item.sale.count} for sale${item.sale.startingPrice ? ` from ${formatCurrency(item.sale.startingPrice)}` : ""}`,
+    ].filter(Boolean);
+    const onlyForSale = item.rent.count === 0 && item.sale.count > 0;
     return {
       key: item.state,
       name: item.state,
       caption: code ? `${code} · United States` : "United States",
-      detail:
-        item.propertyCount === 0 || item.startingPrice === null
-          ? "No homes available right now"
-          : `${homes} · from ${formatCurrency(item.startingPrice)}/mo`,
+      detail: parts.length ? parts.join(" · ") : "No homes available right now",
       image: item.imageUrl,
-      href: `/properties?division=${encodeURIComponent(item.state)}`,
-      hasHomes: item.propertyCount > 0,
+      href: `${onlyForSale ? "/buy" : "/rent"}/${stateSlug(item.state)}`,
+      hasHomes: parts.length > 0,
     };
   });
 }
@@ -139,26 +147,38 @@ function toTypeTiles(items: HomepageSettings["propertyTypes"]["items"]): TypeTil
  * backend uses, built from the listings already fetched (newest first).
  */
 function fallbackHomepage(properties: PropertyWithRelations[]): HomepageSettings {
-  const byState = new Map<string, { count: number; minRent: number | null; image: string | null }>();
+  type Stats = { count: number; min: number | null };
+  const byState = new Map<string, { rent: Stats; sale: Stats; image: string | null }>();
   for (const property of properties) {
-    const entry = byState.get(property.division) ?? { count: 0, minRent: null, image: null };
+    const entry = byState.get(property.division) ?? {
+      rent: { count: 0, min: null },
+      sale: { count: 0, min: null },
+      image: null,
+    };
     entry.image ??= property.images[0] ?? null;
     if (property.availabilityStatus === "AVAILABLE") {
-      entry.count += 1;
-      const rent = Number(property.rentAmount);
-      entry.minRent = entry.minRent === null ? rent : Math.min(entry.minRent, rent);
+      const stats = property.listingType === "SALE" ? entry.sale : entry.rent;
+      const price = Number(property.listingType === "SALE" ? property.salePrice : property.rentAmount);
+      stats.count += 1;
+      stats.min = stats.min === null ? price : Math.min(stats.min, price);
     }
     byState.set(property.division, entry);
   }
+  const toListingStats = (stats: Stats) => ({
+    count: stats.count,
+    startingPrice: stats.min === null ? null : String(stats.min),
+  });
   const states = [...byState.entries()]
     .filter(([, entry]) => entry.image)
-    .sort((a, b) => b[1].count - a[1].count)
+    .sort((a, b) => b[1].rent.count + b[1].sale.count - (a[1].rent.count + a[1].sale.count))
     .slice(0, 8)
     .map(([state, entry]) => ({
       state,
       imageUrl: entry.image as string,
-      propertyCount: entry.count,
-      startingPrice: entry.minRent === null ? null : String(entry.minRent),
+      propertyCount: entry.rent.count,
+      startingPrice: toListingStats(entry.rent).startingPrice,
+      rent: toListingStats(entry.rent),
+      sale: toListingStats(entry.sale),
     }));
 
   return {
@@ -171,6 +191,8 @@ function fallbackHomepage(properties: PropertyWithRelations[]): HomepageSettings
         type,
         imageUrl: properties.find((property) => property.propertyType === type)?.images[0] ?? null,
         propertyCount: properties.filter((property) => property.propertyType === type).length,
+        rentCount: properties.filter((p) => p.propertyType === type && p.listingType === "RENT").length,
+        saleCount: properties.filter((p) => p.propertyType === type && p.listingType === "SALE").length,
       })),
     },
     latest: { enabled: true, count: 8, properties: properties.slice(0, 8) },
@@ -182,7 +204,9 @@ function fallbackHomepage(properties: PropertyWithRelations[]): HomepageSettings
 
 /** The real listing the how-it-works mocks are dressed with. */
 function toMockListing(properties: PropertyWithRelations[]): MockListing {
-  const property = properties.find((item) => item.images.length > 0) ?? properties[0];
+  // The mocks walk through renting, so they use a rental.
+  const rentals = properties.filter((item) => item.listingType === "RENT");
+  const property = rentals.find((item) => item.images.length > 0) ?? rentals[0];
   if (!property) return { title: "Your next home", image: null, rent: 2400, location: "Denver, CO" };
   return {
     title: property.title,
@@ -252,15 +276,35 @@ function toFaq(properties: PropertyWithRelations[]): FaqItem[] {
         "Requests can't be withdrawn from the app yet. Nothing is charged while a request is pending, though, and if you don't pay an approved request, it simply never becomes active.",
     },
     {
-      question: "How do landlords join RentNest?",
+      question: "How do offers work when buying?",
       answer:
-        "Landlords sign up with a landlord account and can list homes right away. Admins can see every account and listing, and block any account that breaks the rules.",
+        "On a home for sale, make an offer with your price and how you'll pay. The owner accepts it, declines it or counters with another price, and you can accept the counter. Offers with no reply for 7 days expire.",
     },
     {
-      question: "Which cities can I rent in?",
+      question: "What is the deposit?",
+      answer:
+        "Once a price is agreed, you pay an earnest-money deposit through Stripe Checkout: 1% of the agreed price, at least $500. Paying it puts the home under contract with you. The full price is never charged on RentNest.",
+    },
+    {
+      question: "Can I withdraw an offer?",
+      answer:
+        "Yes, at any time before you pay the deposit, including after the owner accepts or counters. Once the deposit is paid, contact the owner, since deposits aren't refunded automatically.",
+    },
+    {
+      question: "How long does buying take?",
+      answer:
+        "On RentNest it's as fast as you and the owner reply: offer, answer, deposit, and the owner marks the sale complete. Each step must happen within 7 days or the offer expires. The legal closing itself happens outside the app.",
+    },
+    {
+      question: "How do landlords join RentNest?",
+      answer:
+        "Landlords and owners sign up with a landlord account, and an admin approves it before they can list homes for rent or for sale. Admins can see every account and listing, and block any account that breaks the rules.",
+    },
+    {
+      question: "Where are homes listed?",
       answer: cityList
-        ? `Homes are currently listed in ${cityList}. New cities appear as landlords list them.`
-        : "New cities appear as landlords list homes across the US.",
+        ? `Homes are currently listed in ${cityList}. New cities appear as landlords and owners list them.`
+        : "New cities appear as landlords and owners list homes across the US.",
     },
   ];
 }
@@ -277,7 +321,17 @@ export default async function HomePage() {
   // The admin's homepage config (revalidated every 60 s and on save).
   const settings = homepage ?? fallbackHomepage(listings);
   const { voices, summary } = await loadVoices(listings);
-  const featuredHomes = toFeaturedHomes(settings.featured.properties);
+  // Featured and latest, split by listing type for their Rent | Buy switches.
+  // The admin's picks come first; with no sale picks, Buy shows the newest homes for sale.
+  const byType = (properties: PropertyWithRelations[], type: "RENT" | "SALE") =>
+    properties.filter((property) => property.listingType === type);
+  const newestForSale = byType(listings, "SALE").filter((property) => property.availabilityStatus === "AVAILABLE");
+  const featuredRent = toFeaturedHomes(byType(settings.featured.properties, "RENT"));
+  const featuredSalePicks = byType(settings.featured.properties, "SALE");
+  const featuredSale = toFeaturedHomes(featuredSalePicks.length > 0 ? featuredSalePicks : newestForSale.slice(0, 8));
+  const latestCount = settings.latest.count;
+  const latestRent = listings.length ? byType(listings, "RENT").slice(0, latestCount) : byType(settings.latest.properties, "RENT");
+  const latestSale = listings.length ? byType(listings, "SALE").slice(0, latestCount) : byType(settings.latest.properties, "SALE");
   const places = toExplorePlaces(settings.states.items);
   const mockListing = toMockListing(settings.featured.properties.length > 0 ? settings.featured.properties : listings);
   const stats = toLiveStats(all, available);
@@ -287,8 +341,8 @@ export default async function HomePage() {
     statement: () => <HomeStatement />,
     stats: () => (stats.length > 0 ? <LiveStats stats={stats} /> : null),
     featured: () =>
-      settings.featured.enabled && featuredHomes.length > 0 ? (
-        <FeaturedCollection homes={featuredHomes} title={settings.featured.title} />
+      settings.featured.enabled && featuredRent.length + featuredSale.length > 0 ? (
+        <FeaturedCollection rentHomes={featuredRent} saleHomes={featuredSale} title={settings.featured.title} />
       ) : null,
     states: () =>
       settings.states.enabled && places.length > 0 ? (
@@ -330,23 +384,24 @@ export default async function HomePage() {
         </section>
       ) : null,
     latest: () =>
-      settings.latest.enabled && settings.latest.properties.length > 0 ? (
+      settings.latest.enabled && latestRent.length + latestSale.length > 0 ? (
         <section className="overflow-hidden py-20 sm:py-28">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <FadeIn>
-              <SectionHeading
-                eyebrow="Latest listings"
-                title={
-                  <>
-                    Fresh on the market, <SerifAccent>just for you</SerifAccent>
-                  </>
-                }
-              />
-            </FadeIn>
-          </div>
-          <div className="mt-16 sm:mt-24">
-            <ListingsMarquee properties={settings.latest.properties} />
-          </div>
+          <LatestListings
+            rent={latestRent}
+            sale={latestSale}
+            heading={
+              <FadeIn>
+                <SectionHeading
+                  eyebrow="Latest listings"
+                  title={
+                    <>
+                      Fresh on the market, <SerifAccent>just for you</SerifAccent>
+                    </>
+                  }
+                />
+              </FadeIn>
+            }
+          />
         </section>
       ) : null,
     howItWorks: () => <HowItWorks listing={mockListing} />,
@@ -399,7 +454,7 @@ export default async function HomePage() {
                   Questions, <SerifAccent>answered</SerifAccent>
                 </>
               }
-              description="Straight answers about requests, payments and listings."
+              description="Straight answers about renting, buying, payments and listings."
             />
           </FadeIn>
           <FadeIn>

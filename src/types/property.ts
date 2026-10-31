@@ -1,6 +1,6 @@
 import type { PaginationQuery } from "./api";
 import type { CategorySummary } from "./category";
-import type { AvailabilityStatus, PropertyType } from "./enums";
+import type { AvailabilityStatus, ListingType, PropertyType } from "./enums";
 import type { UserSummary } from "./user";
 
 /** A bare property row (create/update responses and nested in rentals). */
@@ -11,8 +11,11 @@ export type Property = {
   address: string;
   city: string;
   division: string;
-  /** Prisma Decimal, serialized as a string. */
-  rentAmount: string;
+  listingType: ListingType;
+  /** Monthly rent for RENT listings (Prisma Decimal as a string); null for SALE. */
+  rentAmount: string | null;
+  /** Asking price for SALE listings (Prisma Decimal as a string); null for RENT. */
+  salePrice: string | null;
   bedrooms: number;
   bathrooms: number;
   area: number;
@@ -35,14 +38,17 @@ export type PropertyWithRelations = Property & {
   owner: UserSummary;
 };
 
+/** "price" sorts by rent for RENT and by sale price for SALE. */
 export type PropertySortBy =
   | "createdAt"
+  | "price"
   | "rentAmount"
   | "area"
   | "bedrooms"
   | "title";
 
 export type PropertyQuery = PaginationQuery<PropertySortBy> & {
+  listingType?: ListingType;
   searchTerm?: string;
   city?: string;
   division?: string;
@@ -80,8 +86,12 @@ export type MapProperty = {
   title: string;
   latitude: number;
   longitude: number;
-  /** Prisma Decimal, serialized as a string. */
-  rentAmount: string;
+  listingType: ListingType;
+  /** Prisma Decimals as strings; only the one for the listing type is set. */
+  rentAmount: string | null;
+  salePrice: string | null;
+  /** Whichever of the two applies. */
+  price: string | null;
   city: string;
   division: string;
   availabilityStatus: AvailabilityStatus;

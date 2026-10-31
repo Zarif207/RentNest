@@ -3,10 +3,13 @@
 import { createContext, useCallback, useContext, useMemo, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { readFilters, type BrowseFilters } from "@/lib/property-filters";
+import type { ListingType } from "@/types";
 
 type ParamUpdates = Record<string, string | null>;
 
 type BrowseContextValue = {
+  /** The page's listing type (/rent, /buy), or null when browsing both. */
+  listingType: ListingType | null;
   filters: BrowseFilters;
   /** True while a filter change is loading; the results dim meanwhile. */
   isPending: boolean;
@@ -17,15 +20,21 @@ type BrowseContextValue = {
 
 const BrowseContext = createContext<BrowseContextValue | null>(null);
 
-export function BrowseProvider({ children }: { children: React.ReactNode }) {
+export function BrowseProvider({
+  listingType,
+  children,
+}: {
+  listingType: ListingType | null;
+  children: React.ReactNode;
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
 
   const filters = useMemo(
-    () => readFilters(Object.fromEntries(searchParams.entries())),
-    [searchParams],
+    () => readFilters(Object.fromEntries(searchParams.entries()), listingType),
+    [searchParams, listingType],
   );
 
   const navigate = useCallback(
@@ -61,8 +70,8 @@ export function BrowseProvider({ children }: { children: React.ReactNode }) {
   }, [navigate, searchParams]);
 
   const value = useMemo(
-    () => ({ filters, isPending, setParams, clearAll }),
-    [filters, isPending, setParams, clearAll],
+    () => ({ listingType, filters, isPending, setParams, clearAll }),
+    [listingType, filters, isPending, setParams, clearAll],
   );
 
   return <BrowseContext.Provider value={value}>{children}</BrowseContext.Provider>;

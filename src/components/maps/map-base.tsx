@@ -55,9 +55,18 @@ export function ThemedTiles() {
   );
 }
 
-/** Small ink dot with a champagne ring (styled in globals.css). */
+/** A rental: small champagne dot with an ink ring (styled in globals.css). */
 export const pinIcon = L.divIcon({
   className: "rn-pin",
+  html: "<span></span>",
+  iconSize: [16, 16],
+  iconAnchor: [8, 8],
+  popupAnchor: [0, -8],
+});
+
+/** A home for sale: ink dot with a white ring. */
+export const salePinIcon = L.divIcon({
+  className: "rn-pin rn-pin-sale",
   html: "<span></span>",
   iconSize: [16, 16],
   iconAnchor: [8, 8],

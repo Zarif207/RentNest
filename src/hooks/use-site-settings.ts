@@ -20,7 +20,7 @@ export function useHomepageConfig() {
 export function usePropertyStates() {
   return useQuery({
     queryKey: queryKeys.propertyStates,
-    queryFn: propertiesService.getStates,
+    queryFn: () => propertiesService.getStates(),
     staleTime: 5 * 60 * 1000,
   });
 }

@@ -1,15 +1,18 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, ArrowUpRight, Bath, BedDouble, House, Ruler } from "lucide-react";
 import { FavoriteButton } from "@/components/properties/favorite-button";
+import { ListingSwitch } from "@/components/properties/listing-switch";
 import { Button } from "@/components/ui/button";
 import { useIsDesktop, useMotionOk } from "@/hooks/use-motion";
 import { formatNumber } from "@/lib/format";
 import { gsap, ScrollTrigger, useGSAP } from "@/lib/gsap";
+import { LISTING_PATHS } from "@/lib/listing";
 import { cn } from "@/lib/utils";
+import type { ListingType } from "@/types";
 
 /** A real featured listing, flattened on the server for this client section. */
 export type FeaturedHome = {
@@ -31,9 +34,21 @@ const pad = (n: number) => String(n).padStart(2, "0");
  * horizontally as you scroll down; cards swing in from the right on the Y
  * axis, flatten at the center and soften as they leave. Under 768px and with
  * reduced motion it's a native swipe carousel with arrow buttons. Both modes
- * drive the same progress bar and "01 / 08" counter.
+ * drive the same progress bar and "01 / 08" counter. A Rent | Buy switch
+ * appears when there are homes of both kinds.
  */
-export function FeaturedCollection({ homes, title }: { homes: FeaturedHome[]; title?: string | null }) {
+export function FeaturedCollection({
+  rentHomes,
+  saleHomes,
+  title,
+}: {
+  rentHomes: FeaturedHome[];
+  saleHomes: FeaturedHome[];
+  title?: string | null;
+}) {
+  const [mode, setMode] = useState<ListingType>(rentHomes.length > 0 ? "RENT" : "SALE");
+  const homes = mode === "RENT" ? rentHomes : saleHomes;
+  const showSwitch = rentHomes.length > 0 && saleHomes.length > 0;
   const sectionRef = useRef<HTMLElement>(null);
   const trackRef = useRef<HTMLUListElement>(null);
   const barRef = useRef<HTMLSpanElement>(null);
@@ -98,8 +113,15 @@ export function FeaturedCollection({ homes, title }: { homes: FeaturedHome[]; ti
       window.addEventListener("load", refresh);
       return () => window.removeEventListener("load", refresh);
     },
-    { scope: sectionRef, dependencies: [pinned, total] },
+    // `mode` too: switching swaps every card, so the scene is rebuilt.
+    { scope: sectionRef, dependencies: [pinned, total, mode] },
   );
+
+  const switchMode = (next: ListingType) => {
+    setMode(next);
+    trackRef.current?.scrollTo({ left: 0 });
+    setProgress(0, 0);
+  };
 
   const onNativeScroll = (event: React.UIEvent<HTMLUListElement>) => {
     const el = event.currentTarget;
@@ -136,7 +158,10 @@ export function FeaturedCollection({ homes, title }: { homes: FeaturedHome[]; ti
               {title ?? "Homes worth the move"}
             </h2>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            {showSwitch && (
+              <ListingSwitch value={mode} onChange={switchMode} label="Featured homes to rent or buy" />
+            )}
             {!pinned && (
               <>
                 <Button variant="outline" size="icon" aria-label="Previous home" onClick={() => scrollByCard(-1)}>
@@ -148,7 +173,7 @@ export function FeaturedCollection({ homes, title }: { homes: FeaturedHome[]; ti
               </>
             )}
             <Button asChild variant="outline">
-              <Link href="/properties">
+              <Link href={LISTING_PATHS[mode]}>
                 View all <ArrowRight data-icon="inline-end" />
               </Link>
             </Button>

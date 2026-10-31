@@ -24,7 +24,8 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { useAdminProperties } from "@/hooks/use-admin";
 import { useHomepageConfig, usePropertyStates, useSaveHomepageConfig } from "@/hooks/use-site-settings";
-import { formatCurrency, formatDateTime, formatEnumLabel } from "@/lib/format";
+import { formatDateTime, formatEnumLabel } from "@/lib/format";
+import { listingPriceLabel } from "@/lib/listing";
 import { formatLocation } from "@/lib/us-states";
 import { cn } from "@/lib/utils";
 import {
@@ -169,7 +170,7 @@ function PropertyListField({
                   <p className="truncate text-sm font-medium">{property?.title ?? "Listing no longer available"}</p>
                   <p className="truncate text-xs text-muted-foreground">
                     {property
-                      ? `${formatLocation(property.city, property.division)} · ${formatCurrency(property.rentAmount)}/mo`
+                      ? `${formatLocation(property.city, property.division)} · ${listingPriceLabel(property)}`
                       : "It won't show on the homepage. Remove it or pick another."}
                   </p>
                 </div>

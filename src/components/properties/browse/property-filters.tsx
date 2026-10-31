@@ -19,6 +19,7 @@ import { cn } from "@/lib/utils";
 import { PROPERTY_TYPES, type Category } from "@/types";
 import { useBrowse } from "./browse-context";
 import { PriceRange } from "./price-range";
+import { PRICE_RANGES } from "@/lib/property-filters";
 
 const ANY = "any";
 
@@ -88,7 +89,7 @@ function FilterSection({
 
 /** Filters update the results live (URL params); there's no Apply button. */
 export function PropertyFilters({ categories, amenities }: FilterOptions) {
-  const { filters, setParams } = useBrowse();
+  const { listingType, filters, setParams } = useBrowse();
   const id = useId();
 
   const commitSearch = useCallback((value: string) => setParams({ searchTerm: value }), [setParams]);
@@ -101,7 +102,7 @@ export function PropertyFilters({ categories, amenities }: FilterOptions) {
     setParams({ amenities: next.join(",") });
   };
 
-  const rentActive = filters.minPrice !== null || filters.maxPrice !== null;
+  const priceActive = filters.minPrice !== null || filters.maxPrice !== null;
 
   return (
     <div>
@@ -187,9 +188,18 @@ export function PropertyFilters({ categories, amenities }: FilterOptions) {
         </Select>
       </FilterSection>
 
-      <FilterSection title="Monthly rent" activeCount={rentActive ? 1 : 0}>
-        <PriceRange />
-      </FilterSection>
+      {/* One price scale per listing type, so browsing both has no price filter. */}
+      {listingType ? (
+        <FilterSection title={PRICE_RANGES[listingType].title} activeCount={priceActive ? 1 : 0}>
+          <PriceRange listingType={listingType} />
+        </FilterSection>
+      ) : (
+        <FilterSection title="Price">
+          <p className="text-sm text-muted-foreground">
+            Rent and sale prices use different scales. Pick Rent or Buy above to filter by price.
+          </p>
+        </FilterSection>
+      )}
 
       <FilterSection title="Amenities" activeCount={filters.amenities.length} defaultOpen={filters.amenities.length > 0}>
         <ul className="grid grid-cols-2 gap-x-3 gap-y-2.5 lg:grid-cols-1">
@@ -215,7 +225,13 @@ export function PropertyFilters({ categories, amenities }: FilterOptions) {
         <div className="flex items-center justify-between gap-3">
           <Label htmlFor={`${id}-available`} className="flex-col items-start gap-0.5">
             <span>Available only</span>
-            <span className="text-xs font-normal text-muted-foreground">Hide rented homes</span>
+            <span className="text-xs font-normal text-muted-foreground">
+              {listingType === "RENT"
+                ? "Hide rented homes"
+                : listingType === "SALE"
+                  ? "Hide homes under contract"
+                  : "Hide rented and under-contract homes"}
+            </span>
           </Label>
           <Switch
             id={`${id}-available`}

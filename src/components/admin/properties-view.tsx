@@ -13,7 +13,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAdminProperties } from "@/hooks/use-admin";
 import { useUrlParams } from "@/hooks/use-url-params";
-import { formatCurrency, formatDate, formatEnumLabel } from "@/lib/format";
+import { formatDate, formatEnumLabel } from "@/lib/format";
+import { listingPriceLabel } from "@/lib/listing";
 import {
   AVAILABILITY_STATUSES,
   PROPERTY_TYPES,
@@ -47,7 +48,7 @@ const columns: DataTableColumn<PropertyWithRelations>[] = [
   {
     key: "rent",
     header: "Rent",
-    cell: (property) => <span className="font-semibold">{formatCurrency(property.rentAmount)}/mo</span>,
+    cell: (property) => <span className="font-semibold">{listingPriceLabel(property)}</span>,
   },
   {
     key: "status",

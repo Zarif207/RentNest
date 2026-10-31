@@ -17,7 +17,8 @@ import { Button } from "@/components/ui/button";
 import { useAuth, useLogout } from "@/hooks/use-auth";
 import { siteSettingsService } from "@/lib/api/site-settings";
 import { roleHome } from "@/lib/auth";
-import { formatCurrency, formatEnumLabel } from "@/lib/format";
+import { formatEnumLabel } from "@/lib/format";
+import { listingPriceLabel } from "@/lib/listing";
 import {
   isActiveLink,
   PRIMARY_NAV_LINKS,
@@ -95,7 +96,7 @@ function FeaturedHome({ enabled }: { enabled: boolean }) {
           <span className="text-xs font-medium tracking-[0.2em] text-bronze uppercase">Featured home</span>
           <span className="mt-1 block truncate font-medium">{property.title}</span>
           <span className="block truncate text-sm text-muted-foreground">
-            {formatCurrency(property.rentAmount)}/mo · {formatLocation(property.city, property.division)}
+            {listingPriceLabel(property)} · {formatLocation(property.city, property.division)}
           </span>
         </span>
         <ArrowUpRight

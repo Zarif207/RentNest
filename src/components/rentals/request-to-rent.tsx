@@ -14,7 +14,8 @@ type RequestToRentProps = {
   property: {
     id: string;
     title: string;
-    rentAmount: string;
+    /** Always set on rentals, which are the only homes this is shown for. */
+    rentAmount: string | null;
     availabilityStatus: AvailabilityStatus;
   };
 };

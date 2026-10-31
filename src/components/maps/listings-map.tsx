@@ -6,8 +6,16 @@ import { useRouter } from "next/navigation";
 import L from "leaflet";
 import "leaflet.markercluster";
 import { MapContainer, Marker, Popup, useMap } from "react-leaflet";
-import { FitUnitedStates, focusIcon, pinIcon, ThemedTiles, US_BOUNDS, ZOOM_SNAP } from "@/components/maps/map-base";
-import { formatCurrency } from "@/lib/format";
+import {
+  FitUnitedStates,
+  focusIcon,
+  pinIcon,
+  salePinIcon,
+  ThemedTiles,
+  US_BOUNDS,
+  ZOOM_SNAP,
+} from "@/components/maps/map-base";
+import { listingPriceLabel } from "@/lib/listing";
 import imageLoader from "@/lib/image-loader";
 import { formatLocation } from "@/lib/us-states";
 import type { MapProperty } from "@/types";
@@ -31,7 +39,7 @@ function popupContent(pin: MapProperty, navigate: (href: string) => void) {
   title.textContent = pin.title;
   const meta = document.createElement("p");
   meta.className = "rn-popup-meta";
-  meta.textContent = `${formatCurrency(pin.rentAmount)}/mo · ${formatLocation(pin.city, pin.division)}`;
+  meta.textContent = `${listingPriceLabel(pin)} · ${formatLocation(pin.city, pin.division)}`;
   const link = document.createElement("a");
   link.className = "rn-popup-link";
   link.href = href;
@@ -63,7 +71,11 @@ function ClusterLayer({ pins }: { pins: MapProperty[] }) {
         }),
     });
     for (const pin of pins) {
-      const marker = L.marker([pin.latitude, pin.longitude], { icon: pinIcon, title: pin.title, alt: pin.title });
+      const marker = L.marker([pin.latitude, pin.longitude], {
+        icon: pin.listingType === "SALE" ? salePinIcon : pinIcon,
+        title: pin.title,
+        alt: pin.title,
+      });
       marker.bindPopup(() => popupContent(pin, (href) => router.push(href)), {
         className: "rn-popup",
         minWidth: 220,
@@ -98,10 +110,32 @@ function FocusView({ focus }: { focus: MapProperty | null }) {
   return null;
 }
 
+/** What the pin colors mean; sits over the map's bottom-left corner. */
+function MapLegend({ showFocus }: { showFocus: boolean }) {
+  const items = [
+    { swatch: "rn-swatch", label: "For rent" },
+    { swatch: "rn-swatch rn-swatch-sale", label: "For sale" },
+    ...(showFocus ? [{ swatch: "rn-swatch rn-swatch-focus", label: "This home" }] : []),
+  ];
+  return (
+    <ul
+      aria-label="Map legend"
+      className="pointer-events-none absolute bottom-3 left-3 z-1000 flex flex-wrap gap-x-3 gap-y-1.5 rounded-2xl border border-border bg-background/90 px-3 py-2 text-xs font-medium shadow-lg shadow-black/10 backdrop-blur-md"
+    >
+      {items.map((item) => (
+        <li key={item.label} className="flex items-center gap-1.5">
+          <span aria-hidden className={`${item.swatch} size-3! border-2!`} />
+          {item.label}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 /**
- * The US with every listing (clustered) and, when given, this property as a
- * larger red pin with its popup open. Used on the details page and in its
- * full-screen dialog.
+ * The US with every listing (clustered; rentals and homes for sale in their
+ * own colors) and, when given, this property as a larger red pin with its
+ * popup open. Used on the details page and in its full-screen dialog.
  */
 export default function ListingsMap({
   pins,
@@ -116,29 +150,32 @@ export default function ListingsMap({
   const others = focus ? pins.filter((pin) => pin.id !== focus.id) : pins;
 
   return (
-    <MapContainer bounds={US_BOUNDS} minZoom={3} zoomSnap={ZOOM_SNAP} scrollWheelZoom={scrollWheelZoom} className="size-full">
-      <ThemedTiles />
-      <FitUnitedStates />
-      <ClusterLayer pins={others} />
-      {focus && (
-        <Marker
-          position={[focus.latitude, focus.longitude]}
-          icon={focusIcon}
-          zIndexOffset={1000}
-          title={focus.title}
-          alt={focus.title}
-          eventHandlers={{ add: (event) => event.target.openPopup() }}
-        >
-          <Popup className="rn-popup" autoPan={false}>
-            <div className="rn-popup-card">
-              <p className="rn-popup-eyebrow">This home</p>
-              <p className="rn-popup-title">{focus.title}</p>
-              <p className="rn-popup-meta">{formatLocation(focus.city, focus.division)}</p>
-            </div>
-          </Popup>
-        </Marker>
-      )}
-      <FocusView focus={focus} />
-    </MapContainer>
+    <>
+      <MapContainer bounds={US_BOUNDS} minZoom={3} zoomSnap={ZOOM_SNAP} scrollWheelZoom={scrollWheelZoom} className="size-full">
+        <ThemedTiles />
+        <FitUnitedStates />
+        <ClusterLayer pins={others} />
+        {focus && (
+          <Marker
+            position={[focus.latitude, focus.longitude]}
+            icon={focusIcon}
+            zIndexOffset={1000}
+            title={focus.title}
+            alt={focus.title}
+            eventHandlers={{ add: (event) => event.target.openPopup() }}
+          >
+            <Popup className="rn-popup" autoPan={false}>
+              <div className="rn-popup-card">
+                <p className="rn-popup-eyebrow">This home</p>
+                <p className="rn-popup-title">{focus.title}</p>
+                <p className="rn-popup-meta">{formatLocation(focus.city, focus.division)}</p>
+              </div>
+            </Popup>
+          </Marker>
+        )}
+        <FocusView focus={focus} />
+      </MapContainer>
+      <MapLegend showFocus={Boolean(focus)} />
+    </>
   );
 }

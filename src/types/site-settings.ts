@@ -23,6 +23,8 @@ export const HOMEPAGE_SECTIONS = [
 
 export type HomepageSection = (typeof HOMEPAGE_SECTIONS)[number];
 
+export type ListingStats = { count: number; startingPrice: string | null };
+
 /** GET /site-settings/homepage: the admin's homepage config, resolved for rendering. */
 export type HomepageSettings = {
   hero: { properties: PropertyWithRelations[] };
@@ -32,14 +34,24 @@ export type HomepageSettings = {
     items: {
       state: string;
       imageUrl: string;
+      /** Same as rent.count / rent.startingPrice (kept for older clients). */
       propertyCount: number;
-      /** Lowest available rent (Prisma Decimal as a string), or null. */
       startingPrice: string | null;
+      /** Available listings of each type, with the lowest price (Decimal string) or null. */
+      rent: ListingStats;
+      sale: ListingStats;
     }[];
   };
   propertyTypes: {
     enabled: boolean;
-    items: { type: PropertyType; imageUrl: string | null; propertyCount: number }[];
+    items: {
+      type: PropertyType;
+      imageUrl: string | null;
+      /** Both listing types. */
+      propertyCount: number;
+      rentCount: number;
+      saleCount: number;
+    }[];
   };
   latest: { enabled: boolean; count: number; properties: PropertyWithRelations[] };
   sectionOrder: HomepageSection[];

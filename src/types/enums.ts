@@ -13,8 +13,12 @@ export type LandlordStatus = (typeof LANDLORD_STATUSES)[number];
 export const PROPERTY_TYPES = ["APARTMENT", "HOUSE", "STUDIO", "VILLA"] as const;
 export type PropertyType = (typeof PROPERTY_TYPES)[number];
 
-export const AVAILABILITY_STATUSES = ["AVAILABLE", "RENTED"] as const;
+/** Rentals go AVAILABLE → RENTED; homes for sale AVAILABLE → UNDER_CONTRACT → SOLD. */
+export const AVAILABILITY_STATUSES = ["AVAILABLE", "RENTED", "UNDER_CONTRACT", "SOLD"] as const;
 export type AvailabilityStatus = (typeof AVAILABILITY_STATUSES)[number];
+
+export const LISTING_TYPES = ["RENT", "SALE"] as const;
+export type ListingType = (typeof LISTING_TYPES)[number];
 
 export const BOOKING_STATUSES = [
   "PENDING",

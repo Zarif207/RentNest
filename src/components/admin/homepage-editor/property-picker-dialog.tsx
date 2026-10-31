@@ -17,7 +17,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAdminProperties } from "@/hooks/use-admin";
 import { usePropertyStates } from "@/hooks/use-site-settings";
-import { formatCurrency, formatEnumLabel } from "@/lib/format";
+import { formatEnumLabel } from "@/lib/format";
+import { listingPriceLabel } from "@/lib/listing";
 import { formatLocation } from "@/lib/us-states";
 import { cn } from "@/lib/utils";
 import { PROPERTY_TYPES, type PropertyType } from "@/types";
@@ -154,7 +155,7 @@ export function PropertyPickerDialog({ open, onOpenChange, title, selected, max,
                       <span className="block p-3">
                         <span className="block truncate text-sm font-medium">{property.title}</span>
                         <span className="block truncate text-xs text-muted-foreground">
-                          {formatLocation(property.city, property.division)} · {formatCurrency(property.rentAmount)}/mo
+                          {formatLocation(property.city, property.division)} · {listingPriceLabel(property)}
                         </span>
                       </span>
                     </button>

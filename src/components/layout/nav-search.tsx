@@ -44,7 +44,7 @@ export function NavSearch({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label="Search homes" className={cn("rounded-full", className)}>
+        <Button variant="ghost" size="icon" aria-label="Open search" className={cn("rounded-full", className)}>
           <Search />
         </Button>
       </PopoverTrigger>

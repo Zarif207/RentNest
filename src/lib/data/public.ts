@@ -4,7 +4,7 @@ import { ApiError, getErrorMessage, isApiError } from "@/lib/api/client";
 import { propertiesService } from "@/lib/api/properties";
 import { reviewsService } from "@/lib/api/reviews";
 import { siteSettingsService } from "@/lib/api/site-settings";
-import type { PropertyQuery } from "@/types";
+import type { ListingType, PropertyQuery } from "@/types";
 
 // Cached reads for the public, server-rendered pages. With Cache Components,
 // `"use cache"` + cacheLife replaces fetch's `next: { revalidate: 60 }`.
@@ -74,11 +74,11 @@ async function cachedHomepage() {
   return settle(siteSettingsService.getHomepage());
 }
 
-async function cachedPropertyStates() {
+async function cachedPropertyStates(listingType?: ListingType) {
   "use cache";
   cacheLife(PUBLIC_CACHE);
   cacheTag(PROPERTIES_TAG);
-  return settle(propertiesService.getStates());
+  return settle(propertiesService.getStates(listingType));
 }
 
 async function cachedMapProperties() {
@@ -118,8 +118,8 @@ export async function getPublicHomepage() {
   return unwrap(await cachedHomepage());
 }
 
-export async function getPublicPropertyStates() {
-  return unwrap(await cachedPropertyStates());
+export async function getPublicPropertyStates(listingType?: ListingType) {
+  return unwrap(await cachedPropertyStates(listingType));
 }
 
 export async function getPublicMapProperties() {

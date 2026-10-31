@@ -1,19 +1,28 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpRight, Bath, BedDouble, House, MapPin, Ruler } from "lucide-react";
+import { ArrowUpRight, Bath, BedDouble, House, MapPin, Ruler, Tag } from "lucide-react";
 import { TiltCard } from "@/components/motion/tilt-card";
 import { FavoriteButton } from "@/components/properties/favorite-button";
-import { formatCurrency, formatNumber } from "@/lib/format";
+import { formatNumber } from "@/lib/format";
+import { availabilityLabel, formatListingPrice, LISTING_LABELS, pricePerSqft } from "@/lib/listing";
 import { formatLocation } from "@/lib/us-states";
 import { cn } from "@/lib/utils";
-import type { Property } from "@/types";
+import type { AvailabilityStatus, Property } from "@/types";
+
+// Status dot colors: sage when it can be had, ochre under contract, stone otherwise.
+const STATUS_DOT: Record<AvailabilityStatus, string> = {
+  AVAILABLE: "bg-[#7f9a6b]",
+  UNDER_CONTRACT: "bg-[#b8893b]",
+  RENTED: "bg-muted-foreground",
+  SOLD: "bg-muted-foreground",
+};
 
 const PROPERTY_CARD_IMAGE_SIZES =
   "(min-width: 1280px) 400px, (min-width: 768px) 50vw, 100vw";
 
 /**
- * Listing card: photo with zoom, gold price tag, availability and a
- * favorite heart. The whole card is one link (stretched over
+ * Listing card: photo with zoom, gold price tag (monthly rent, or the sale
+ * price), "For rent"/"For sale" and status chips, and a favorite heart. The whole card is one link (stretched over
  * the card) with the heart layered above it; it tilts in 3D on desktop.
  */
 export function PropertyCard({
@@ -25,7 +34,8 @@ export function PropertyCard({
   eager?: boolean;
 }) {
   const image = property.images[0];
-  const available = property.availabilityStatus === "AVAILABLE";
+  const price = formatListingPrice(property);
+  const perSqft = pricePerSqft(property);
 
   return (
     <TiltCard max={5} className="h-full rounded-3xl">
@@ -45,16 +55,18 @@ export function PropertyCard({
               <House className="size-10" aria-hidden />
             </div>
           )}
-          <span className="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-background/85 px-3 py-1 text-xs font-medium backdrop-blur-md">
-            <span
-              aria-hidden
-              className={cn("size-1.5 rounded-full", available ? "bg-[#7f9a6b]" : "bg-muted-foreground")}
-            />
-            {available ? "Available" : "Rented"}
-          </span>
+          <div className="absolute top-3 left-3 flex flex-wrap gap-1.5 pr-14">
+            <span className="rounded-full bg-foreground/85 px-3 py-1 text-xs font-medium text-background backdrop-blur-md">
+              {LISTING_LABELS[property.listingType]}
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-background/85 px-3 py-1 text-xs font-medium backdrop-blur-md">
+              <span aria-hidden className={cn("size-1.5 rounded-full", STATUS_DOT[property.availabilityStatus])} />
+              {availabilityLabel(property.availabilityStatus)}
+            </span>
+          </div>
           <span className="absolute bottom-3 left-3 rounded-full bg-gold px-3.5 py-1.5 text-sm font-semibold text-gold-foreground shadow-lg shadow-black/20">
-            {formatCurrency(property.rentAmount)}
-            <span className="font-normal opacity-80">/mo</span>
+            {price.amount}
+            {price.suffix && <span className="font-normal opacity-80">{price.suffix}</span>}
           </span>
         </div>
 
@@ -86,6 +98,12 @@ export function PropertyCard({
                 <Ruler className="size-4" aria-hidden />
                 {formatNumber(property.area)} sq ft
               </li>
+              {perSqft && (
+                <li className="flex items-center gap-1.5" title="Price per square foot">
+                  <Tag className="size-4" aria-hidden />
+                  {perSqft}
+                </li>
+              )}
             </ul>
             <ArrowUpRight
               aria-hidden

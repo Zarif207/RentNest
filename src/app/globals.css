@@ -302,22 +302,30 @@ html[data-intro-seen] [data-intro] {
 .dark .leaflet-container .leaflet-bar a.leaflet-disabled {
   color: var(--color-muted-foreground);
 }
-.rn-pin span {
+/* Map pins (and the legend's swatches): rentals champagne with an ink ring,
+   homes for sale ink with a white ring; this home is the red teardrop. */
+.rn-pin span,
+.rn-swatch {
   display: block;
   width: 16px;
   height: 16px;
   border-radius: 9999px;
-  background: #12100e;
-  border: 2.5px solid var(--color-gold);
+  background: var(--color-gold);
+  border: 2.5px solid #12100e;
   box-shadow: 0 2px 6px rgb(0 0 0 / 0.35);
   transition: transform 0.2s ease-out;
 }
 .rn-pin:hover span {
   transform: scale(1.25);
 }
-.dark .rn-pin span {
-  background: var(--color-gold);
-  border-color: #12100e;
+.rn-pin-sale span,
+.rn-swatch-sale {
+  background: #12100e;
+  border-color: #fff;
+}
+.rn-swatch-focus {
+  background: #d23b2a;
+  border-color: #fff;
 }
 .rn-pin-focus svg {
   width: 100%;

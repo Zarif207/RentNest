@@ -9,7 +9,8 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMyFavorites, useToggleFavorite } from "@/hooks/use-favorites";
-import { formatCurrency, formatNumber } from "@/lib/format";
+import { formatNumber } from "@/lib/format";
+import { availabilityLabel, formatListingPrice } from "@/lib/listing";
 import { formatLocation } from "@/lib/us-states";
 import { cn } from "@/lib/utils";
 import type { FavoriteWithProperty } from "@/types";
@@ -39,11 +40,13 @@ function SavedHomeCard({ favorite }: { favorite: FavoriteWithProperty }) {
         )}
         <span className="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-background/85 px-3 py-1 text-xs font-medium backdrop-blur-md">
           <span aria-hidden className={cn("size-1.5 rounded-full", available ? "bg-[#7f9a6b]" : "bg-muted-foreground")} />
-          {available ? "Available" : "Rented"}
+          {availabilityLabel(property.availabilityStatus)}
         </span>
         <span className="absolute bottom-3 left-3 rounded-full bg-gold px-3.5 py-1.5 text-sm font-semibold text-gold-foreground shadow-lg shadow-black/20">
-          {formatCurrency(property.rentAmount)}
-          <span className="font-normal opacity-80">/mo</span>
+          {formatListingPrice(property).amount}
+          {formatListingPrice(property).suffix && (
+            <span className="font-normal opacity-80">{formatListingPrice(property).suffix}</span>
+          )}
         </span>
       </div>
 
