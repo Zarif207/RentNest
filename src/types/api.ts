@@ -5,6 +5,8 @@ export type Meta = {
   limit: number;
   total: number;
   totalPage: number;
+  /** GET /notifications only: every unread notification, whatever the filter. */
+  unreadCount?: number;
 };
 
 export type ApiSuccess<T> = {

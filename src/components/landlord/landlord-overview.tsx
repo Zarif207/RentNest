@@ -10,6 +10,7 @@ import { PageHeader } from "@/components/dashboard/page-header";
 import { QueryError } from "@/components/dashboard/query-error";
 import { StatusPill } from "@/components/dashboard/status-badge";
 import { EarningsChart, monthlyEarnings } from "@/components/landlord/earnings-chart";
+import { RecentActivityCard } from "@/components/notifications/recent-activity-card";
 import { EmptyState } from "@/components/shared/empty-state";
 import { UserAvatar } from "@/components/shared/user-avatar";
 import { Button } from "@/components/ui/button";
@@ -284,6 +285,8 @@ export function LandlordOverview() {
             </ul>
           )}
         </BentoCard>
+
+        <RecentActivityCard role="LANDLORD" className="md:col-span-6 lg:col-span-12" />
       </BentoGrid>
 
       <ConfirmDialog

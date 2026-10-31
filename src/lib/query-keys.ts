@@ -3,6 +3,7 @@ import type {
   AdminUserQuery,
   BookingStatus,
   LandlordReviewQuery,
+  NotificationQuery,
   PropertyQuery,
 } from "@/types";
 
@@ -32,6 +33,10 @@ export const queryKeys = {
     all: ["favorites"] as const,
     ids: ["favorites", "ids"] as const,
     list: ["favorites", "list"] as const,
+  },
+  notifications: {
+    all: ["notifications"] as const,
+    list: (query: NotificationQuery = {}) => ["notifications", "list", query] as const,
   },
   payments: {
     all: ["payments"] as const,

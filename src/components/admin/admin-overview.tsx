@@ -19,6 +19,7 @@ import { PageHeader } from "@/components/dashboard/page-header";
 import { QueryError } from "@/components/dashboard/query-error";
 import { StatusPill } from "@/components/dashboard/status-badge";
 import { RoleBadge } from "@/components/dashboard/user-badges";
+import { RecentActivityCard } from "@/components/notifications/recent-activity-card";
 import { EmptyState } from "@/components/shared/empty-state";
 import { UserAvatar } from "@/components/shared/user-avatar";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -214,6 +215,8 @@ export function AdminOverview() {
             </ul>
           )}
         </BentoCard>
+
+        <RecentActivityCard role="ADMIN" className="md:col-span-6 lg:col-span-12" />
       </BentoGrid>
     </div>
   );

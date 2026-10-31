@@ -1,160 +1,141 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Bell } from "lucide-react";
-import { StatusPill } from "@/components/dashboard/status-badge";
+import { useRouter } from "next/navigation";
+import { Bell, BellOff, CheckCheck } from "lucide-react";
+import { toast } from "sonner";
+import { QueryError } from "@/components/dashboard/query-error";
+import { NotificationItem } from "@/components/notifications/notification-item";
+import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useAdminRentals } from "@/hooks/use-admin";
-import { useLandlordRequests } from "@/hooks/use-landlord-requests";
-import { useMyPayments } from "@/hooks/use-payments";
-import { useMyRentals } from "@/hooks/use-rentals";
-import { formatCurrency, formatDate } from "@/lib/format";
-import type { BookingStatus, PaymentStatus, UserRole } from "@/types";
+import {
+  notificationsPath,
+  useMarkAllNotificationsRead,
+  useMarkNotificationRead,
+  useNotificationFeed,
+} from "@/hooks/use-notifications";
+import type { AppNotification, UserRole } from "@/types";
 
-type Notice = {
-  id: string;
-  text: string;
-  date: string;
-  status: BookingStatus | PaymentStatus;
-  href: string;
-};
+// More than this at once (e.g. after a long time away) gets one summary toast.
+const MAX_TOASTS = 2;
 
-const LIMIT = 6;
+/**
+ * Toasts notifications that arrive while the page is open. The first load
+ * only records what's already there, so a reload never replays old ones.
+ */
+function useArrivalToasts(notifications: AppNotification[] | undefined, role: UserRole) {
+  const router = useRouter();
+  // mutate is stable, so the effect doesn't re-run on every render.
+  const { mutate: markRead } = useMarkNotificationRead();
+  const seen = useRef<Set<string> | null>(null);
 
-const byNewest = (a: Notice, b: Notice) => b.date.localeCompare(a.date);
+  useEffect(() => {
+    if (!notifications) return;
+    if (!seen.current) {
+      seen.current = new Set(notifications.map((notification) => notification.id));
+      return;
+    }
+    const fresh = notifications.filter((notification) => !seen.current?.has(notification.id) && !notification.isRead);
+    notifications.forEach((notification) => seen.current?.add(notification.id));
+    if (fresh.length === 0) return;
 
-// One hook set per role: each list only exists for that role (others get 403).
-function useTenantNotices() {
-  const rentals = useMyRentals();
-  const payments = useMyPayments();
-  const notices: Notice[] = [
-    ...(rentals.data ?? []).map((rental) => ({
-      id: `r-${rental.id}`,
-      text: rental.property.title,
-      date: rental.updatedAt,
-      status: rental.bookingStatus,
-      href: "/dashboard/tenant/requests",
-    })),
-    ...(payments.data ?? []).map((payment) => ({
-      id: `p-${payment.id}`,
-      text: `Payment of ${formatCurrency(payment.amount)}`,
-      date: payment.updatedAt,
-      status: payment.paymentStatus,
-      href: "/dashboard/tenant/payments",
-    })),
-  ];
-  return {
-    notices: notices.sort(byNewest).slice(0, LIMIT),
-    // Approved requests are waiting on the tenant to pay.
-    actionable: (rentals.data ?? []).filter((rental) => rental.bookingStatus === "APPROVED").length,
-    isLoading: rentals.isLoading || payments.isLoading,
-  };
+    if (fresh.length > MAX_TOASTS) {
+      toast(`${fresh.length} new notifications`, {
+        action: { label: "View all", onClick: () => router.push(notificationsPath(role)) },
+      });
+      return;
+    }
+    for (const notification of fresh) {
+      const link = notification.link;
+      toast(notification.title, {
+        description: notification.message,
+        action: {
+          label: link ? "View" : "Mark read",
+          onClick: () => {
+            markRead(notification.id);
+            if (link) router.push(link);
+          },
+        },
+      });
+    }
+  }, [notifications, role, router, markRead]);
 }
 
-function useLandlordNotices() {
-  const requests = useLandlordRequests();
-  const notices = (requests.data ?? []).map((request) => ({
-    id: request.id,
-    text: `${request.tenant.name} · ${request.property.title}`,
-    date: request.updatedAt,
-    status: request.bookingStatus,
-    href: "/dashboard/landlord/requests",
-  }));
-  return {
-    notices: notices.sort(byNewest).slice(0, LIMIT),
-    actionable: (requests.data ?? []).filter((request) => request.bookingStatus === "PENDING").length,
-    isLoading: requests.isLoading,
-  };
-}
+/** Bell with the unread count; the dropdown lists the latest notifications. */
+export function NotificationsMenu({ role }: { role: UserRole }) {
+  const [open, setOpen] = useState(false);
+  const feed = useNotificationFeed();
+  const markAll = useMarkAllNotificationsRead();
+  const notifications = feed.data?.data;
+  const unread = feed.data?.meta.unreadCount ?? 0;
+  useArrivalToasts(notifications, role);
 
-function useAdminNotices() {
-  const rentals = useAdminRentals({ limit: LIMIT, sortBy: "createdAt", sortOrder: "desc" });
-  const notices = (rentals.data?.data ?? []).map((rental) => ({
-    id: rental.id,
-    text: `${rental.tenant.name} · ${rental.property.title}`,
-    date: rental.createdAt,
-    status: rental.bookingStatus,
-    href: "/dashboard/admin/rentals",
-  }));
-  return { notices, actionable: 0, isLoading: rentals.isLoading };
-}
-
-function NoticeList({ notices, isLoading }: { notices: Notice[]; isLoading: boolean }) {
-  if (isLoading) {
-    return (
-      <div className="space-y-3 p-4">
-        {Array.from({ length: 3 }, (_, index) => (
-          <Skeleton key={index} className="h-10 w-full rounded-xl" />
-        ))}
-      </div>
-    );
-  }
-  if (notices.length === 0) {
-    return <p className="p-6 text-center text-sm text-muted-foreground">Nothing new yet.</p>;
-  }
   return (
-    <ul className="max-h-96 overflow-y-auto p-2">
-      {notices.map((notice) => (
-        <li key={notice.id}>
-          <Link
-            href={notice.href}
-            className="flex items-center gap-3 rounded-2xl px-3 py-2.5 outline-none transition-colors hover:bg-muted focus-visible:bg-muted"
-          >
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium">{notice.text}</p>
-              <p className="text-xs text-muted-foreground">{formatDate(notice.date)}</p>
-            </div>
-            <StatusPill status={notice.status} />
-          </Link>
-        </li>
-      ))}
-    </ul>
-  );
-}
-
-function Menu({ notices, actionable, isLoading }: ReturnType<typeof useTenantNotices>) {
-  return (
-    <Popover>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
-        aria-label={actionable > 0 ? `Notifications, ${actionable} need attention` : "Notifications"}
+        aria-label={unread > 0 ? `Notifications, ${unread} unread` : "Notifications"}
         className="relative grid size-10 place-items-center rounded-full bg-foreground/5 outline-none transition-colors hover:bg-foreground/10 focus-visible:ring-3 focus-visible:ring-ring/50"
       >
         <Bell className="size-4.5" aria-hidden />
-        {actionable > 0 && (
-          <span className="absolute top-1.5 right-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-gold px-1 text-[10px] font-semibold text-gold-foreground">
-            {actionable}
+        {unread > 0 && (
+          <span className="absolute top-1 right-1 grid h-4 min-w-4 place-items-center rounded-full bg-gold px-1 text-[10px] font-semibold text-gold-foreground">
+            {unread > 99 ? "99+" : unread}
           </span>
         )}
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-[min(22rem,calc(100vw-1.5rem))] rounded-3xl p-0">
-        <div className="flex items-center justify-between border-b border-border px-5 py-4">
-          <p className="font-medium">Recent activity</p>
-          {actionable > 0 && <span className="text-xs text-bronze">{actionable} need attention</span>}
+      <PopoverContent align="end" className="w-[min(24rem,calc(100vw-1.5rem))] rounded-3xl p-0">
+        <div className="flex items-center justify-between gap-3 border-b border-border px-5 py-3.5">
+          <p className="font-medium">
+            Notifications
+            {unread > 0 && <span className="ml-2 text-sm font-normal text-muted-foreground">{unread} unread</span>}
+          </p>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="-mr-2"
+            disabled={unread === 0 || markAll.isPending}
+            onClick={() => markAll.mutate()}
+          >
+            <CheckCheck data-icon="inline-start" /> Mark all as read
+          </Button>
         </div>
-        <NoticeList notices={notices} isLoading={isLoading} />
+
+        {feed.isError ? (
+          <div className="p-4">
+            <QueryError error={feed.error} onRetry={() => void feed.refetch()} />
+          </div>
+        ) : !notifications ? (
+          <div className="space-y-3 p-4">
+            {Array.from({ length: 3 }, (_, index) => (
+              <Skeleton key={index} className="h-16 w-full rounded-2xl" />
+            ))}
+          </div>
+        ) : notifications.length === 0 ? (
+          <div className="flex flex-col items-center gap-2 px-6 py-10 text-center">
+            <BellOff className="size-6 text-muted-foreground" aria-hidden />
+            <p className="text-sm font-medium">You&apos;re all caught up</p>
+            <p className="text-sm text-muted-foreground">Requests, payments and approvals will show up here.</p>
+          </div>
+        ) : (
+          <ul data-lenis-prevent className="max-h-[min(26rem,60svh)] space-y-0.5 overflow-y-auto overscroll-contain p-2">
+            {notifications.map((notification) => (
+              <li key={notification.id}>
+                <NotificationItem notification={notification} onOpen={() => setOpen(false)} />
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <div className="border-t border-border p-2">
+          <Button asChild variant="ghost" className="w-full">
+            <Link href={notificationsPath(role)} onClick={() => setOpen(false)}>
+              View all notifications
+            </Link>
+          </Button>
+        </div>
       </PopoverContent>
     </Popover>
   );
-}
-
-function TenantMenu() {
-  return <Menu {...useTenantNotices()} />;
-}
-function LandlordMenu() {
-  return <Menu {...useLandlordNotices()} />;
-}
-function AdminMenu() {
-  return <Menu {...useAdminNotices()} />;
-}
-
-/**
- * Bell with recent request/payment activity from real data for the role.
- * UI only: there's no notifications API, so "unread" is the number of items
- * waiting on you (tenant: approved, unpaid; landlord: pending decisions).
- */
-export function NotificationsMenu({ role }: { role: UserRole }) {
-  if (role === "TENANT") return <TenantMenu />;
-  if (role === "LANDLORD") return <LandlordMenu />;
-  return <AdminMenu />;
 }

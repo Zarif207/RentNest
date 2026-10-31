@@ -3,6 +3,7 @@ export * from "./booking";
 export * from "./category";
 export * from "./enums";
 export * from "./favorite";
+export * from "./notification";
 export * from "./payment";
 export * from "./property";
 export * from "./review";
