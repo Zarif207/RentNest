@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader, SiteHeaderFallback } from "@/components/layout/site-header";
+import { WhatsAppButton } from "@/components/layout/whatsapp-button";
 import { IntroGate } from "@/components/motion/intro-gate";
 import { IntroPreloader } from "@/components/motion/intro-preloader";
 import { SmoothScrollProvider } from "@/components/motion/smooth-scroll-provider";
@@ -21,6 +22,10 @@ export default function PublicLayout({ children }: LayoutProps<"/">) {
         </main>
         <SiteFooter />
       </div>
+      {/* Reads the pathname, so it needs its own boundary on dynamic routes. */}
+      <Suspense fallback={null}>
+        <WhatsAppButton />
+      </Suspense>
     </SmoothScrollProvider>
   );
 }

@@ -57,6 +57,8 @@ export function BackToTop() {
     <Magnetic strength={0.35}>
       <button
         type="button"
+        // The floating WhatsApp button hides while this is on screen.
+        data-back-to-top
         onClick={() => smoothScrollTo(0)}
         className="group grid size-16 place-items-center rounded-full border border-white/20 text-white transition-colors outline-none hover:border-gold hover:bg-gold hover:text-gold-foreground focus-visible:ring-3 focus-visible:ring-gold/50"
       >
