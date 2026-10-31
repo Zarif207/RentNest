@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { SearchX } from "lucide-react";
+import { ApprovalGate } from "@/components/landlord/approval";
 import { PropertyForm } from "@/components/landlord/property-form";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { QueryError } from "@/components/dashboard/query-error";
@@ -50,10 +51,12 @@ export function EditPropertyView({ propertyId }: { propertyId: string }) {
   }
 
   return (
-    <div className="space-y-6">
-      <PageHeader title="Edit property" description={property.data.title} />
-      {/* key: start a fresh form if the listing is refetched with new data. */}
-      <PropertyForm key={property.data.updatedAt} property={property.data} />
-    </div>
+    <ApprovalGate>
+      <div className="space-y-6">
+        <PageHeader title="Edit property" description={property.data.title} />
+        {/* key: start a fresh form if the listing is refetched with new data. */}
+        <PropertyForm key={property.data.updatedAt} property={property.data} />
+      </div>
+    </ApprovalGate>
   );
 }

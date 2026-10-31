@@ -90,6 +90,11 @@ export function useAdminRentals(query: AdminRentalQuery) {
   });
 }
 
+/** Pending landlords: `meta.total` is the count, `data` the newest few. */
+export function usePendingLandlords(limit = 1) {
+  return useAdminUsers({ role: "LANDLORD", landlordStatus: "PENDING", limit, sortBy: "createdAt", sortOrder: "desc" });
+}
+
 type UsersSnapshot = [readonly unknown[], Paginated<User> | undefined][];
 
 /** Ban (BLOCKED) / unban (ACTIVE) with an instant badge change and rollback. */
@@ -122,6 +127,43 @@ export function useUpdateUserStatus() {
           : `${user.name} has been unbanned`,
       );
     },
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: usersKey });
+    },
+  });
+}
+
+/** Approve or reject a landlord: instant badge change, rollback on error. */
+export function useUpdateLandlordStatus() {
+  const queryClient = useQueryClient();
+  const usersKey = queryKeys.admin.users.all;
+
+  return useMutation({
+    mutationFn: ({ id, landlordStatus }: { id: string; landlordStatus: "APPROVED" | "REJECTED" }) =>
+      adminService.updateLandlordStatus(id, landlordStatus),
+    onMutate: async ({ id, landlordStatus }) => {
+      await queryClient.cancelQueries({ queryKey: usersKey });
+      const snapshot: UsersSnapshot = queryClient.getQueriesData({ queryKey: usersKey });
+      queryClient.setQueriesData<Paginated<User>>({ queryKey: usersKey }, (old) =>
+        old && {
+          ...old,
+          data: old.data.map((user) => (user.id === id ? { ...user, landlordStatus } : user)),
+        },
+      );
+      return { snapshot };
+    },
+    onError: (error, _variables, context) => {
+      context?.snapshot.forEach(([key, data]) => queryClient.setQueryData(key, data));
+      toast.error(getErrorMessage(error));
+    },
+    onSuccess: (user) => {
+      toast.success(
+        user.landlordStatus === "APPROVED"
+          ? `${user.name} is approved and can list properties now`
+          : `${user.name}'s landlord application was rejected`,
+      );
+    },
+    // Refetch so the Pending tab and its count drop the decided landlord.
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: usersKey });
     },

@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { formatEnumLabel } from "@/lib/format";
-import type { UserRole, UserStatus } from "@/types";
+import type { LandlordStatus, UserRole, UserStatus } from "@/types";
 
 const ROLE_VARIANT = { ADMIN: "default", LANDLORD: "approved", TENANT: "secondary" } as const;
 
@@ -14,4 +14,10 @@ export function UserStatusBadge({ status }: { status: UserStatus }) {
       {status === "ACTIVE" ? "Active" : "Banned"}
     </Badge>
   );
+}
+
+const LANDLORD_VARIANT = { PENDING: "pending", APPROVED: "active", REJECTED: "rejected" } as const;
+
+export function LandlordStatusBadge({ status }: { status: LandlordStatus }) {
+  return <Badge variant={LANDLORD_VARIANT[status]}>{formatEnumLabel(status)}</Badge>;
 }

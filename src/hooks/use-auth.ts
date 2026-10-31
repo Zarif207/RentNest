@@ -47,7 +47,14 @@ export function useRegister() {
     },
     onSuccess: ({ accessToken, user }) => {
       setSession(accessToken, user);
-      toast.success(`Welcome to RentNest, ${user.name}`);
+      if (user.role === "LANDLORD") {
+        toast.success("Your landlord account was created", {
+          description: "An admin will review it shortly. You can explore your dashboard meanwhile.",
+          duration: 8000,
+        });
+      } else {
+        toast.success(`Welcome to RentNest, ${user.name}`);
+      }
     },
     onError: (error) => toast.error(getErrorMessage(error)),
   });

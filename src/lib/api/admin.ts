@@ -2,6 +2,7 @@ import type {
   AdminBooking,
   AdminRentalQuery,
   AdminUserQuery,
+  LandlordStatusUpdate,
   PropertyQuery,
   PropertyWithRelations,
   User,
@@ -18,6 +19,10 @@ export const adminService = {
   /** Ban (BLOCKED) or unban (ACTIVE) a user. */
   updateUserStatus: (id: string, userStatus: UserStatus) =>
     api.patch<UserStatusUpdate>(`/admin/users/${id}`, { userStatus }),
+
+  /** Approve or reject a landlord (takes effect on their next write request). */
+  updateLandlordStatus: (id: string, landlordStatus: "APPROVED" | "REJECTED") =>
+    api.patch<LandlordStatusUpdate>(`/admin/users/${id}/landlord-status`, { landlordStatus }),
 
   getProperties: (query?: PropertyQuery) =>
     api.getPaginated<PropertyWithRelations>("/admin/properties", { query }),

@@ -1,21 +1,22 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { Ban, Flag, Search, ShieldCheck, UserRound, Users } from "lucide-react";
+import { Ban, Check, Flag, Search, ShieldCheck, UserRound, Users, X } from "lucide-react";
 import { FilterPill } from "@/components/dashboard/bento";
 import { ConfirmDialog } from "@/components/dashboard/confirm-dialog";
 import { DataTable, type DataTableColumn } from "@/components/dashboard/data-table";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { QueryError } from "@/components/dashboard/query-error";
-import { RoleBadge, UserStatusBadge } from "@/components/dashboard/user-badges";
+import { LandlordStatusBadge, RoleBadge, UserStatusBadge } from "@/components/dashboard/user-badges";
 import { DebouncedInput } from "@/components/shared/debounced-input";
 import { PaginationNav } from "@/components/shared/pagination-nav";
 import { UserAvatar } from "@/components/shared/user-avatar";
 import { Button } from "@/components/ui/button";
-import { useAdminUsers, useUpdateUserStatus } from "@/hooks/use-admin";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAdminUsers, usePendingLandlords, useUpdateLandlordStatus, useUpdateUserStatus } from "@/hooks/use-admin";
 import { useAuth } from "@/hooks/use-auth";
 import { useUrlParams } from "@/hooks/use-url-params";
-import { formatDate, formatEnumLabel } from "@/lib/format";
+import { formatDate, formatEnumLabel, formatNumber } from "@/lib/format";
 import { USER_ROLES, USER_STATUSES, type AdminUserQuery, type User, type UserRole, type UserStatus } from "@/types";
 
 const ANY = "any";
@@ -34,6 +35,8 @@ function readQuery(params: URLSearchParams): Required<Pick<AdminUserQuery, "page
     searchTerm: params.get("searchTerm")?.trim() || undefined,
     role: role && USER_ROLES.includes(role) ? role : undefined,
     userStatus: userStatus && USER_STATUSES.includes(userStatus) ? userStatus : undefined,
+    // The "Pending landlords" tab (also the link in admins' notifications).
+    landlordStatus: params.get("landlordStatus") === "PENDING" ? "PENDING" : undefined,
     sortBy: sortBy && SORTABLE.includes(sortBy) ? sortBy : "createdAt",
     sortOrder: params.get("sortOrder") === "asc" ? "asc" : "desc",
     page: Number.isInteger(page) && page > 0 ? page : 1,
@@ -47,7 +50,11 @@ export function UsersView() {
 
   const users = useAdminUsers({ ...query, limit: PAGE_SIZE });
   const updateStatus = useUpdateUserStatus();
+  const updateLandlord = useUpdateLandlordStatus();
+  const pendingLandlords = usePendingLandlords();
+  const pendingCount = pendingLandlords.data?.meta.total ?? 0;
   const [target, setTarget] = useState<User | null>(null);
+  const [decision, setDecision] = useState<{ user: User; landlordStatus: "APPROVED" | "REJECTED" } | null>(null);
 
   const commitSearch = useCallback((value: string) => setParams({ searchTerm: value }), [setParams]);
 
@@ -84,6 +91,16 @@ export function UsersView() {
     { key: "phone", header: "Phone", cell: (user) => user.phone ?? <span className="text-muted-foreground">—</span> },
     { key: "role", header: "Role", cell: (user) => <RoleBadge role={user.role} /> },
     { key: "status", header: "Status", cell: (user) => <UserStatusBadge status={user.userStatus} /> },
+    {
+      key: "landlordStatus",
+      header: "Landlord status",
+      cell: (user) =>
+        user.role === "LANDLORD" && user.landlordStatus ? (
+          <LandlordStatusBadge status={user.landlordStatus} />
+        ) : (
+          <span className="text-muted-foreground">—</span>
+        ),
+    },
     { key: "joined", header: "Joined", sort: sortFor("createdAt"), cell: (user) => formatDate(user.createdAt) },
     {
       key: "actions",
@@ -92,8 +109,25 @@ export function UsersView() {
       cell: (user) => {
         const banned = user.userStatus === "BLOCKED";
         const busy = updateStatus.isPending && updateStatus.variables?.id === user.id;
+        const deciding = updateLandlord.isPending && updateLandlord.variables?.id === user.id;
+        const landlordStatus = user.role === "LANDLORD" ? user.landlordStatus : null;
         return (
-          <div className="flex justify-end">
+          <div className="flex flex-wrap justify-end gap-2">
+            {(landlordStatus === "PENDING" || landlordStatus === "REJECTED") && (
+              <Button size="sm" disabled={deciding} onClick={() => setDecision({ user, landlordStatus: "APPROVED" })}>
+                <Check data-icon="inline-start" /> Approve
+              </Button>
+            )}
+            {landlordStatus === "PENDING" && (
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={deciding}
+                onClick={() => setDecision({ user, landlordStatus: "REJECTED" })}
+              >
+                <X data-icon="inline-start" /> Reject
+              </Button>
+            )}
             <Button
               size="sm"
               variant={banned ? "outline" : "destructive"}
@@ -146,9 +180,32 @@ export function UsersView() {
     </>
   );
 
+  const approving = decision?.landlordStatus === "APPROVED";
+
   return (
     <div className="space-y-6">
-      <PageHeader title="Users" description="Search everyone on RentNest and ban or unban accounts." />
+      <PageHeader
+        title="Users"
+        description="Search everyone on RentNest, approve new landlords and ban or unban accounts."
+      />
+
+      <Tabs
+        value={query.landlordStatus === "PENDING" ? "pending" : "all"}
+        onValueChange={(value) => setParams({ landlordStatus: value === "pending" ? "PENDING" : null })}
+      >
+        <TabsList>
+          <TabsTrigger value="all">All users</TabsTrigger>
+          <TabsTrigger value="pending">
+            Pending landlords
+            {pendingCount > 0 && (
+              <span className="grid h-5 min-w-5 place-items-center rounded-full bg-gold px-1.5 text-[11px] font-semibold text-gold-foreground">
+                {formatNumber(pendingCount)}
+                <span className="sr-only"> waiting</span>
+              </span>
+            )}
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
 
       {users.isError ? (
         <QueryError error={users.error} onRetry={() => void users.refetch()} />
@@ -169,11 +226,14 @@ export function UsersView() {
             )}
             empty={{
               icon: Users,
-              title: "No users match",
-              description: "Try a different name or email, or clear the role and status filters.",
+              title: query.landlordStatus === "PENDING" ? "No landlords waiting" : "No users match",
+              description:
+                query.landlordStatus === "PENDING"
+                  ? "New landlord sign-ups show up here for approval."
+                  : "Try a different name or email, or clear the role and status filters.",
               action: (
                 <Button variant="outline" onClick={clear}>
-                  Clear filters
+                  {query.landlordStatus === "PENDING" ? "Show all users" : "Clear filters"}
                 </Button>
               ),
             }}
@@ -206,6 +266,23 @@ export function UsersView() {
             updateStatus.mutate({ id: target.id, userStatus: targetBanned ? "ACTIVE" : "BLOCKED" });
           }
           setTarget(null);
+        }}
+      />
+
+      <ConfirmDialog
+        open={Boolean(decision)}
+        onOpenChange={(open) => !open && setDecision(null)}
+        title={approving ? `Approve ${decision?.user.name}?` : `Reject ${decision?.user.name}?`}
+        description={
+          approving
+            ? "They'll be able to list properties and manage rental requests right away."
+            : "They won't be able to list properties or manage requests. You can approve them later."
+        }
+        confirmLabel={approving ? "Approve landlord" : "Reject landlord"}
+        destructive={!approving}
+        onConfirm={() => {
+          if (decision) updateLandlord.mutate({ id: decision.user.id, landlordStatus: decision.landlordStatus });
+          setDecision(null);
         }}
       />
     </div>

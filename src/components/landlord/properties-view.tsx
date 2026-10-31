@@ -11,7 +11,6 @@ import {
   LayoutGrid,
   List,
   Pencil,
-  Plus,
   Shapes,
   ToggleRight,
   Trash2,
@@ -26,6 +25,7 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { AddPropertyButton, ApprovalTooltip } from "@/components/landlord/approval";
 import { Switch } from "@/components/ui/switch";
 import {
   LANDLORD_PROPERTIES_PATH,
@@ -34,6 +34,7 @@ import {
   useToggleAvailability,
   type LandlordPropertyFilters,
 } from "@/hooks/use-landlord-properties";
+import { useLandlordAccess } from "@/hooks/use-landlord-access";
 import { formatCurrency, formatEnumLabel } from "@/lib/format";
 import { formatLocation } from "@/lib/us-states";
 import { cn } from "@/lib/utils";
@@ -94,6 +95,7 @@ export function PropertiesView() {
   const properties = useLandlordProperties(page, filters);
   const toggle = useToggleAvailability();
   const remove = useDeleteProperty();
+  const { canWrite } = useLandlordAccess();
   const [deleting, setDeleting] = useState<PropertyWithRelations | null>(null);
 
   const meta = properties.data?.meta;
@@ -106,24 +108,35 @@ export function PropertiesView() {
   };
 
   const availabilitySwitch = (property: PropertyWithRelations) => (
-    <Switch
-      checked={property.availabilityStatus === "AVAILABLE"}
-      onCheckedChange={(checked) => toggle.mutate({ id: property.id, status: checked ? "AVAILABLE" : "RENTED" })}
-      aria-label={`${property.title} is available`}
-    />
+    <ApprovalTooltip>
+      <Switch
+        checked={property.availabilityStatus === "AVAILABLE"}
+        disabled={!canWrite}
+        onCheckedChange={(checked) => toggle.mutate({ id: property.id, status: checked ? "AVAILABLE" : "RENTED" })}
+        aria-label={`${property.title} is available`}
+      />
+    </ApprovalTooltip>
   );
 
   const rowActions = (property: PropertyWithRelations) => (
-    <div className="flex justify-end gap-2">
-      <Button asChild size="sm" variant="outline">
-        <Link href={`${LANDLORD_PROPERTIES_PATH}/${property.id}/edit`}>
-          <Pencil data-icon="inline-start" /> Edit
-        </Link>
-      </Button>
-      <Button size="sm" variant="destructive" onClick={() => setDeleting(property)}>
-        <Trash2 data-icon="inline-start" /> Delete
-      </Button>
-    </div>
+    <ApprovalTooltip className="w-full justify-end">
+      <div className="flex justify-end gap-2">
+        {canWrite ? (
+          <Button asChild size="sm" variant="outline">
+            <Link href={`${LANDLORD_PROPERTIES_PATH}/${property.id}/edit`}>
+              <Pencil data-icon="inline-start" /> Edit
+            </Link>
+          </Button>
+        ) : (
+          <Button size="sm" variant="outline" disabled>
+            <Pencil data-icon="inline-start" /> Edit
+          </Button>
+        )}
+        <Button size="sm" variant="destructive" disabled={!canWrite} onClick={() => setDeleting(property)}>
+          <Trash2 data-icon="inline-start" /> Delete
+        </Button>
+      </div>
+    </ApprovalTooltip>
   );
 
   const columns: DataTableColumn<PropertyWithRelations>[] = [
@@ -156,11 +169,7 @@ export function PropertiesView() {
         Clear filters
       </Button>
     ) : (
-      <Button asChild>
-        <Link href={`${LANDLORD_PROPERTIES_PATH}/new`}>
-          <Plus data-icon="inline-start" /> Add property
-        </Link>
-      </Button>
+      <AddPropertyButton />
     ),
   };
 
@@ -192,11 +201,7 @@ export function PropertiesView() {
         title="My properties"
         description="Edit listings, switch availability and remove homes you no longer rent."
         actions={
-          <Button asChild>
-            <Link href={`${LANDLORD_PROPERTIES_PATH}/new`}>
-              <Plus data-icon="inline-start" /> Add property
-            </Link>
-          </Button>
+          <AddPropertyButton />
         }
       />
 

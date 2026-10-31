@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpRight, BarChart3, Building2, Check, Hourglass, House, Inbox, KeyRound, Plus, Star, X } from "lucide-react";
+import { ArrowUpRight, BarChart3, Building2, Check, Hourglass, House, Inbox, KeyRound, Star, X } from "lucide-react";
 import { BentoCard, BentoGrid, MetricCard, ProgressPair } from "@/components/dashboard/bento";
 import { ConfirmDialog } from "@/components/dashboard/confirm-dialog";
 import { PageHeader } from "@/components/dashboard/page-header";
@@ -14,6 +14,7 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { UserAvatar } from "@/components/shared/user-avatar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { AddPropertyButton, ApprovalTooltip } from "@/components/landlord/approval";
 import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/hooks/use-auth";
 import {
@@ -22,6 +23,7 @@ import {
   useToggleAvailability,
 } from "@/hooks/use-landlord-properties";
 import { useLandlordReviews } from "@/hooks/use-landlord-reviews";
+import { useLandlordAccess } from "@/hooks/use-landlord-access";
 import { useDecideRequest, useLandlordRequests } from "@/hooks/use-landlord-requests";
 import { formatCurrency, formatDate, formatNumber } from "@/lib/format";
 import { formatLocation } from "@/lib/us-states";
@@ -35,6 +37,7 @@ const OBJECT_COUNT = 3;
 /** Mini listing card: photo, status chip, price and a quick availability switch. */
 function PropertyObject({ property }: { property: PropertyWithRelations }) {
   const toggle = useToggleAvailability();
+  const { canWrite } = useLandlordAccess();
   const available = property.availabilityStatus === "AVAILABLE";
   return (
     <li className="flex flex-col overflow-hidden rounded-2xl bg-foreground/3 p-2">
@@ -52,13 +55,15 @@ function PropertyObject({ property }: { property: PropertyWithRelations }) {
         >
           {available ? "Available" : "Rented"}
         </span>
-        <Link
-          href={`${LANDLORD_PROPERTIES_PATH}/${property.id}/edit`}
-          aria-label={`Edit ${property.title}`}
-          className="absolute top-2 right-2 grid size-8 place-items-center rounded-full bg-foreground text-background transition-transform hover:scale-105"
-        >
-          <ArrowUpRight className="size-4" aria-hidden />
-        </Link>
+        {canWrite && (
+          <Link
+            href={`${LANDLORD_PROPERTIES_PATH}/${property.id}/edit`}
+            aria-label={`Edit ${property.title}`}
+            className="absolute top-2 right-2 grid size-8 place-items-center rounded-full bg-foreground text-background transition-transform hover:scale-105"
+          >
+            <ArrowUpRight className="size-4" aria-hidden />
+          </Link>
+        )}
       </div>
       <div className="space-y-1 px-2 pt-3 pb-1">
         <div className="flex items-start justify-between gap-2">
@@ -68,12 +73,14 @@ function PropertyObject({ property }: { property: PropertyWithRelations }) {
         <p className="truncate text-xs text-muted-foreground">{formatLocation(property.city, property.division)}</p>
         <label className="flex items-center justify-between gap-2 pt-2 text-xs text-muted-foreground">
           Listed as available
-          <Switch
-            checked={available}
-            disabled={toggle.isPending}
-            onCheckedChange={(checked) => toggle.mutate({ id: property.id, status: checked ? "AVAILABLE" : "RENTED" })}
-            aria-label={`${property.title} is available`}
-          />
+          <ApprovalTooltip>
+            <Switch
+              checked={available}
+              disabled={toggle.isPending || !canWrite}
+              onCheckedChange={(checked) => toggle.mutate({ id: property.id, status: checked ? "AVAILABLE" : "RENTED" })}
+              aria-label={`${property.title} is available`}
+            />
+          </ApprovalTooltip>
         </label>
       </div>
     </li>
@@ -86,6 +93,7 @@ export function LandlordOverview() {
   const requests = useLandlordRequests();
   const reviews = useLandlordReviews();
   const decide = useDecideRequest();
+  const { canWrite } = useLandlordAccess();
   const [rejecting, setRejecting] = useState<LandlordBooking | null>(null);
 
   const propertyList = properties.data?.data ?? [];
@@ -112,11 +120,7 @@ export function LandlordOverview() {
         title={user ? `Welcome back, ${user.name.split(" ")[0]}` : <Skeleton className="h-10 w-64" />}
         description="Your listings, requests and earnings at a glance."
         actions={
-          <Button asChild>
-            <Link href={`${LANDLORD_PROPERTIES_PATH}/new`}>
-              <Plus data-icon="inline-start" /> Add property
-            </Link>
-          </Button>
+          <AddPropertyButton />
         }
       />
 
@@ -210,11 +214,7 @@ export function LandlordOverview() {
               title="No properties yet"
               description="List your first home: photos, rent and amenities in a few minutes."
               action={
-                <Button asChild>
-                  <Link href={`${LANDLORD_PROPERTIES_PATH}/new`}>
-                    <Plus data-icon="inline-start" /> Add property
-                  </Link>
-                </Button>
+                <AddPropertyButton />
               }
             />
           ) : (
@@ -258,18 +258,25 @@ export function LandlordOverview() {
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-sm font-semibold">{formatCurrency(request.totalRent)}</p>
                     {request.bookingStatus === "PENDING" && (
-                      <div className="flex gap-2">
-                        <Button
-                          size="xs"
-                          disabled={decide.isPending}
-                          onClick={() => decide.mutate({ id: request.id, status: "APPROVED" })}
-                        >
-                          <Check /> Approve
-                        </Button>
-                        <Button size="xs" variant="outline" disabled={decide.isPending} onClick={() => setRejecting(request)}>
-                          <X /> Reject
-                        </Button>
-                      </div>
+                      <ApprovalTooltip>
+                        <div className="flex gap-2">
+                          <Button
+                            size="xs"
+                            disabled={decide.isPending || !canWrite}
+                            onClick={() => decide.mutate({ id: request.id, status: "APPROVED" })}
+                          >
+                            <Check /> Approve
+                          </Button>
+                          <Button
+                            size="xs"
+                            variant="outline"
+                            disabled={decide.isPending || !canWrite}
+                            onClick={() => setRejecting(request)}
+                          >
+                            <X /> Reject
+                          </Button>
+                        </div>
+                      </ApprovalTooltip>
                     )}
                   </div>
                 </li>

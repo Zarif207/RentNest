@@ -5,6 +5,7 @@ import {
   ArrowUpRight,
   Ban,
   Building2,
+  CircleCheck,
   ClipboardList,
   Hourglass,
   KeyRound,
@@ -21,10 +22,11 @@ import { RoleBadge } from "@/components/dashboard/user-badges";
 import { EmptyState } from "@/components/shared/empty-state";
 import { UserAvatar } from "@/components/shared/user-avatar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useAdminRentals, useAdminStats, useAdminUsers } from "@/hooks/use-admin";
+import { useAdminRentals, useAdminStats, useAdminUsers, usePendingLandlords } from "@/hooks/use-admin";
 import { formatCurrency, formatDate, formatNumber } from "@/lib/format";
 
 const RECENT = { limit: 5, sortBy: "createdAt", sortOrder: "desc" } as const;
+const PENDING_LANDLORDS_PATH = "/dashboard/admin/users?landlordStatus=PENDING";
 
 const QUICK_ACTIONS: { href: string; label: string; description: string; icon: LucideIcon }[] = [
   { href: "/dashboard/admin/users?userStatus=BLOCKED", label: "Banned users", description: "Review and unban", icon: Ban },
@@ -47,6 +49,7 @@ export function AdminOverview() {
   const stats = useAdminStats();
   const users = useAdminUsers(RECENT);
   const rentals = useAdminRentals(RECENT);
+  const pendingLandlords = usePendingLandlords(3);
   const { totals } = stats;
 
   const metrics = [
@@ -96,8 +99,50 @@ export function AdminOverview() {
           )}
         </BentoCard>
 
-        <BentoCard title="Quick actions" className="md:col-span-6 lg:col-span-7">
-          <ul className="grid gap-2 sm:grid-cols-2">
+        <BentoCard title="Awaiting approval" href={PENDING_LANDLORDS_PATH} className="md:col-span-6 lg:col-span-7">
+          {pendingLandlords.isError ? (
+            <QueryError error={pendingLandlords.error} onRetry={() => void pendingLandlords.refetch()} />
+          ) : pendingLandlords.isPending ? (
+            <ListSkeleton />
+          ) : pendingLandlords.data.meta.total === 0 ? (
+            <p className="flex items-center gap-2 text-sm text-muted-foreground">
+              <CircleCheck className="size-4 text-bronze" aria-hidden /> All caught up: no landlords waiting for approval.
+            </p>
+          ) : (
+            <div className="space-y-4">
+              <p className="flex items-baseline gap-2">
+                <span className="font-serif text-5xl leading-none lining-nums tabular-nums">
+                  {formatNumber(pendingLandlords.data.meta.total)}
+                </span>
+                <span className="text-sm text-muted-foreground">
+                  {pendingLandlords.data.meta.total === 1 ? "landlord is" : "landlords are"} waiting for approval
+                </span>
+              </p>
+              <ul className="space-y-1">
+                {pendingLandlords.data.data.map((user) => (
+                  <li key={user.id}>
+                    <Link
+                      href={PENDING_LANDLORDS_PATH}
+                      className="flex items-center gap-3 rounded-2xl p-2 outline-none transition-colors hover:bg-foreground/3 focus-visible:ring-3 focus-visible:ring-ring/50"
+                    >
+                      <UserAvatar name={user.name} className="size-9" />
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-medium">{user.name}</span>
+                        <span className="block truncate text-xs text-muted-foreground">
+                          {user.email} · signed up {formatDate(user.createdAt)}
+                        </span>
+                      </span>
+                      <span className="text-sm font-medium text-bronze">Review</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </BentoCard>
+
+        <BentoCard title="Quick actions" className="md:col-span-6 lg:col-span-12">
+          <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
             {QUICK_ACTIONS.map(({ href, label, description, icon: Icon }) => (
               <li key={href}>
                 <Link

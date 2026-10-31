@@ -9,8 +9,10 @@ import { PropertyCell } from "@/components/dashboard/property-cell";
 import { QueryError } from "@/components/dashboard/query-error";
 import { StatusBadge } from "@/components/dashboard/status-badge";
 import { StatusTabs, useStatusParam } from "@/components/dashboard/status-tabs";
+import { ApprovalTooltip } from "@/components/landlord/approval";
 import { UserAvatar } from "@/components/shared/user-avatar";
 import { Button } from "@/components/ui/button";
+import { useLandlordAccess } from "@/hooks/use-landlord-access";
 import {
   useCompleteRental,
   useDecideRequest,
@@ -40,6 +42,7 @@ export function LandlordRequestsView() {
   const requests = useLandlordRequests(status);
   const decide = useDecideRequest();
   const complete = useCompleteRental();
+  const { canWrite } = useLandlordAccess();
   const [confirm, setConfirm] = useState<PendingConfirm | null>(null);
 
   // Disable a row's buttons while its own change is in flight.
@@ -75,23 +78,41 @@ export function LandlordRequestsView() {
         const busy = busyId === request.id;
         if (request.bookingStatus === "PENDING") {
           return (
-            <div className="flex justify-end gap-2">
-              <Button size="sm" disabled={busy} onClick={() => decide.mutate({ id: request.id, status: "APPROVED" })}>
-                <Check data-icon="inline-start" /> Approve
-              </Button>
-              <Button size="sm" variant="outline" disabled={busy} onClick={() => setConfirm({ type: "reject", request })}>
-                <X data-icon="inline-start" /> Reject
-              </Button>
-            </div>
+            <ApprovalTooltip className="w-full justify-end">
+              <div className="flex justify-end gap-2">
+                <Button
+                  size="sm"
+                  disabled={busy || !canWrite}
+                  onClick={() => decide.mutate({ id: request.id, status: "APPROVED" })}
+                >
+                  <Check data-icon="inline-start" /> Approve
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={busy || !canWrite}
+                  onClick={() => setConfirm({ type: "reject", request })}
+                >
+                  <X data-icon="inline-start" /> Reject
+                </Button>
+              </div>
+            </ApprovalTooltip>
           );
         }
         if (request.bookingStatus === "ACTIVE") {
           return (
-            <div className="flex justify-end">
-              <Button size="sm" variant="outline" disabled={busy} onClick={() => setConfirm({ type: "complete", request })}>
-                <CircleCheckBig data-icon="inline-start" /> Mark completed
-              </Button>
-            </div>
+            <ApprovalTooltip className="w-full justify-end">
+              <div className="flex justify-end">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={busy || !canWrite}
+                  onClick={() => setConfirm({ type: "complete", request })}
+                >
+                  <CircleCheckBig data-icon="inline-start" /> Mark completed
+                </Button>
+              </div>
+            </ApprovalTooltip>
           );
         }
         return <span className="block text-right text-sm text-muted-foreground">—</span>;

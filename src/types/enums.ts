@@ -6,6 +6,10 @@ export type UserRole = (typeof USER_ROLES)[number];
 export const USER_STATUSES = ["ACTIVE", "BLOCKED"] as const;
 export type UserStatus = (typeof USER_STATUSES)[number];
 
+/** Landlords only (null for tenants and admins); new landlords start PENDING. */
+export const LANDLORD_STATUSES = ["PENDING", "APPROVED", "REJECTED"] as const;
+export type LandlordStatus = (typeof LANDLORD_STATUSES)[number];
+
 export const PROPERTY_TYPES = ["APARTMENT", "HOUSE", "STUDIO", "VILLA"] as const;
 export type PropertyType = (typeof PROPERTY_TYPES)[number];
 

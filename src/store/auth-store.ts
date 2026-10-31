@@ -17,6 +17,8 @@ type AuthState = {
   clearSession: () => void;
   /** Restores the session from the cookie once per page load. */
   hydrate: () => Promise<void>;
+  /** Re-reads /auth/me (e.g. on tab focus) and returns the previous and new user. */
+  refreshUser: () => Promise<{ previous: User; next: User } | null>;
 };
 
 export const useAuthStore = create<AuthState>()((set, get) => ({
@@ -65,5 +67,16 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
     } catch {
       get().clearSession();
     }
+  },
+
+  refreshUser: async () => {
+    const { token, user: previous, status } = get();
+    if (status !== "authenticated" || !token || !previous) return null;
+    // Normal session handling applies: a blocked account is signed out.
+    const next = await authService.getMe();
+    // Ignore the answer if the session changed while it was in flight.
+    if (get().token !== token) return null;
+    set({ user: next });
+    return { previous, next };
   },
 }));

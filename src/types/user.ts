@@ -1,5 +1,5 @@
 import type { PaginationQuery } from "./api";
-import type { UserRole, UserStatus } from "./enums";
+import type { LandlordStatus, UserRole, UserStatus } from "./enums";
 
 /** User without the password hash (auth/me, login, register, profile). */
 export type User = {
@@ -9,6 +9,8 @@ export type User = {
   phone: string | null;
   role: UserRole;
   userStatus: UserStatus;
+  /** Landlords only; null for tenants and admins. */
+  landlordStatus: LandlordStatus | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -20,6 +22,12 @@ export type UserSummary = Pick<User, "id" | "name" | "email" | "phone">;
 export type UserStatusUpdate = Pick<
   User,
   "id" | "name" | "email" | "role" | "userStatus" | "updatedAt"
+>;
+
+/** Returned by PATCH /admin/users/:id/landlord-status. */
+export type LandlordStatusUpdate = Pick<
+  User,
+  "id" | "name" | "email" | "role" | "userStatus" | "landlordStatus" | "updatedAt"
 >;
 
 /** Payload of the access token. */
@@ -59,4 +67,5 @@ export type AdminUserQuery = PaginationQuery<"createdAt" | "name" | "email"> & {
   searchTerm?: string;
   role?: UserRole;
   userStatus?: UserStatus;
+  landlordStatus?: LandlordStatus;
 };
