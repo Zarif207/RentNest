@@ -5,7 +5,6 @@ import Image from "next/image";
 import { HeroMosaic, MOSAIC_FACETS, type HeroCard } from "@/components/home/hero-mosaic";
 import { HeroSearch, type HeroSuggestion } from "@/components/home/hero-search";
 import { SplitText } from "@/components/motion/split-text";
-import { useDarkHero } from "@/hooks/use-dark-hero";
 import { useIntroDone } from "@/hooks/use-intro-done";
 import { useFinePointer, useIsDesktop, useMotionOk } from "@/hooks/use-motion";
 import { gsap, useGSAP } from "@/lib/gsap";
@@ -23,7 +22,6 @@ const HERO_IMAGE = "https://images.unsplash.com/photo-1600585154340-be6161a56a0c
  * everything static.
  */
 export function Hero({ suggestions, cards }: { suggestions: HeroSuggestion[]; cards: HeroCard[] }) {
-  useDarkHero();
   const sectionRef = useRef<HTMLElement>(null);
   const motionOk = useMotionOk();
   const isDesktop = useIsDesktop();
@@ -132,7 +130,7 @@ export function Hero({ suggestions, cards }: { suggestions: HeroSuggestion[]; ca
         <div aria-hidden className="absolute inset-0 bg-linear-to-r from-black/55 via-black/10 to-transparent" />
 
         {/* Grows past the viewport on short phones rather than cutting the copy off. */}
-        <div className="relative z-10 mx-auto flex min-h-[inherit] max-w-7xl flex-col justify-end px-4 pt-28 pb-20 sm:px-6 md:pb-24 lg:px-8 lg:pb-16">
+        <div className="relative z-10 mx-auto flex min-h-[inherit] max-w-7xl flex-col justify-end px-4 pt-28 pb-20 sm:px-6 md:pb-24 lg:px-8 lg:pt-42 lg:pb-16">
           <div data-hero-copy className="max-w-4xl">
             <p data-enter className="text-xs font-medium tracking-[0.3em] text-white/75 uppercase">
               Rental homes across the United States
@@ -152,7 +150,7 @@ export function Hero({ suggestions, cards }: { suggestions: HeroSuggestion[]; ca
           {/* Phones: small, right under the headline. md+: top right, beside the copy. */}
           <HeroMosaic
             cards={cards}
-            className="mt-4 w-[min(9rem,40vw)] self-end md:absolute md:top-[max(6.5rem,12svh)] md:right-6 md:mt-0 md:w-[min(26vw,24rem)] md:portrait:w-[min(46vw,26rem)] lg:right-8"
+            className="mt-4 w-[min(9rem,40vw)] self-end md:absolute md:top-[max(6.5rem,12svh)] lg:top-[max(9.5rem,16svh)] md:right-6 md:mt-0 md:w-[min(26vw,24rem)] md:portrait:w-[min(46vw,26rem)] lg:right-8"
           />
           <div data-hero-copy className="max-w-4xl">
             {/* Not animated: it's the LCP text on phones, so it paints right away (under the intro curtain). */}

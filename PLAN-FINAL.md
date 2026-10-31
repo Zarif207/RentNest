@@ -4,7 +4,7 @@ Everything up to F13 is done. This is the last build phase. After it you do **St
 
 Same rules as before: Claude Code builds, runs lint and build, and reports. **You** run all git commands, and you run anything that touches the production database yourself.
 
-Order: **Part A** (three small frontend changes, no backend needed) → **Part B** (backend for buy/sell) → **Part C** (frontend for buy/sell) → **Part D** (SEO, performance, final QA).
+Order: **Part A** (four frontend changes, no backend needed) → **Part B** (backend for buy/sell) → **Part C** (frontend for buy/sell) → **Part D** (SEO, performance, final QA).
 
 ---
 
@@ -20,7 +20,7 @@ Order: **Part A** (three small frontend changes, no backend needed) → **Part B
 
 ---
 
-# Part A — Three frontend changes (start now)
+# Part A — Four frontend changes (start now)
 
 ### A1. Triangle mosaic hero cards (item 1)
 > Redesign the 3 floating hero cards on the home page. They must no longer be rounded squares. Build one connected **triangle mosaic** like the triangle image in my design-refs folder (`triangle-ref.png`; look at it): a large equilateral-ish triangle made of ~7–9 small triangle facets separated by thin gaps (1.5–2 px, champagne/ivory hairline), with the central facet inverted, as in the reference. Implementation: one SVG or absolutely positioned elements using `clip-path: polygon(...)`; no images with baked-in shapes.
@@ -33,20 +33,70 @@ Order: **Part A** (three small frontend changes, no backend needed) → **Part B
 
 **Done when:** the hero shows a connected triangle shape with 3 property photos in it; scrolling breaks it apart smoothly; mobile looks good.
 
-### A2. Professional logo wordmark font (item 2)
-> Change the font of the "RentNest" logo text only. Build a temporary page `/logo-lab` showing the wordmark in 3 professional real-estate styles on dark and light backgrounds, with the monogram next to it:
-> 1. **Marcellus**: classic Roman capitals, uppercase `RENTNEST`, tracking 0.18em.
-> 2. **Jost** (500): modern geometric sans, uppercase, tracking 0.22em.
-> 3. **Playfair Display** (600): editorial serif, "RentNest" in mixed case.
->
-> Load them with `next/font/google` (subset latin, `display: swap`). Wait for me to pick one, then apply it to the navbar, footer, auth pages, dashboard bar and the OG image, and delete `/logo-lab`. Keep the monogram. Make sure the wordmark stays sharp at 14–22 px.
+### A2. New logo: "Egg in nest" wordmark (item 2, decided)
+> I chose wordmark concept 05, "Egg in nest". Apply it as the RentNest logo, replacing the current logo text and monogram in the footer, auth pages, dashboard top bar, loading screen, the OG image and the favicon. (The main navbar gets its own layout in Step A4, which uses the stacked variant of this same logo.)
+> - Text "RENT" + [egg-in-nest mark] + "NEST" on one line, Jost weight 500 (load with `next/font/google`, latin, `display: swap`), uppercase, letter-spacing 0.22em, line-height 1.
+> - Build a React component `BrandLogo` with props `size` ("sm" | "md" | "lg") and `variant` ("full" = horizontal wordmark, "stacked" = the mark above a small "RENTNEST" wordmark, "mark" = egg-in-nest only). The mark is an inline SVG, not an image, so it follows the theme through `currentColor`:
+> ```
+> <svg viewBox="0 0 60 46">
+>   <ellipse cx="30" cy="15" rx="9" ry="12" fill="var(--logo-accent)"/>
+>   <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+>     <path d="M4 20 C 5 42, 55 42, 56 20"/>
+>     <path d="M7 25 C 20 33, 40 30, 54 24"/>
+>     <path d="M6 23 C 22 31, 38 36, 52 31"/>
+>     <path d="M12 33 C 24 27, 40 28, 50 35"/>
+>     <path d="M15 22 C 26 36, 36 37, 47 35"/>
+>   </g>
+> </svg>
+> ```
+> - Mark size relative to the text: width 1.5em, height 1.15em, side margin 0.1em, nudged down 0.06em so the nest sits on the text baseline.
+> - Colors: text and twigs use the current text color (ivory in dark mode, ink in light mode). The egg uses `--logo-accent`: champagne #C2A878 in dark mode, bronze #8A6D3B in light mode (better contrast).
+> - Loading screen: the egg drops into the nest, then the letters fade in (CSS only, respects `prefers-reduced-motion`).
+> - Favicon and app icon: the mark only, on an ink #12100E rounded square, champagne egg and ivory twigs, at 32, 180 and 512 px. OG image (1200×630): ink background, the full wordmark centered and large, tagline "Find a home worth coming home to" below in Jost 400, letter-spacing 0.3em, champagne.
+> - Wrap the logo in a link to "/" with `aria-label="RentNest home"`. Remove the old logo files.
 
-**Done when:** you picked a font and it looks right everywhere the logo appears.
+**Done when:** the new logo shows everywhere except the main navbar (which waits for A4), is sharp at 16 px and at 200 px, and looks right in both themes.
 
 ### A3. Remove the hover pop-up image (item 3)
 > In the "A place for every chapter" section, remove only the small image that appears next to the cursor on hover (the one that duplicates the big image). Keep everything else exactly as it is: the type list, counts, gold underline, dimming, the big image on the right that crossfades, and the mobile cards. Remove any code that became unused.
 
 **Done when:** hovering shows no floating image, and the rest looks unchanged.
+
+### A4. Roof-peak navbar (decided: concept E)
+> Rebuild the main public navbar as the **roof-peak bar** from the navbar concepts sheet (concept E): one glass bar with a gabled peak in the middle that holds the egg-in-nest mark, links split to the left and right. This is a UI-only change. Keep every link, role-aware menu item, auth state, avatar menu, notification bell, theme toggle, route and behavior exactly as they are today. Dashboards keep their own pill navigation (don't touch it) and auth pages keep their own layout.
+>
+> **Shape (desktop, 1024 px and up)**
+> - Fixed, horizontally centered, `max-width: 1360px`, 12–16 px from the top. Bar height 80 px, peak rises 34 px above the bar, peak base width about 300 px, outer corner radius 20 px, slope lines straight.
+> - Build the outline as **one SVG path generated from the measured width** (a `RoofBar` component with `ResizeObserver` + `requestAnimationFrame`, a sensible default width for the first render so nothing jumps). The same path is used three ways: (1) `clip-path: path(...)` on a div that has `backdrop-filter: blur(14px)` and the glass fill, because backdrop blur doesn't follow an SVG fill; (2) an SVG overlay that strokes the outline (1.2 px, champagne at ~65 % opacity); (3) nothing else. The shape must stay crisp at any width and must not use a stretched image.
+> - Dark theme: fill `rgba(18,16,14,.62)`, stroke champagne, text ivory. Light theme: fill `rgba(246,243,238,.78)`, stroke bronze #8A6D3B, text ink, egg bronze.
+> - After scrolling past about 40 px, increase the fill opacity a little so the links stay readable over any section.
+>
+> **Content**
+> - Peak: the egg-in-nest **mark** (from `BrandLogo`, `variant="mark"`) centered inside the peak, about 60×46 px. Directly under it, centered in the bar: the small wordmark "RENTNEST" (Jost 500, 13 px, letter-spacing 0.55em) as a link to "/" with `aria-label="RentNest home"`. Use `BrandLogo variant="stacked"` for this.
+> - Left links: Home, Rent, Buy, Sell. Right links: About, Contact, then the account cluster.
+> - Account cluster, logged out: a champagne "Sign in" pill. Logged in: a "Dashboard" outline pill (role-aware destination), the notification bell with its unread badge, the theme toggle, and the avatar menu. Logged out also shows the theme toggle (small icon button).
+> - Role-aware extras that exist today (for example "My requests" or "List a property") move into the avatar menu so the bar stays uncluttered. Nothing may be removed from the product, only moved.
+> - Active link: a small champagne dot under it plus brighter text and `aria-current="page"`. Hover: a thin champagne underline that slides in from the left. All links have a visible `focus-visible` ring.
+> - 1024–1279 px: reduce link gaps, and move About and Contact into a "More" dropdown so nothing wraps or touches the peak. 1280 px and up: full layout.
+>
+> **Motion** (all disabled under `prefers-reduced-motion`)
+> - On first load, after the intro curtain finishes: the outline draws itself (stroke-dashoffset, ~0.9 s), the egg fades down into the nest, then the links fade in with a short stagger.
+> - Scroll: hide on scroll down and show on scroll up (as now), transform/opacity only.
+> - Hover on the peak: the egg wobbles very slightly (CSS only).
+>
+> **Mobile and tablet (under 1024 px)**
+> - A compact rounded bar (no peak) with the egg-in-nest mark and small "RENTNEST" wordmark on the left and a **Menu** button on the right (champagne circle with a two-line icon, text "Menu" beside it from 480 px up).
+> - The Menu opens a full-screen panel: large Cormorant Garamond links numbered 01–05 (Home, Rent, Buy, Sell, About · Contact), staggered reveal, a featured property card (the first hero property from homepage settings, hidden if none), and at the bottom the theme toggle and Sign in or avatar and Dashboard buttons. Role-aware links are included.
+> - Accessibility: focus trap inside the panel, Esc closes it, focus returns to the Menu button, `aria-expanded` and `aria-controls` on the button, background scrolling locked while open (also stop Lenis), 44 px minimum touch targets, closes on route change.
+>
+> **Semantics and layout**
+> - `<header>` containing `<nav aria-label="Primary">`, real `next/link` anchors, a "Skip to content" link as the first focusable element, and `<main id="main">` on every public page.
+> - The navbar is now taller (peak plus bar, about 126 px from the top of the page). Update the shared `PageShell` top padding and any hero or page-header spacing so no content is hidden under the peak on **every** public page (home, rent/properties, details, about, contact, privacy, terms, 404). Check the home hero: the headline, the triangle mosaic and the search panel must not collide with the peak.
+> - No layout shift on load, and no overlap with the WhatsApp button or the cookie banner.
+>
+> Check 375, 768, 1024, 1280 and 1440 px in both themes, with and without a logged-in user (tenant, landlord and admin), and a very long user name in the avatar menu.
+
+**Done when:** the navbar shows the gabled roof with the egg in the peak on desktop; the peak outline stays crisp when you resize the window; links, role menus, notifications and theme toggle all still work; mobile has the full-screen menu with focus trap; no page content is hidden under the navbar.
 
 ---
 

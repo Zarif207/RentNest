@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { LayoutDashboard, LogOut, UserRound } from "lucide-react";
+import { ClipboardList, LogOut, PlusCircle, UserRound } from "lucide-react";
 import { UserAvatar } from "@/components/shared/user-avatar";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -13,23 +13,21 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useLogout } from "@/hooks/use-auth";
-import { roleHome } from "@/lib/auth";
 import { formatEnumLabel } from "@/lib/format";
-import { profilePath } from "@/lib/navigation";
-import { cn } from "@/lib/utils";
+import { profilePath, roleShortcut } from "@/lib/navigation";
 import type { User } from "@/types";
 
-export function UserMenu({ user, onDark = false }: { user: User; onDark?: boolean }) {
+/** Avatar dropdown: who's signed in, the role shortcut, Profile and Log out. */
+export function UserMenu({ user }: { user: User }) {
   const logout = useLogout();
+  const shortcut = roleShortcut(user.role);
+  const ShortcutIcon = user.role === "LANDLORD" ? PlusCircle : ClipboardList;
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
         aria-label="Open account menu"
-        className={cn(
-          "rounded-full ring-1 outline-none transition-shadow focus-visible:ring-3 focus-visible:ring-ring/50",
-          onDark ? "ring-white/40" : "ring-border",
-        )}
+        className="rounded-full ring-1 ring-border outline-none transition-shadow focus-visible:ring-3 focus-visible:ring-ring/50"
       >
         <UserAvatar name={user.name} className="size-10" />
       </DropdownMenuTrigger>
@@ -42,11 +40,13 @@ export function UserMenu({ user, onDark = false }: { user: User; onDark?: boolea
           </Badge>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <Link href={roleHome(user.role)}>
-            <LayoutDashboard aria-hidden /> Dashboard
-          </Link>
-        </DropdownMenuItem>
+        {shortcut && (
+          <DropdownMenuItem asChild>
+            <Link href={shortcut.href}>
+              <ShortcutIcon aria-hidden /> {shortcut.label}
+            </Link>
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem asChild>
           <Link href={profilePath(user.role)}>
             <UserRound aria-hidden /> Profile

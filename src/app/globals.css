@@ -110,6 +110,10 @@
   /* The egg in the logo: bronze reads better than champagne on ivory. */
   --logo-accent: #8a6d3b;
   --logo-tracking: 0.22em;
+  /* Roof-peak navbar glass and outline; the "solid" fill is used once scrolled. */
+  --roof-fill: rgb(246 243 238 / 0.78);
+  --roof-fill-solid: rgb(246 243 238 / 0.92);
+  --roof-stroke: #8a6d3b;
   --bronze: #806435; /* gold-toned text on light surfaces */
   --sand: #e9e2d6;
   --surface: #efebe4;
@@ -156,6 +160,9 @@
   --gold: #c2a878;
   --gold-foreground: #12100e;
   --logo-accent: #c2a878;
+  --roof-fill: rgb(18 16 14 / 0.62);
+  --roof-fill-solid: rgb(18 16 14 / 0.8);
+  --roof-stroke: rgb(194 168 120 / 0.65);
   --bronze: #c2a878; /* on ink, champagne itself reads as the gold text */
   --sand: #2a241e;
   --surface: #161412;
@@ -542,5 +549,72 @@ html:not([data-intro-seen]) [data-cookie-banner] {
   }
   50% {
     opacity: 1;
+  }
+}
+
+/* Roof-peak navbar. First visit only (when the intro plays, desktop): after
+   the curtain lifts at 1.6 s the outline draws itself, the egg drops into
+   the nest, then the links fade in one by one. */
+@keyframes roof-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes roof-egg-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes roof-link-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+@keyframes roof-egg-wobble {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  30% {
+    transform: rotate(-5deg);
+  }
+  65% {
+    transform: rotate(4deg);
+  }
+}
+
+.roof-logo ellipse {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-intro-seen]) [data-roof-outline] {
+    stroke-dasharray: 1;
+    animation: roof-draw 900ms cubic-bezier(0.65, 0, 0.35, 1) 1600ms both;
+  }
+  html:not([data-intro-seen]) .roof-logo ellipse {
+    animation: roof-egg-in 500ms cubic-bezier(0.3, 0, 0.2, 1) 2350ms both;
+  }
+  html:not([data-intro-seen]) [data-nav-enter] {
+    animation: roof-link-in 450ms ease-out both;
+    animation-delay: calc(2500ms + var(--nav-i, 0) * 70ms);
+  }
+  .roof-logo:hover ellipse {
+    animation: roof-egg-wobble 700ms ease-in-out;
+  }
+  /* Keep the entrance first in the list so un-hovering doesn't restart it. */
+  html:not([data-intro-seen]) .roof-logo:hover ellipse {
+    animation:
+      roof-egg-in 500ms cubic-bezier(0.3, 0, 0.2, 1) 2350ms both,
+      roof-egg-wobble 700ms ease-in-out;
   }
 }

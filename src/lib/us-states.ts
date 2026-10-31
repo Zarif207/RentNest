@@ -58,6 +58,12 @@ const CODE_BY_NAME = new Map<string, string>(
   US_STATES.map(({ code, name }) => [name.toLowerCase(), code]),
 );
 
+/** "texas" or "TX" → "Texas"; null when the text isn't a US state. */
+export function matchUsState(text: string) {
+  const key = text.trim().toLowerCase();
+  return US_STATES.find((state) => state.name.toLowerCase() === key || state.code.toLowerCase() === key)?.name ?? null;
+}
+
 /** "Austin", "Texas" → "Austin, TX" (falls back to the stored value). */
 export function formatLocation(city: string, division: string) {
   const state = CODE_BY_NAME.get(division.trim().toLowerCase()) ?? division;

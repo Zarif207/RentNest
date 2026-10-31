@@ -21,6 +21,7 @@ export const queryKeys = {
   categories: {
     all: ["categories"] as const,
   },
+  homepage: ["site-settings", "homepage"] as const,
   reviews: {
     property: (propertyId: string) => ["reviews", "property", propertyId] as const,
   },

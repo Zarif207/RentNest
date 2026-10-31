@@ -3,14 +3,12 @@
 import Image from "next/image";
 import { Parallax } from "@/components/motion/parallax";
 import { SplitText } from "@/components/motion/split-text";
-import { useDarkHero } from "@/hooks/use-dark-hero";
 import { useIntroDone } from "@/hooks/use-intro-done";
 
 const ABOUT_HERO_IMAGE = "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9";
 
 /** Dark full-bleed opener: a slow parallax photo under a big statement. */
 export function AboutHero() {
-  useDarkHero();
   const ready = useIntroDone();
 
   return (

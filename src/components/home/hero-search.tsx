@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { formatCurrency, formatEnumLabel } from "@/lib/format";
-import { US_STATES } from "@/lib/us-states";
+import { matchUsState } from "@/lib/us-states";
 import { cn } from "@/lib/utils";
 import { PROPERTY_TYPES } from "@/types";
 
@@ -30,11 +30,6 @@ const fieldClass =
   "h-12 w-full border-0 bg-transparent px-0 text-base text-white shadow-none hover:border-0 focus-visible:ring-0 data-placeholder:text-white/70 dark:bg-transparent [&_svg]:text-white/70";
 
 /** "new york", "NY" → "New York"; anything else → null. */
-function matchState(text: string) {
-  const key = text.trim().toLowerCase();
-  return US_STATES.find((state) => state.name.toLowerCase() === key || state.code.toLowerCase() === key)?.name ?? null;
-}
-
 const suggestionLabel = (suggestion: HeroSuggestion) =>
   suggestion.kind === "state" ? suggestion.state : suggestion.label;
 
@@ -116,7 +111,7 @@ export function HeroSearch({ suggestions }: { suggestions: HeroSuggestion[] }) {
         params.set("division", picked.state);
       }
     } else if (text) {
-      const state = matchState(text);
+      const state = matchUsState(text);
       params.set(state ? "division" : "searchTerm", state ?? text);
     }
     if (propertyType !== ANY) params.set("propertyType", propertyType);

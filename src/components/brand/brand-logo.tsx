@@ -81,10 +81,33 @@ const SIZES = {
   lg: { fontSize: "28px", tracking: "0.22em" },
 } as const;
 
+// Stacked: the mark (its width is 1.5× `markSize`) over a small, widely
+// tracked "RENTNEST". md is the navbar's roof peak (a 60 × 46 mark), sm the
+// mobile bar.
+const STACKED_SIZES = {
+  sm: { markSize: "24px", fontSize: "10px", tracking: "0.45em", gap: "gap-1" },
+  md: { markSize: "40px", fontSize: "13px", tracking: "0.55em", gap: "gap-3" },
+  lg: { markSize: "52px", fontSize: "16px", tracking: "0.55em", gap: "gap-3.5" },
+} as const;
+
+/** The mark above "RENTNEST". */
+function StackedLockup({ size }: { size: keyof typeof STACKED_SIZES }) {
+  const { gap } = STACKED_SIZES[size];
+  return (
+    <span className={cn("flex flex-col items-center", gap)}>
+      <NestMark className="text-(length:--logo-mark-size)" />
+      <span className="-mr-[var(--logo-tracking)] font-wordmark leading-none font-medium tracking-[var(--logo-tracking)] uppercase">
+        RentNest
+      </span>
+    </span>
+  );
+}
+
 /**
  * The RentNest logo. `full` is the wordmark with the mark inside it; `mark`
- * is the egg in nest alone (a little larger, so it holds its own). Links to
- * `href` (home by default); pass `href={null}` for a static logo.
+ * is the egg in nest alone (a little larger, so it holds its own); `stacked`
+ * is the mark above a small "RENTNEST" (the navbar). Links to `href` (home by
+ * default); pass `href={null}` for a static logo.
  *
  * Under 400 px the compact size drops its tracking to 0.12em so the navbar
  * pill keeps room for its buttons.
@@ -96,15 +119,22 @@ export function BrandLogo({
   className,
 }: {
   size?: keyof typeof SIZES;
-  variant?: "full" | "mark";
+  variant?: "full" | "mark" | "stacked";
   href?: string | null;
   className?: string;
 }) {
-  const { fontSize, tracking } = SIZES[size];
-  const style = { fontSize, "--logo-tracking": tracking } as React.CSSProperties;
+  const stacked = STACKED_SIZES[size];
+  const { fontSize, tracking } = variant === "stacked" ? stacked : SIZES[size];
+  const style = {
+    fontSize,
+    "--logo-tracking": tracking,
+    ...(variant === "stacked" && { "--logo-mark-size": stacked.markSize }),
+  } as React.CSSProperties;
   const content =
     variant === "mark" ? (
       <NestMark className="text-[1.5em]" />
+    ) : variant === "stacked" ? (
+      <StackedLockup size={size} />
     ) : (
       <LogoLockup className={cn(size === "sm" && "max-[399px]:[--logo-tracking:0.12em]")} />
     );

@@ -15,6 +15,12 @@ export function smoothScrollTo(top: number) {
   else window.scrollTo({ top, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
 }
 
+/** Stop Lenis while an overlay (like the mobile menu) locks the page. */
+export function setSmoothScrollPaused(paused: boolean) {
+  if (paused) activeLenis?.stop();
+  else activeLenis?.start();
+}
+
 /**
  * Lenis smooth scrolling, driven by the GSAP ticker so ScrollTrigger scenes
  * stay in sync. Mounted only on the public site (not dashboards) and skipped

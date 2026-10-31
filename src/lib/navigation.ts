@@ -6,14 +6,22 @@ export type NavLink = {
   label: string;
 };
 
-export const PUBLIC_NAV_LINKS: NavLink[] = [
+/**
+ * Left of the navbar's roof peak. Buy and Sell join these once their pages
+ * exist (PLAN-FINAL C1); until then Rent is the browse page.
+ */
+export const PRIMARY_NAV_LINKS: NavLink[] = [
   { href: "/", label: "Home" },
-  { href: "/properties", label: "Properties" },
+  { href: "/properties", label: "Rent" },
+];
+
+/** Right of the peak (inside "More" between 1024 and 1279 px). */
+export const SECONDARY_NAV_LINKS: NavLink[] = [
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
 ];
 
-/** Shortcut shown next to the main links for signed-in tenants and landlords. */
+/** Role shortcut for signed-in tenants and landlords, shown in the account menus. */
 export function roleShortcut(role: UserRole): NavLink | null {
   if (role === "LANDLORD") {
     return { href: "/dashboard/landlord/properties/new", label: "List a property" };
