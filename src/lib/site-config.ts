@@ -10,8 +10,6 @@ export const SITE_CONTACT = {
     state: "NY",
     zip: "10118",
   },
-  // Map pin for the address (OpenStreetMap embed).
-  map: { lat: 40.7484, lon: -73.9857 },
   hours: [
     { days: "Monday – Friday", time: "9:00 am – 6:00 pm ET" },
     { days: "Saturday", time: "10:00 am – 2:00 pm ET" },

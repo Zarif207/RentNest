@@ -81,6 +81,13 @@ async function cachedPropertyStates() {
   return settle(propertiesService.getStates());
 }
 
+async function cachedMapProperties() {
+  "use cache";
+  cacheLife(PUBLIC_CACHE);
+  cacheTag(PROPERTIES_TAG);
+  return settle(propertiesService.getMap());
+}
+
 async function cachedPropertyReviews(propertyId: string) {
   "use cache";
   cacheLife(PUBLIC_CACHE);
@@ -113,6 +120,10 @@ export async function getPublicHomepage() {
 
 export async function getPublicPropertyStates() {
   return unwrap(await cachedPropertyStates());
+}
+
+export async function getPublicMapProperties() {
+  return unwrap(await cachedMapProperties());
 }
 
 /** Resolves to null instead of throwing, so one failed section doesn't blank the page. */

@@ -19,14 +19,10 @@ const FAQ_LINKS = [
   { href: "/#faq", label: "Which cities can I rent in?" },
 ];
 
-function mapSrc() {
-  const { lat, lon } = SITE_CONTACT.map;
-  const bbox = [lon - 0.012, lat - 0.006, lon + 0.012, lat + 0.006].map((n) => n.toFixed(4)).join(",");
-  return `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${lat},${lon}`;
-}
+// Google's keyless embed, zoomed out to the whole country.
+const US_MAP_EMBED = "https://www.google.com/maps?q=United%20States&z=4&output=embed";
 
 export default function ContactPage() {
-  const { lat, lon } = SITE_CONTACT.map;
   const details = [
     { icon: Mail, label: "Email", value: SITE_CONTACT.email, href: `mailto:${SITE_CONTACT.email}` },
     { icon: Phone, label: "Phone", value: SITE_CONTACT.phone.display, href: SITE_CONTACT.phone.href },
@@ -101,26 +97,25 @@ export default function ContactPage() {
         </Reveal>
       </div>
 
-      <Reveal className="mt-20 space-y-4">
-        <div className="relative h-80 overflow-hidden rounded-3xl border border-border bg-muted sm:h-104">
+      <Reveal className="mt-20 space-y-5">
+        <div className="space-y-2">
+          <p className="text-xs font-medium tracking-[0.25em] text-bronze uppercase">Where we rent</p>
+          <p className="text-2xl font-medium tracking-tight sm:text-3xl">Homes across the United States</p>
+        </div>
+        <div className="relative aspect-[4/3] overflow-hidden rounded-3xl border border-border bg-muted sm:aspect-[16/9] md:aspect-[21/9]">
           <iframe
-            title={`Map showing ${formatAddress()}`}
-            src={mapSrc()}
+            title="Map of the United States"
+            src={US_MAP_EMBED}
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
-            className="absolute inset-0 size-full grayscale-[0.4] dark:brightness-75 dark:grayscale"
+            className="absolute inset-0 size-full dark:brightness-90"
+          />
+          {/* Dark mode: a soft inner frame so the bright map sits into the page. */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 hidden rounded-3xl shadow-[inset_0_0_0_1px_rgb(255_255_255/0.08),inset_0_0_90px_rgb(0_0_0/0.55)] dark:block"
           />
         </div>
-        <p className="text-right text-xs text-muted-foreground">
-          <a
-            href={`https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=17/${lat}/${lon}`}
-            target="_blank"
-            rel="noreferrer"
-            className="underline-offset-4 hover:underline"
-          >
-            Open larger map
-          </a>
-        </p>
       </Reveal>
 
       <Reveal className="mt-16 flex flex-col gap-6 rounded-3xl border border-border bg-card p-6 sm:p-8 lg:flex-row lg:items-center lg:justify-between">

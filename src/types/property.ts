@@ -69,6 +69,23 @@ export type PropertyInput = {
   categoryId: string;
   amenities: string[];
   images: string[];
+  /** A pin set by the landlord; without one the backend geocodes the address. */
+  latitude?: number;
+  longitude?: number;
+};
+
+/** GET /properties/map: one pin per property that has coordinates. */
+export type MapProperty = {
+  id: string;
+  title: string;
+  latitude: number;
+  longitude: number;
+  /** Prisma Decimal, serialized as a string. */
+  rentAmount: string;
+  city: string;
+  division: string;
+  availabilityStatus: AvailabilityStatus;
+  image: string | null;
 };
 
 export type PropertyUpdateInput = Partial<PropertyInput> & {

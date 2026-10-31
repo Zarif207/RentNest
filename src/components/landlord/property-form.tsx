@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Check, Loader2 } from "lucide-react";
 import { Controller, useForm, useWatch, type FieldErrors } from "react-hook-form";
 import { toast } from "sonner";
+import { LocationPicker } from "@/components/landlord/location-picker";
 import { FormAlert } from "@/components/shared/form-alert";
 import { FormField } from "@/components/shared/form-field";
 import { ImageUploader } from "@/components/shared/image-uploader";
@@ -118,6 +119,14 @@ export function PropertyForm({ property }: { property?: PropertyWithRelations })
   const isPending = createProperty.isPending || updateProperty.isPending;
   const values = useWatch({ control: form.control }) as Partial<PropertyValues>;
   const done = STEPS.map((step) => stepDone(step, values, errors));
+  const pin =
+    values.latitude !== undefined && values.longitude !== undefined
+      ? { latitude: values.latitude, longitude: values.longitude }
+      : null;
+  const initialPin =
+    initial?.latitude !== undefined && initial.longitude !== undefined
+      ? { latitude: initial.latitude, longitude: initial.longitude }
+      : null;
   const doneCount = done.filter(Boolean).length;
 
   const handleError = (error: unknown) => {
@@ -273,6 +282,14 @@ export function PropertyForm({ property }: { property?: PropertyWithRelations })
               />
             </FormField>
           </div>
+          <LocationPicker
+            value={pin}
+            initial={initialPin}
+            onChange={(next) => {
+              form.setValue("latitude", next?.latitude, { shouldDirty: true });
+              form.setValue("longitude", next?.longitude, { shouldDirty: true });
+            }}
+          />
         </Section>
 
         <Section id="details" index={2} title="Details" description="Monthly rent in US dollars and the size of the home.">

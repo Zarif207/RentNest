@@ -20,6 +20,9 @@ export const propertySchema = z.object({
   area: z.number({ error: "Enter the area" }).int("Use a whole number").positive("Area must be greater than 0"),
   amenities: z.array(z.string().min(1)).min(1, "Add at least one amenity"),
   images: z.array(z.url()).min(1, "Add at least one photo"),
+  // Optional map pin; both or neither (the picker always sets them together).
+  latitude: z.number().min(-90).max(90).optional(),
+  longitude: z.number().min(-180).max(180).optional(),
 });
 
 export type PropertyValues = z.infer<typeof propertySchema>;
@@ -42,6 +45,8 @@ export function toPropertyValues(property: PropertyWithRelations): PropertyValue
     area: property.area,
     amenities: property.amenities,
     images: property.images,
+    latitude: property.latitude ?? undefined,
+    longitude: property.longitude ?? undefined,
   };
 }
 
@@ -50,6 +55,11 @@ export function changedFields(initial: PropertyValues, values: PropertyValues): 
   const changes: Record<string, unknown> = {};
   for (const key of PROPERTY_FIELDS) {
     if (JSON.stringify(initial[key]) !== JSON.stringify(values[key])) changes[key] = values[key];
+  }
+  // The backend takes a pin only as a pair.
+  if ("latitude" in changes || "longitude" in changes) {
+    changes.latitude = values.latitude;
+    changes.longitude = values.longitude;
   }
   return changes as Partial<PropertyInput>;
 }

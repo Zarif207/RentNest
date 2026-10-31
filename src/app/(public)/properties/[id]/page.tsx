@@ -5,6 +5,7 @@ import { ArrowLeft, ArrowRight, MapPin } from "lucide-react";
 import { AmenityChip } from "@/components/properties/details/amenity-chip";
 import { BookingCard } from "@/components/properties/details/booking-card";
 import { PropertyGallery } from "@/components/properties/details/property-gallery";
+import { PropertyLocation } from "@/components/properties/details/property-location";
 import { LandlordCard } from "@/components/properties/details/landlord-card";
 import { PropertyReviews } from "@/components/properties/details/property-reviews";
 import { FavoriteButton } from "@/components/properties/favorite-button";
@@ -12,7 +13,7 @@ import { PropertyGrid } from "@/components/properties/property-grid";
 import { SerifAccent } from "@/components/shared/serif-accent";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { getPublicProperties, getPublicProperty, getPublicPropertyReviews, orNull } from "@/lib/data/public";
+import { getPublicMapProperties, getPublicProperties, getPublicProperty, getPublicPropertyReviews, orNull } from "@/lib/data/public";
 import { formatDate, formatEnumLabel, formatNumber } from "@/lib/format";
 import { formatLocation } from "@/lib/us-states";
 import { isUuid } from "@/lib/utils";
@@ -82,9 +83,10 @@ export default async function PropertyDetailsPage({ params }: PageProps<"/proper
   const property = await loadProperty(id);
   if (!property) notFound();
 
-  const [reviews, similar] = await Promise.all([
+  const [reviews, similar, pins] = await Promise.all([
     orNull(getPublicPropertyReviews(property.id)),
     loadSimilar(property),
+    orNull(getPublicMapProperties()),
   ]);
   const location = formatLocation(property.city, property.division);
   const typeLabel = formatEnumLabel(property.propertyType);
@@ -163,6 +165,18 @@ export default async function PropertyDetailsPage({ params }: PageProps<"/proper
             ) : (
               <p className="text-muted-foreground">No amenities listed.</p>
             )}
+          </section>
+
+          <section aria-labelledby="location-heading" className="space-y-5">
+            <div className="space-y-1">
+              <h2 id="location-heading" className="text-3xl font-medium tracking-tighter">
+                Location
+              </h2>
+              <p className="text-muted-foreground">
+                {property.address}, {location}
+              </p>
+            </div>
+            <PropertyLocation property={property} pins={pins ?? []} />
           </section>
 
           <section aria-label="Landlord">
