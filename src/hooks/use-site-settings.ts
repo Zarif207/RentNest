@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { getErrorMessage } from "@/lib/api/client";
+import { getErrorMessage, isApiError } from "@/lib/api/client";
 import { propertiesService } from "@/lib/api/properties";
 import { siteSettingsService } from "@/lib/api/site-settings";
 import { queryKeys } from "@/lib/query-keys";
@@ -31,6 +31,24 @@ async function refreshHomepage() {
   if (!response.ok) throw new Error("revalidate failed");
 }
 
+// Editor panel names for the config's top-level keys, used in error toasts.
+const SECTION_LABELS: Record<string, string> = {
+  hero: "Hero mosaic",
+  featured: "Featured collection",
+  states: "States",
+  propertyTypes: "Property types",
+  latest: "Latest listings",
+  sectionOrder: "Section order",
+};
+
+/** "Validation failed" alone doesn't say what to fix; list each problem by panel. */
+function describeSaveError(error: unknown) {
+  if (!isApiError(error) || error.errorDetails.length === 0) return undefined;
+  return error.errorDetails
+    .map(({ path, message }) => `${SECTION_LABELS[path.split(".")[0]] ?? path}: ${message}`)
+    .join(" · ");
+}
+
 /** Saves the homepage config, then refreshes the public homepage right away. */
 export function useSaveHomepageConfig() {
   const queryClient = useQueryClient();
@@ -45,6 +63,6 @@ export function useSaveHomepageConfig() {
         toast.success("Homepage saved", { description: "It can take up to a minute to show on the homepage." });
       }
     },
-    onError: (error) => toast.error(getErrorMessage(error)),
+    onError: (error) => toast.error(getErrorMessage(error), { description: describeSaveError(error) }),
   });
 }

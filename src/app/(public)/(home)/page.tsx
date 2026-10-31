@@ -74,11 +74,11 @@ function toHeroSuggestions(
   ];
 }
 
-/** Hero cards: the admin's picks, in order (only ones with a photo; up to three). */
+/** Hero mosaic: the admin's picks, in order (only ones with a photo; up to seven, one per piece). */
 function toHeroCards(properties: PropertyWithRelations[]): HeroCard[] {
   return properties
     .filter((property) => property.images.length > 0)
-    .slice(0, 3)
+    .slice(0, 7)
     .map((property) => ({
       id: property.id,
       title: property.title,

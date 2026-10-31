@@ -39,7 +39,7 @@ import {
 import { PropertyPickerDialog } from "./property-picker-dialog";
 import { SortableList } from "./sortable-list";
 
-const LIMITS = { hero: 3, featured: 12, states: 8, latestMin: 4, latestMax: 16 };
+const LIMITS = { hero: 7, featured: 12, states: 8, latestMin: 4, latestMax: 16 };
 
 const SECTION_LABELS: Record<HomepageSection, string> = {
   statement: "Statement",
@@ -362,9 +362,12 @@ function EditorForm({ initial }: { initial: HomepageConfigResponse }) {
       {/* Two independent columns, so short panels don't stretch to their neighbour. */}
       <div className="grid items-start gap-4 lg:grid-cols-2">
         <div className="min-w-0 space-y-4">
-          <Panel title="Hero cards" description="Up to 3 homes float over the hero image, in this order.">
+          <Panel
+            title="Hero mosaic"
+            description="Up to 7 photos make up the house shape on the hero, biggest piece first: the roof, then the walls, then the smaller pieces. Empty pieces show glass."
+          >
             <PropertyListField
-              label="Hero cards"
+              label="Hero homes"
               ids={draft.hero.propertyIds}
               max={LIMITS.hero}
               lookup={lookup}
