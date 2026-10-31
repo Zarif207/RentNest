@@ -46,7 +46,7 @@ export function MortgageCalculator({ price: askingPrice }: { price: number }) {
               type="number"
               inputMode="numeric"
               min={0}
-              step={1000}
+              step="any"
               className="pl-6"
               value={price}
               onChange={(event) => setPrice(event.target.value)}
@@ -80,7 +80,7 @@ export function MortgageCalculator({ price: askingPrice }: { price: number }) {
               inputMode="decimal"
               min={0}
               max={20}
-              step={0.05}
+              step="any"
               value={rate}
               onChange={(event) => setRate(event.target.value)}
             />

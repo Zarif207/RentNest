@@ -4,6 +4,7 @@ export * from "./category";
 export * from "./enums";
 export * from "./favorite";
 export * from "./notification";
+export * from "./offer";
 export * from "./payment";
 export * from "./property";
 export * from "./review";

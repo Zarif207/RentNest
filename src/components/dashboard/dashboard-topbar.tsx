@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth, useLogout } from "@/hooks/use-auth";
+import { usePendingOfferCount } from "@/hooks/use-landlord-offers";
 import { usePendingRequestCount } from "@/hooks/use-landlord-requests";
 import {
   activeNavItem,
@@ -39,11 +40,17 @@ function useDashboardNav() {
   const items = role ? DASHBOARD_NAV[role] : [];
   // Landlords see how many requests are waiting on "Requests".
   const pendingRequests = usePendingRequestCount(role === "LANDLORD");
+  const pendingOffers = usePendingOfferCount(role === "LANDLORD");
   return {
     role,
     items,
     active: activeNavItem(items, pathname),
-    badgeFor: (item: DashboardNavItem) => (item.href === "/dashboard/landlord/requests" ? pendingRequests : 0),
+    badgeFor: (item: DashboardNavItem) =>
+      item.href === "/dashboard/landlord/requests"
+        ? pendingRequests
+        : item.href === "/dashboard/landlord/offers"
+          ? pendingOffers
+          : 0,
   };
 }
 

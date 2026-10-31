@@ -1,9 +1,11 @@
 import type {
+  AdminOfferQuery,
   AdminRentalQuery,
   AdminUserQuery,
   BookingStatus,
   LandlordReviewQuery,
   NotificationQuery,
+  OfferStatus,
   PropertyQuery,
 } from "@/types";
 
@@ -39,6 +41,12 @@ export const queryKeys = {
     all: ["notifications"] as const,
     list: (query: NotificationQuery = {}) => ["notifications", "list", query] as const,
   },
+  offers: {
+    all: ["offers"] as const,
+    list: (status?: OfferStatus) => ["offers", "list", status ?? "ALL"] as const,
+    detail: (id: string) => ["offers", "detail", id] as const,
+    deposits: ["offers", "deposits"] as const,
+  },
   payments: {
     all: ["payments"] as const,
     detail: (id: string) => ["payments", "detail", id] as const,
@@ -53,6 +61,10 @@ export const queryKeys = {
       all: ["landlord", "requests"] as const,
       list: (status?: BookingStatus) =>
         ["landlord", "requests", "list", status ?? "ALL"] as const,
+    },
+    offers: {
+      all: ["landlord", "offers"] as const,
+      list: (status?: OfferStatus) => ["landlord", "offers", "list", status ?? "ALL"] as const,
     },
     reviews: {
       all: ["landlord", "reviews"] as const,
@@ -74,6 +86,10 @@ export const queryKeys = {
       all: ["admin", "rentals"] as const,
       list: (query: AdminRentalQuery = {}) =>
         ["admin", "rentals", "list", query] as const,
+    },
+    offers: {
+      all: ["admin", "offers"] as const,
+      list: (query: AdminOfferQuery = {}) => ["admin", "offers", "list", query] as const,
     },
     homepage: ["admin", "site-settings", "homepage"] as const,
   },

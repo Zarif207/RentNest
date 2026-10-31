@@ -11,6 +11,7 @@ import { LatestListings } from "@/components/home/latest-listings";
 import { LiveStats } from "@/components/home/live-stats";
 import { PlaceExplorer, type ExplorePlace } from "@/components/home/place-explorer";
 import { PropertyTypes, type TypeTile } from "@/components/home/property-types";
+import { SellBand } from "@/components/home/sell-band";
 import { Voices, type Voice, type VoicesSummary } from "@/components/home/voices";
 import { WhyRentNest } from "@/components/home/why-rentnest";
 import { FadeIn } from "@/components/shared/fade-in";
@@ -477,6 +478,7 @@ export default async function HomePage() {
         <Fragment key={id}>{sections[id]()}</Fragment>
       ))}
 
+      <SellBand />
       <CtaBanner />
     </>
   );

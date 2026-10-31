@@ -7,6 +7,7 @@ import { Check, Loader2 } from "lucide-react";
 import { Controller, useForm, useWatch, type FieldErrors } from "react-hook-form";
 import { toast } from "sonner";
 import { LocationPicker } from "@/components/landlord/location-picker";
+import { ListingSwitch } from "@/components/properties/listing-switch";
 import { FormAlert } from "@/components/shared/form-alert";
 import { FormField } from "@/components/shared/form-field";
 import { ImageUploader } from "@/components/shared/image-uploader";
@@ -27,35 +28,73 @@ import {
   useCreateProperty,
   useUpdateProperty,
 } from "@/hooks/use-landlord-properties";
+import { useLandlordOffers } from "@/hooks/use-landlord-offers";
+import { useLandlordRequests } from "@/hooks/use-landlord-requests";
 import { getErrorMessage, isApiError } from "@/lib/api/client";
-import { formatAmenity, formatEnumLabel } from "@/lib/format";
+import { formatAmenity, formatCurrency, formatEnumLabel } from "@/lib/format";
+import { depositFor } from "@/lib/offers";
 import { applyServerErrors } from "@/lib/forms";
 import { cn } from "@/lib/utils";
 import { COMMON_AMENITIES } from "@/lib/property-filters";
 import { US_STATES } from "@/lib/us-states";
 import {
   changedFields,
+  forListingType,
   PROPERTY_FIELDS,
   propertySchema,
   toPropertyValues,
   type PropertyValues,
 } from "@/schemas/property";
-import { PROPERTY_TYPES, type PropertyWithRelations } from "@/types";
+import { PROPERTY_TYPES, type ListingType, type PropertyWithRelations } from "@/types";
 
 const normalizeAmenity = (tag: string) => tag.trim().toLowerCase().replace(/\s+/g, "-");
 
 type StepId = "basic" | "location" | "details" | "amenities" | "photos";
 
-const STEPS: { id: StepId; title: string; fields: (keyof PropertyValues)[] }[] = [
-  { id: "basic", title: "Basic info", fields: ["title", "description", "propertyType", "categoryId"] },
-  { id: "location", title: "Location", fields: ["address", "city", "division"] },
-  { id: "details", title: "Details", fields: ["rentAmount", "bedrooms", "bathrooms", "area"] },
-  { id: "amenities", title: "Amenities", fields: ["amenities"] },
-  { id: "photos", title: "Photos", fields: ["images"] },
-];
+type Step = { id: StepId; title: string; fields: (keyof PropertyValues)[] };
+
+/** The form's sections; Details asks for the price that fits the listing type. */
+function stepsFor(listingType: ListingType): Step[] {
+  return [
+    { id: "basic", title: "Basic info", fields: ["title", "description", "propertyType", "categoryId"] },
+    { id: "location", title: "Location", fields: ["address", "city", "division"] },
+    {
+      id: "details",
+      title: "Details",
+      fields: [listingType === "SALE" ? "salePrice" : "rentAmount", "bedrooms", "bathrooms", "area"],
+    },
+    { id: "amenities", title: "Amenities", fields: ["amenities"] },
+    { id: "photos", title: "Photos", fields: ["images"] },
+  ];
+}
+
+// Empty number inputs mean "not set" (valueAsNumber would give NaN).
+const optionalNumber = (value: unknown) => (value === "" || value === null ? undefined : Number(value));
+
+const OWNER_LABELS: Record<ListingType, string> = { RENT: "For rent", SALE: "For sale" };
+
+/**
+ * Edit only: whether this home's listing type can still change. The backend
+ * refuses once a home has rental requests or offers, so the toggle explains
+ * that up front instead of failing on save.
+ */
+function useTypeLock(propertyId: string | undefined) {
+  const requests = useLandlordRequests(undefined);
+  const offers = useLandlordOffers(undefined, Boolean(propertyId));
+  if (!propertyId) return { locked: false, reason: null, checking: false };
+  if (requests.isPending || offers.isPending) return { locked: true, reason: null, checking: true };
+  const hasRequests = (requests.data ?? []).some((request) => request.propertyId === propertyId);
+  const hasOffers = (offers.data ?? []).some((offer) => offer.propertyId === propertyId);
+  if (!hasRequests && !hasOffers) return { locked: false, reason: null, checking: false };
+  return {
+    locked: true,
+    checking: false,
+    reason: `This home already has ${hasRequests ? "rental requests" : "offers"}, so it can't switch between rent and sale.`,
+  };
+}
 
 /** A step is done when all its fields have a value and none shows an error. */
-function stepDone(step: (typeof STEPS)[number], values: Partial<PropertyValues>, errors: FieldErrors<PropertyValues>) {
+function stepDone(step: Step, values: Partial<PropertyValues>, errors: FieldErrors<PropertyValues>) {
   return step.fields.every((field) => {
     const value = values[field];
     const filled = Array.isArray(value)
@@ -106,6 +145,7 @@ export function PropertyForm({ property }: { property?: PropertyWithRelations })
   const form = useForm<PropertyValues>({
     resolver: zodResolver(propertySchema),
     defaultValues: initial ?? {
+      listingType: "RENT",
       title: "",
       description: "",
       categoryId: "",
@@ -118,7 +158,11 @@ export function PropertyForm({ property }: { property?: PropertyWithRelations })
   const { errors } = form.formState;
   const isPending = createProperty.isPending || updateProperty.isPending;
   const values = useWatch({ control: form.control }) as Partial<PropertyValues>;
+  const listingType = values.listingType ?? "RENT";
+  const forSale = listingType === "SALE";
+  const STEPS = stepsFor(listingType);
   const done = STEPS.map((step) => stepDone(step, values, errors));
+  const typeLock = useTypeLock(property?.id);
   const pin =
     values.latitude !== undefined && values.longitude !== undefined
       ? { latitude: values.latitude, longitude: values.longitude }
@@ -138,15 +182,16 @@ export function PropertyForm({ property }: { property?: PropertyWithRelations })
     form.setError("root.server", { type: "server", message: getErrorMessage(error) });
   };
 
-  const onSubmit = (values: PropertyValues) => {
+  const onSubmit = (submitted: PropertyValues) => {
     const done = { onSuccess: () => router.push(LANDLORD_PROPERTIES_PATH), onError: handleError };
+    const values = forListingType(submitted);
 
     if (!property || !initial) {
       createProperty.mutate(values, done);
       return;
     }
 
-    const changes = changedFields(initial, values);
+    const changes = changedFields(forListingType(initial), values);
     if (Object.keys(changes).length === 0) {
       toast.info("No changes to save");
       return;
@@ -196,7 +241,33 @@ export function PropertyForm({ property }: { property?: PropertyWithRelations })
       <div className="min-w-0 space-y-4">
         <FormAlert message={errors.root?.server?.message} />
 
-        <Section id="basic" index={0} title="Basic info" description="What renters see first in search results.">
+        {/* Rent or sell: decides the price field and where the home is listed. */}
+        <div className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-border bg-card p-5 sm:px-8">
+          <div className="space-y-1">
+            <h2 className="text-xl font-medium tracking-tight">Listing type</h2>
+            <p className="text-sm text-muted-foreground">
+              {typeLock.reason ??
+                (forSale
+                  ? "Buyers make offers; you accept, decline or counter."
+                  : "Renters send requests; you approve them and they pay online.")}
+            </p>
+          </div>
+          <Controller
+            control={form.control}
+            name="listingType"
+            render={({ field }) => (
+              <ListingSwitch
+                value={field.value}
+                onChange={field.onChange}
+                label="Listing type"
+                labels={OWNER_LABELS}
+                disabled={typeLock.locked}
+              />
+            )}
+          />
+        </div>
+
+        <Section id="basic" index={0} title="Basic info" description="What renters and buyers see first in search results.">
           <FormField label="Title" htmlFor="title" error={errors.title}>
             <Input id="title" placeholder="Sunny 2-bed apartment near Central Park" aria-invalid={Boolean(errors.title)} {...form.register("title")} />
           </FormField>
@@ -292,11 +363,31 @@ export function PropertyForm({ property }: { property?: PropertyWithRelations })
           />
         </Section>
 
-        <Section id="details" index={2} title="Details" description="Monthly rent in US dollars and the size of the home.">
+        <Section
+          id="details"
+          index={2}
+          title="Details"
+          description={`${forSale ? "Asking price" : "Monthly rent"} in US dollars and the size of the home.`}
+        >
           <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
-            <FormField label="Monthly rent ($)" htmlFor="rentAmount" error={errors.rentAmount}>
-              <Input id="rentAmount" type="number" inputMode="decimal" min={1} step="any" placeholder="2400" aria-invalid={Boolean(errors.rentAmount)} {...form.register("rentAmount", { valueAsNumber: true })} />
-            </FormField>
+            {forSale ? (
+              <FormField
+                label="Asking price ($)"
+                htmlFor="salePrice"
+                error={errors.salePrice}
+                description={
+                  values.salePrice
+                    ? `Buyer's deposit when you accept: about ${formatCurrency(depositFor(values.salePrice))}`
+                    : "Buyers pay a 1% deposit (at least $500) once you accept."
+                }
+              >
+                <Input id="salePrice" type="number" inputMode="decimal" min={1} step="any" placeholder="450000" aria-invalid={Boolean(errors.salePrice)} {...form.register("salePrice", { setValueAs: optionalNumber })} />
+              </FormField>
+            ) : (
+              <FormField label="Monthly rent ($)" htmlFor="rentAmount" error={errors.rentAmount}>
+                <Input id="rentAmount" type="number" inputMode="decimal" min={1} step="any" placeholder="2400" aria-invalid={Boolean(errors.rentAmount)} {...form.register("rentAmount", { setValueAs: optionalNumber })} />
+              </FormField>
+            )}
             <FormField label="Bedrooms" htmlFor="bedrooms" error={errors.bedrooms}>
               <Input id="bedrooms" type="number" inputMode="numeric" min={0} step={1} placeholder="2" aria-invalid={Boolean(errors.bedrooms)} {...form.register("bedrooms", { valueAsNumber: true })} />
             </FormField>

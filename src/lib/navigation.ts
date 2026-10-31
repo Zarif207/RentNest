@@ -6,11 +6,12 @@ export type NavLink = {
   label: string;
 };
 
-/** Left of the navbar's roof peak. Sell joins these with its landing page (PLAN-FINAL C3). */
+/** Left of the navbar's roof peak. */
 export const PRIMARY_NAV_LINKS: NavLink[] = [
   { href: "/", label: "Home" },
   { href: "/rent", label: "Rent" },
   { href: "/buy", label: "Buy" },
+  { href: "/sell", label: "Sell" },
 ];
 
 /** Right of the peak (inside "More" between 1024 and 1279 px). */

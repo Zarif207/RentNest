@@ -8,6 +8,7 @@ import {
   CircleDollarSign,
   ClipboardList,
   CreditCard,
+  HandCoins,
   House,
   Hourglass,
   KeyRound,
@@ -23,11 +24,13 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/use-auth";
 import { SAVED_HOMES_PATH, useFavoriteIds } from "@/hooks/use-favorites";
+import { BUYER_OFFERS_PATH, useMyOffers } from "@/hooks/use-offers";
 import { useMyPayments } from "@/hooks/use-payments";
 import { TENANT_REQUESTS_PATH, useMyRentals } from "@/hooks/use-rentals";
 import { formatCurrency, formatDate, formatNumber } from "@/lib/format";
 import { formatLocation } from "@/lib/us-states";
-import type { BookingWithProperty } from "@/types";
+import { isOpenOffer } from "@/lib/offers";
+import type { BookingWithProperty, Offer } from "@/types";
 
 const TIMELINE_COUNT = 5;
 const PAYMENTS_COUNT = 4;
@@ -48,14 +51,30 @@ function useGreeting() {
 
 const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;
 
-/** The single most useful next step, from the tenant's real requests. */
-function nextAction(list: BookingWithProperty[]) {
+/** The single most useful next step, from the tenant's real requests and offers. */
+function nextAction(list: BookingWithProperty[], offers: Offer[]) {
   const approved = list.filter((rental) => rental.bookingStatus === "APPROVED");
   if (approved.length > 0) {
     return {
       text: `You have ${plural(approved.length, "request")} ready to pay.`,
       detail: `${approved[0].property.title} was approved. Pay securely with Stripe to move in.`,
       cta: { href: `/dashboard/tenant/requests/${approved[0].id}/pay`, label: "Pay now", icon: CreditCard },
+    };
+  }
+  const accepted = offers.find((offer) => offer.status === "ACCEPTED");
+  if (accepted) {
+    return {
+      text: `Your offer on ${accepted.property.title} was accepted.`,
+      detail: `Pay the ${formatCurrency(accepted.depositAmount)} deposit to put the home under contract.`,
+      cta: { href: BUYER_OFFERS_PATH, label: "Pay deposit", icon: HandCoins },
+    };
+  }
+  const countered = offers.find((offer) => offer.status === "COUNTERED");
+  if (countered) {
+    return {
+      text: `The owner countered at ${formatCurrency(countered.counterAmount)}.`,
+      detail: `Accept or decline the counteroffer on ${countered.property.title}.`,
+      cta: { href: BUYER_OFFERS_PATH, label: "Answer counter", icon: HandCoins },
     };
   }
   const pending = list.filter((rental) => rental.bookingStatus === "PENDING").length;
@@ -81,10 +100,18 @@ function nextAction(list: BookingWithProperty[]) {
   };
 }
 
-function WelcomeCard({ list, isLoading }: { list: BookingWithProperty[]; isLoading: boolean }) {
+function WelcomeCard({
+  list,
+  offers,
+  isLoading,
+}: {
+  list: BookingWithProperty[];
+  offers: Offer[];
+  isLoading: boolean;
+}) {
   const { user } = useAuth();
   const greeting = useGreeting();
-  const action = nextAction(list);
+  const action = nextAction(list, offers);
   const Icon = action.cta.icon;
 
   return (
@@ -207,6 +234,7 @@ function RequestTimeline({ list }: { list: BookingWithProperty[] }) {
 
 export function TenantOverview() {
   const rentals = useMyRentals();
+  const offers = useMyOffers();
   const payments = useMyPayments();
   const favoriteIds = useFavoriteIds();
 
@@ -218,7 +246,7 @@ export function TenantOverview() {
 
   return (
     <BentoGrid>
-      <WelcomeCard list={list} isLoading={rentals.isPending} />
+      <WelcomeCard list={list} offers={offers.data ?? []} isLoading={rentals.isPending || offers.isPending} />
 
       <BentoCard title="Requests by status" href={TENANT_REQUESTS_PATH} className="md:col-span-6 lg:col-span-5">
         {rentals.isPending ? (
@@ -239,8 +267,8 @@ export function TenantOverview() {
         )}
       </BentoCard>
 
-      {/* Five metrics share one full-width row on desktop. */}
-      <div className="grid gap-3 sm:grid-cols-2 sm:gap-4 md:col-span-6 lg:col-span-12 lg:grid-cols-5">
+      {/* Six metrics share one full-width row on desktop. */}
+      <div className="grid gap-3 sm:grid-cols-2 sm:gap-4 md:col-span-6 lg:col-span-12 lg:grid-cols-3 xl:grid-cols-6">
         <MetricCard
           label="Total requests"
           value={formatNumber(list.length)}
@@ -274,7 +302,14 @@ export function TenantOverview() {
           hint="Homes you hearted"
           href={SAVED_HOMES_PATH}
           isLoading={favoriteIds.isPending}
-          className="sm:col-span-2 lg:col-span-1"
+        />
+        <MetricCard
+          label="Offers"
+          value={offers.isError ? "—" : formatNumber((offers.data ?? []).filter((offer) => isOpenOffer(offer.status)).length)}
+          hint={`Open, of ${formatNumber(offers.data?.length ?? 0)} made`}
+          icon={HandCoins}
+          href={BUYER_OFFERS_PATH}
+          isLoading={offers.isPending}
         />
       </div>
 

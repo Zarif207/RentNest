@@ -67,7 +67,10 @@ export type PropertyInput = {
   address: string;
   city: string;
   division: string;
-  rentAmount: number;
+  /** RENT (the default) needs rentAmount; SALE needs salePrice. */
+  listingType: ListingType;
+  rentAmount?: number;
+  salePrice?: number;
   bedrooms: number;
   bathrooms: number;
   area: number;

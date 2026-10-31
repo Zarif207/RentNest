@@ -7,8 +7,10 @@ import {
   Building2,
   CircleCheck,
   ClipboardList,
+  HandCoins,
   Hourglass,
   KeyRound,
+  Signpost,
   Tags,
   UserRound,
   Users,
@@ -33,6 +35,7 @@ const QUICK_ACTIONS: { href: string; label: string; description: string; icon: L
   { href: "/dashboard/admin/users?userStatus=BLOCKED", label: "Banned users", description: "Review and unban", icon: Ban },
   { href: "/dashboard/admin/rentals?status=PENDING", label: "Pending rentals", description: "Waiting on landlords", icon: Hourglass },
   { href: "/dashboard/admin/properties", label: "All listings", description: "Search every property", icon: Building2 },
+  { href: "/dashboard/admin/offers?status=PENDING", label: "Open offers", description: "Waiting on owners", icon: HandCoins },
   { href: "/dashboard/admin/categories", label: "Categories", description: "Add, rename or remove", icon: Tags },
 ];
 
@@ -62,6 +65,13 @@ export function AdminOverview() {
     { label: "Pending requests", value: totals.pending, icon: Hourglass, hint: "Waiting on landlords" },
   ];
 
+  // Buying and selling, one wider row.
+  const saleMetrics = [
+    { label: "Homes for sale", value: totals.forSale, icon: Signpost, hint: "Sale listings, any status" },
+    { label: "Offers", value: totals.offers, icon: HandCoins, href: "/dashboard/admin/offers" },
+    { label: "Sales completed", value: totals.sales, icon: CircleCheck, hint: "Homes marked sold" },
+  ];
+
   return (
     <div className="space-y-6">
       <PageHeader title="Platform overview" description="Everyone and everything on RentNest, live." />
@@ -79,6 +89,18 @@ export function AdminOverview() {
             hint={metric.hint}
             isLoading={stats.isPending}
             className="md:col-span-2 lg:col-span-2"
+          />
+        ))}
+        {saleMetrics.map((metric) => (
+          <MetricCard
+            key={metric.label}
+            label={metric.label}
+            value={formatNumber(metric.value)}
+            icon={metric.href ? undefined : metric.icon}
+            href={metric.href}
+            hint={metric.hint}
+            isLoading={stats.isPending}
+            className="md:col-span-2 lg:col-span-4"
           />
         ))}
 
@@ -143,7 +165,7 @@ export function AdminOverview() {
         </BentoCard>
 
         <BentoCard title="Quick actions" className="md:col-span-6 lg:col-span-12">
-          <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+          <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
             {QUICK_ACTIONS.map(({ href, label, description, icon: Icon }) => (
               <li key={href}>
                 <Link

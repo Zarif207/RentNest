@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback } from "react";
-import { Building2, ExternalLink, Search, Shapes, ToggleRight } from "lucide-react";
+import { Building2, ExternalLink, Search, Shapes, Tags, ToggleRight } from "lucide-react";
 import { FilterPill } from "@/components/dashboard/bento";
 import { DataTable, type DataTableColumn } from "@/components/dashboard/data-table";
 import { PageHeader } from "@/components/dashboard/page-header";
@@ -14,17 +14,26 @@ import { Button } from "@/components/ui/button";
 import { useAdminProperties } from "@/hooks/use-admin";
 import { useUrlParams } from "@/hooks/use-url-params";
 import { formatDate, formatEnumLabel } from "@/lib/format";
-import { listingPriceLabel } from "@/lib/listing";
+import { availabilityLabel, LISTING_LABELS, listingPriceLabel } from "@/lib/listing";
 import {
   AVAILABILITY_STATUSES,
+  LISTING_TYPES,
   PROPERTY_TYPES,
   type AvailabilityStatus,
+  type ListingType,
   type PropertyType,
   type PropertyWithRelations,
 } from "@/types";
 
 const ANY = "any";
 const PAGE_SIZE = 10;
+
+const STATUS_VARIANT = {
+  AVAILABLE: "active",
+  RENTED: "completed",
+  UNDER_CONTRACT: "pending",
+  SOLD: "completed",
+} as const satisfies Record<AvailabilityStatus, string>;
 
 const columns: DataTableColumn<PropertyWithRelations>[] = [
   {
@@ -44,21 +53,27 @@ const columns: DataTableColumn<PropertyWithRelations>[] = [
       </div>
     ),
   },
-  { key: "type", header: "Type", cell: (property) => formatEnumLabel(property.propertyType) },
   {
-    key: "rent",
-    header: "Rent",
+    key: "type",
+    header: "Type",
+    cell: (property) => (
+      <span>
+        {formatEnumLabel(property.propertyType)}
+        <span className="block text-xs text-muted-foreground">{LISTING_LABELS[property.listingType]}</span>
+      </span>
+    ),
+  },
+  {
+    key: "price",
+    header: "Price",
     cell: (property) => <span className="font-semibold">{listingPriceLabel(property)}</span>,
   },
   {
     key: "status",
     header: "Status",
-    cell: (property) =>
-      property.availabilityStatus === "AVAILABLE" ? (
-        <Badge variant="active">Available</Badge>
-      ) : (
-        <Badge variant="completed">Rented</Badge>
-      ),
+    cell: (property) => (
+      <Badge variant={STATUS_VARIANT[property.availabilityStatus]}>{availabilityLabel(property.availabilityStatus)}</Badge>
+    ),
   },
   { key: "listed", header: "Listed", cell: (property) => formatDate(property.createdAt) },
   {
@@ -81,9 +96,11 @@ export function AdminPropertiesView() {
 
   const type = searchParams.get("propertyType") as PropertyType | null;
   const availability = searchParams.get("availabilityStatus") as AvailabilityStatus | null;
+  const listingType = searchParams.get("listingType") as ListingType | null;
   const page = Number.parseInt(searchParams.get("page") ?? "", 10);
   const query = {
     searchTerm: searchParams.get("searchTerm")?.trim() || undefined,
+    listingType: listingType && LISTING_TYPES.includes(listingType) ? listingType : undefined,
     propertyType: type && PROPERTY_TYPES.includes(type) ? type : undefined,
     availabilityStatus: availability && AVAILABILITY_STATUSES.includes(availability) ? availability : undefined,
     page: Number.isInteger(page) && page > 0 ? page : 1,
@@ -107,6 +124,16 @@ export function AdminPropertiesView() {
         />
       </div>
       <FilterPill
+        icon={Tags}
+        label="Filter by listing type"
+        value={query.listingType ?? ANY}
+        onValueChange={(value) => setParams({ listingType: value === ANY ? null : value })}
+        options={[
+          { value: ANY, label: "Rent and sale" },
+          ...LISTING_TYPES.map((value) => ({ value, label: LISTING_LABELS[value] })),
+        ]}
+      />
+      <FilterPill
         icon={Shapes}
         label="Filter by type"
         value={query.propertyType ?? ANY}
@@ -123,8 +150,7 @@ export function AdminPropertiesView() {
         onValueChange={(value) => setParams({ availabilityStatus: value === ANY ? null : value })}
         options={[
           { value: ANY, label: "Any availability" },
-          { value: "AVAILABLE", label: "Available" },
-          { value: "RENTED", label: "Rented" },
+          ...AVAILABILITY_STATUSES.map((value) => ({ value, label: availabilityLabel(value) })),
         ]}
       />
     </>
@@ -132,7 +158,7 @@ export function AdminPropertiesView() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Properties" description="Every listing on RentNest, from every landlord." />
+      <PageHeader title="Properties" description="Every listing on RentNest, for rent and for sale, from every owner." />
 
       {properties.isError ? (
         <QueryError error={properties.error} onRetry={() => void properties.refetch()} />

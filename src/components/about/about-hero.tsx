@@ -40,7 +40,8 @@ export function AboutHero() {
           />
         </h1>
         <p className="mt-8 max-w-xl text-lg text-white/75">
-          RentNest puts the whole rental journey in one place, from the first search to the day you get the keys.
+          RentNest puts the whole journey in one place, to rent or to buy, from the first search to the day you get
+          the keys.
         </p>
       </div>
     </section>

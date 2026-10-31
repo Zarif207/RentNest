@@ -9,6 +9,7 @@ import {
 } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { adminService } from "@/lib/api/admin";
+import { adminOffersService } from "@/lib/api/offers";
 import { getErrorMessage } from "@/lib/api/client";
 import { queryKeys } from "@/lib/query-keys";
 import type {
@@ -51,15 +52,24 @@ export function useAdminStats() {
         queryKey: queryKeys.admin.rentals.list({ ...ONE, status: "ACTIVE" }),
         queryFn: () => adminService.getRentals({ ...ONE, status: "ACTIVE" }),
       },
+      {
+        queryKey: queryKeys.admin.properties.list({ ...ONE, listingType: "SALE" }),
+        queryFn: () => adminService.getProperties({ ...ONE, listingType: "SALE" }),
+      },
+      { queryKey: queryKeys.admin.offers.list(ONE), queryFn: () => adminOffersService.getAll(ONE) },
+      {
+        queryKey: queryKeys.admin.offers.list({ ...ONE, status: "COMPLETED" }),
+        queryFn: () => adminOffersService.getAll({ ...ONE, status: "COMPLETED" }),
+      },
     ],
   });
 
-  const [users, tenants, landlords, blocked, properties, pending, active] = results.map(
+  const [users, tenants, landlords, blocked, properties, pending, active, forSale, offers, sales] = results.map(
     (result) => result.data?.meta.total,
   );
 
   return {
-    totals: { users, tenants, landlords, blocked, properties, pending, active },
+    totals: { users, tenants, landlords, blocked, properties, pending, active, forSale, offers, sales },
     isPending: results.some((result) => result.isPending),
     error: results.find((result) => result.isError)?.error ?? null,
     refetch: () => results.forEach((result) => void result.refetch()),

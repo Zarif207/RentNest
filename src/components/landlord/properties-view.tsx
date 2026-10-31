@@ -12,6 +12,7 @@ import {
   List,
   Pencil,
   Shapes,
+  Tags,
   ToggleRight,
   Trash2,
 } from "lucide-react";
@@ -36,29 +37,49 @@ import {
 } from "@/hooks/use-landlord-properties";
 import { useLandlordAccess } from "@/hooks/use-landlord-access";
 import { formatEnumLabel } from "@/lib/format";
-import { formatListingPrice, listingPriceLabel } from "@/lib/listing";
+import { availabilityLabel, formatListingPrice, LISTING_LABELS, listingPriceLabel } from "@/lib/listing";
 import { formatLocation } from "@/lib/us-states";
 import { cn } from "@/lib/utils";
-import { PROPERTY_TYPES, type AvailabilityStatus, type PropertyType, type PropertyWithRelations } from "@/types";
+import {
+  AVAILABILITY_STATUSES,
+  LISTING_TYPES,
+  PROPERTY_TYPES,
+  type AvailabilityStatus,
+  type ListingType,
+  type PropertyType,
+  type PropertyWithRelations,
+} from "@/types";
 
 const ANY = "any";
 type View = "grid" | "table";
 
 const AVAILABILITY_OPTIONS = [
   { value: ANY, label: "Any status" },
-  { value: "AVAILABLE", label: "Available" },
-  { value: "RENTED", label: "Rented" },
+  ...AVAILABILITY_STATUSES.map((status) => ({ value: status, label: availabilityLabel(status) })),
+];
+const LISTING_OPTIONS = [
+  { value: ANY, label: "Rent and sale" },
+  ...LISTING_TYPES.map((type) => ({ value: type, label: LISTING_LABELS[type] })),
 ];
 const TYPE_OPTIONS = [
   { value: ANY, label: "Any type" },
   ...PROPERTY_TYPES.map((type) => ({ value: type, label: formatEnumLabel(type) })),
 ];
 
+const STATUS_VARIANT = {
+  AVAILABLE: "active",
+  RENTED: "completed",
+  UNDER_CONTRACT: "pending",
+  SOLD: "completed",
+} as const satisfies Record<AvailabilityStatus, string>;
+
+/** "For sale" / "For rent" and the status, side by side. */
 function AvailabilityBadge({ property }: { property: PropertyWithRelations }) {
-  return property.availabilityStatus === "AVAILABLE" ? (
-    <Badge variant="active">Available</Badge>
-  ) : (
-    <Badge variant="completed">Rented</Badge>
+  return (
+    <span className="flex flex-wrap gap-1.5">
+      <Badge variant="default">{LISTING_LABELS[property.listingType]}</Badge>
+      <Badge variant={STATUS_VARIANT[property.availabilityStatus]}>{availabilityLabel(property.availabilityStatus)}</Badge>
+    </span>
   );
 }
 
@@ -101,23 +122,27 @@ export function PropertiesView() {
 
   const meta = properties.data?.meta;
   const rows = properties.data?.data;
-  const filtered = Boolean(filters.availabilityStatus || filters.propertyType);
+  const filtered = Boolean(filters.availabilityStatus || filters.propertyType || filters.listingType);
 
   const setFilter = (patch: LandlordPropertyFilters) => {
     setFilters((current) => ({ ...current, ...patch }));
     setPage(1);
   };
 
-  const availabilitySwitch = (property: PropertyWithRelations) => (
-    <ApprovalTooltip>
-      <Switch
-        checked={property.availabilityStatus === "AVAILABLE"}
-        disabled={!canWrite}
-        onCheckedChange={(checked) => toggle.mutate({ id: property.id, status: checked ? "AVAILABLE" : "RENTED" })}
-        aria-label={`${property.title} is available`}
-      />
-    </ApprovalTooltip>
-  );
+  // Rentals only: a home for sale goes under contract and sold through its offers.
+  const availabilitySwitch = (property: PropertyWithRelations) =>
+    property.listingType === "SALE" ? (
+      <span className="text-xs text-muted-foreground">Set by offers</span>
+    ) : (
+      <ApprovalTooltip>
+        <Switch
+          checked={property.availabilityStatus === "AVAILABLE"}
+          disabled={!canWrite}
+          onCheckedChange={(checked) => toggle.mutate({ id: property.id, status: checked ? "AVAILABLE" : "RENTED" })}
+          aria-label={`${property.title} is available`}
+        />
+      </ApprovalTooltip>
+    );
 
   const rowActions = (property: PropertyWithRelations) => (
     <ApprovalTooltip className="w-full justify-end">
@@ -150,12 +175,12 @@ export function PropertiesView() {
     },
     { key: "type", header: "Type", cell: (property) => formatEnumLabel(property.propertyType) },
     {
-      key: "rent",
-      header: "Rent",
+      key: "price",
+      header: "Price",
       cell: (property) => <span className="font-semibold">{listingPriceLabel(property)}</span>,
     },
     { key: "status", header: "Status", cell: (property) => <AvailabilityBadge property={property} /> },
-    { key: "availability", header: "Listed as available", cell: availabilitySwitch },
+    { key: "availability", header: "Availability", cell: availabilitySwitch },
     { key: "actions", header: "Actions", className: "text-right", cell: rowActions },
   ];
 
@@ -166,7 +191,10 @@ export function PropertiesView() {
       ? "Try another status or type."
       : "List your first home: add photos, rent and amenities in a few minutes.",
     action: filtered ? (
-      <Button variant="outline" onClick={() => setFilter({ availabilityStatus: undefined, propertyType: undefined })}>
+      <Button
+        variant="outline"
+        onClick={() => setFilter({ availabilityStatus: undefined, propertyType: undefined, listingType: undefined })}
+      >
         Clear filters
       </Button>
     ) : (
@@ -176,6 +204,13 @@ export function PropertiesView() {
 
   const toolbar = (
     <>
+      <FilterPill
+        icon={Tags}
+        label="Listing"
+        value={filters.listingType ?? ANY}
+        onValueChange={(value) => setFilter({ listingType: value === ANY ? undefined : (value as ListingType) })}
+        options={LISTING_OPTIONS}
+      />
       <FilterPill
         icon={ToggleRight}
         label="Availability"
@@ -200,7 +235,7 @@ export function PropertiesView() {
     <div className="space-y-6">
       <PageHeader
         title="My properties"
-        description="Edit listings, switch availability and remove homes you no longer rent."
+        description="Edit listings for rent or for sale, switch rental availability and remove homes you no longer list."
         actions={
           <AddPropertyButton />
         }
@@ -271,7 +306,7 @@ export function PropertiesView() {
                       </p>
                     </div>
                     <label className="flex items-center justify-between gap-3 rounded-2xl bg-foreground/3 px-3 py-2 text-sm">
-                      Listed as available
+                      {property.listingType === "SALE" ? "Sale status" : "Listed as available"}
                       {availabilitySwitch(property)}
                     </label>
                     <div className="mt-auto">{rowActions(property)}</div>

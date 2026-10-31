@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { LayoutDashboard, LogIn, RotateCcw, TriangleAlert } from "lucide-react";
 import { AnimatedCheck } from "@/components/payment/animated-check";
+import { DepositSuccessView } from "@/components/payment/deposit-success-view";
 import { LeaveReviewButton } from "@/components/reviews/leave-review-button";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -26,10 +27,16 @@ function Panel({ children }: { children: React.ReactNode }) {
   );
 }
 
+/** /payment/success: a sale deposit (?type=deposit) or, as before, a rental payment. */
 export function PaymentSuccessView() {
-  const pathname = usePathname();
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("session_id");
+  if (searchParams.get("type") === "deposit" && sessionId) return <DepositSuccessView sessionId={sessionId} />;
+  return <RentalPaymentSuccess sessionId={sessionId} />;
+}
+
+function RentalPaymentSuccess({ sessionId }: { sessionId: string | null }) {
+  const pathname = usePathname();
   const { status: authStatus } = useAuth();
   const { mutate, ...confirmation } = useConfirmPayment();
   const [alreadyConfirmed, setAlreadyConfirmed] = useState(false);
@@ -146,7 +153,7 @@ export function PaymentSuccessView() {
         </div>
         <div className="flex justify-between gap-4 border-t pt-2 text-base">
           <dt className="font-semibold">Amount paid</dt>
-          <dd className="font-bold italic">{formatCurrency(payment.amount)}</dd>
+          <dd className="font-bold">{formatCurrency(payment.amount)}</dd>
         </div>
       </dl>
 

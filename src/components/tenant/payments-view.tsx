@@ -10,29 +10,46 @@ import { QueryError } from "@/components/dashboard/query-error";
 import { StatusBadge } from "@/components/dashboard/status-badge";
 import { CopyButton } from "@/components/shared/copy-button";
 import { Button } from "@/components/ui/button";
+import { useMyDeposits } from "@/hooks/use-offers";
 import { useMyPayments } from "@/hooks/use-payments";
 import { TENANT_REQUESTS_PATH } from "@/hooks/use-rentals";
 import { formatCurrency, formatDate, formatDateTime, formatNumber } from "@/lib/format";
-import type { PaymentWithBooking } from "@/types";
+import { Badge } from "@/components/ui/badge";
+import type { PaymentStatus, Property } from "@/types";
+
+/** A rent payment or a sale deposit, as one row. */
+type PaymentRow = {
+  id: string;
+  kind: "RENT" | "DEPOSIT";
+  date: string;
+  property: Pick<Property, "id" | "title" | "images" | "city" | "division">;
+  amount: string;
+  paymentStatus: PaymentStatus;
+  transactionId: string;
+};
 
 /** "cs_test_a1B2c3…x9Y8" — enough to recognize a Stripe session. */
 function shortRef(id: string) {
   return id.length > 22 ? `${id.slice(0, 14)}…${id.slice(-4)}` : id;
 }
 
-const columns: DataTableColumn<PaymentWithBooking>[] = [
-  {
-    key: "date",
-    header: "Date",
-    // Paid payments have a paymentDate; pending/failed ones only createdAt.
-    cell: (payment) => formatDateTime(payment.paymentDate ?? payment.createdAt),
-  },
+const columns: DataTableColumn<PaymentRow>[] = [
+  { key: "date", header: "Date", cell: (payment) => formatDateTime(payment.date) },
   {
     key: "property",
     header: "Property",
-    cell: (payment) => <PropertyCell property={payment.booking.property} />,
+    cell: (payment) => <PropertyCell property={payment.property} />,
     className: "max-w-72",
     hideOnMobile: true,
+  },
+  {
+    key: "type",
+    header: "Type",
+    cell: (payment) => (
+      <Badge variant={payment.kind === "DEPOSIT" ? "gold" : "secondary"}>
+        {payment.kind === "DEPOSIT" ? "Deposit" : "Rent"}
+      </Badge>
+    ),
   },
   {
     key: "amount",
@@ -55,11 +72,44 @@ const columns: DataTableColumn<PaymentWithBooking>[] = [
 ];
 
 export function PaymentsView() {
-  const payments = useMyPayments();
+  const rentPayments = useMyPayments();
+  const deposits = useMyDeposits();
+  // Rent payments and sale deposits in one list, newest first. Paid ones have
+  // a paymentDate; pending/failed ones only createdAt.
+  const rows: PaymentRow[] | undefined =
+    rentPayments.data && deposits.data
+      ? [
+          ...rentPayments.data.map((payment) => ({
+            id: payment.id,
+            kind: "RENT" as const,
+            date: payment.paymentDate ?? payment.createdAt,
+            property: payment.booking.property,
+            amount: payment.amount,
+            paymentStatus: payment.paymentStatus,
+            transactionId: payment.transactionId,
+          })),
+          ...deposits.data.map((deposit) => ({
+            id: deposit.id,
+            kind: "DEPOSIT" as const,
+            date: deposit.paymentDate ?? deposit.createdAt,
+            property: deposit.offer.property,
+            amount: deposit.amount,
+            paymentStatus: deposit.paymentStatus,
+            transactionId: deposit.transactionId,
+          })),
+        ].sort((a, b) => b.date.localeCompare(a.date))
+      : undefined;
+  const payments = {
+    data: rows,
+    isPending: rentPayments.isPending || deposits.isPending,
+    isError: rentPayments.isError || deposits.isError,
+    error: rentPayments.error ?? deposits.error,
+    refetch: () => Promise.all([rentPayments.refetch(), deposits.refetch()]),
+  };
   const paid = (payments.data ?? []).filter((payment) => payment.paymentStatus === "PAID");
   const totalPaid = paid.reduce((sum, payment) => sum + Number(payment.amount), 0);
   const lastPaid = paid
-    .map((payment) => payment.paymentDate ?? payment.createdAt)
+    .map((payment) => payment.date)
     .sort()
     .at(-1);
 
@@ -67,7 +117,7 @@ export function PaymentsView() {
     <div className="space-y-6">
       <PageHeader
         title="Payments"
-        description="Every Stripe payment for your rentals, in US dollars."
+        description="Every Stripe payment, rent and home deposits, in US dollars."
       />
 
       {!payments.isError && (
@@ -106,12 +156,12 @@ export function PaymentsView() {
           rows={payments.data}
           getRowKey={(payment) => payment.id}
           isLoading={payments.isPending}
-          mobileTitle={(payment) => <PropertyCell property={payment.booking.property} />}
+          mobileTitle={(payment) => <PropertyCell property={payment.property} />}
           empty={{
             icon: CreditCard,
             title: "No payments yet",
             description:
-              "Once a landlord approves your request, pay from My Requests and the receipt will show up here.",
+              "Rent you pay for approved requests and deposits on accepted offers show up here.",
             action: (
               <Button asChild>
                 <Link href={TENANT_REQUESTS_PATH}>View my requests</Link>

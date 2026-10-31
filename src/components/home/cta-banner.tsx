@@ -25,7 +25,7 @@ export function CtaBanner() {
             Your next chapter starts <SerifAccent className="text-gold">here</SerifAccent>
           </h2>
           <p className="mt-6 max-w-xl text-lg text-white/75">
-            Find a home and request it in minutes, or list your property and start receiving requests.
+            Rent or buy a home in minutes, or list your property and start receiving requests and offers.
           </p>
           <div className="mt-10 flex w-full flex-col justify-center gap-3 sm:w-auto sm:flex-row">
             <Button asChild size="lg" variant="gold">

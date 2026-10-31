@@ -4,6 +4,8 @@ export const CONTACT_SUBJECTS = [
   "General",
   "Tenant support",
   "Landlord support",
+  "Buying",
+  "Selling",
   "Payments",
   "Partnership",
 ] as const;

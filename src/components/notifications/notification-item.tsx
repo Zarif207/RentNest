@@ -2,9 +2,14 @@
 
 import Link from "next/link";
 import {
+  ArrowLeftRight,
   Ban,
   BadgeCheck,
   Banknote,
+  HandCoins,
+  House,
+  Signature,
+  Undo2,
   CircleCheck,
   CircleX,
   CreditCard,
@@ -35,6 +40,14 @@ export const NOTIFICATION_ICONS: Record<NotificationType, { icon: LucideIcon; to
   REVIEW_RECEIVED: { icon: Star, tone: "good" },
   ACCOUNT_BLOCKED: { icon: Ban, tone: "bad" },
   ACCOUNT_UNBLOCKED: { icon: ShieldCheck, tone: "good" },
+  OFFER_RECEIVED: { icon: HandCoins, tone: "neutral" },
+  OFFER_ACCEPTED: { icon: CircleCheck, tone: "good" },
+  OFFER_REJECTED: { icon: CircleX, tone: "bad" },
+  OFFER_COUNTERED: { icon: ArrowLeftRight, tone: "neutral" },
+  OFFER_WITHDRAWN: { icon: Undo2, tone: "neutral" },
+  DEPOSIT_RECEIVED: { icon: Banknote, tone: "good" },
+  DEPOSIT_PAID: { icon: Signature, tone: "good" },
+  SALE_COMPLETED: { icon: House, tone: "good" },
 };
 
 const TONES = {

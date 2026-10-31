@@ -17,7 +17,7 @@ import { toLiveStats } from "@/lib/live-stats";
 export const metadata: Metadata = {
   title: "About",
   description:
-    "Why RentNest exists, what it stands for and how it keeps renting safe: Stripe payments, role-based access and moderation.",
+    "Why RentNest exists, what it stands for and how it keeps renting and buying safe: Stripe payments, role-based access and moderation.",
 };
 
 const STORY_IMAGE = "https://images.unsplash.com/photo-1505691938895-1758d7feb511";
@@ -43,16 +43,17 @@ export default async function AboutPage() {
             </h2>
             <div className="space-y-4 text-lg leading-relaxed text-muted-foreground">
               <p>
-                Finding a rental usually means jumping between listing sites, chasing landlords for answers and
-                sending money on trust.
+                Finding a home to rent or buy usually means jumping between listing sites, chasing owners for
+                answers and sending money on trust.
               </p>
               <p>
-                RentNest brings it together. Landlords list homes with photos and monthly prices. Tenants request
-                a move-in date and lease length. Landlords approve or decline from their dashboard, and payment
-                happens through Stripe only after a yes.
+                RentNest brings it together. Owners list homes to rent or to buy, with photos and real prices.
+                Renters request a move-in date and lease length; buyers make offers. Owners answer from their
+                dashboard, and money moves through Stripe only after a yes: the rent, or a deposit on an agreed
+                price.
               </p>
               <p>
-                It began as a full-stack project to show that a rental marketplace can be simple and safe at the
+                It began as a full-stack project to show that a home marketplace can be simple and safe at the
                 same time, and every number on this site comes straight from its live database.
               </p>
             </div>
@@ -111,7 +112,8 @@ export default async function AboutPage() {
           </h2>
           <Signature className="mt-4" />
           <p className="mt-5 max-w-2xl font-serif text-2xl leading-snug sm:text-3xl">
-            Designed and built to make renting in the US simpler, clearer and safer, for both sides of the door.
+            Designed and built to make renting and buying in the US simpler, clearer and safer, for both sides of
+            the door.
           </p>
           <Link
             href="https://github.com/Zarif207/RentNest"

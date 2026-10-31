@@ -1,12 +1,11 @@
-import { HandCoins, ShieldCheck } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
+import { MakeOffer } from "@/components/offers/make-offer";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { formatCurrency, formatNumber } from "@/lib/format";
 import { availabilityLabel, pricePerSqft } from "@/lib/listing";
+import { depositFor } from "@/lib/offers";
 import type { AvailabilityStatus, PropertyWithRelations } from "@/types";
 
-// Earnest-money deposit, as the backend charges it: 1% of the agreed price, at least $500.
-const depositFor = (price: number) => Math.max(500, Math.round(price * 0.01));
 
 const STATUS_BADGE: Record<AvailabilityStatus, "active" | "pending" | "completed"> = {
   AVAILABLE: "active",
@@ -50,19 +49,7 @@ export function SaleCard({ property }: { property: PropertyWithRelations }) {
         ))}
       </dl>
 
-      {/* Offers are sent from here once the offer flow ships (PLAN-FINAL C2). */}
-      <div className="space-y-2">
-        <Button variant="gold" size="lg" className="h-13 w-full text-base" disabled>
-          <HandCoins data-icon="inline-start" /> Make an offer
-        </Button>
-        <p className="text-center text-sm text-muted-foreground">
-          {status === "UNDER_CONTRACT"
-            ? "This home is under contract, so it isn't taking offers."
-            : status === "SOLD"
-              ? "This home has been sold."
-              : "Online offers are coming soon."}
-        </p>
-      </div>
+      <MakeOffer property={property} />
 
       {open && price > 0 && (
         <p className="flex items-start gap-2 text-xs text-muted-foreground">

@@ -32,7 +32,7 @@ function afterPropertyChange(queryClient: QueryClient) {
   void refreshPublicListings();
 }
 
-export type LandlordPropertyFilters = Pick<PropertyQuery, "availabilityStatus" | "propertyType">;
+export type LandlordPropertyFilters = Pick<PropertyQuery, "availabilityStatus" | "propertyType" | "listingType">;
 
 export function useLandlordProperties(page: number, filters: LandlordPropertyFilters = {}) {
   return useQuery({

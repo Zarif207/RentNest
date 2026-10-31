@@ -3,13 +3,29 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpRight, BarChart3, Building2, Check, Hourglass, House, Inbox, KeyRound, Star, X } from "lucide-react";
+import {
+  ArrowUpRight,
+  BadgeCheck,
+  Banknote,
+  BarChart3,
+  Building2,
+  Check,
+  HandCoins,
+  Hourglass,
+  House,
+  Inbox,
+  KeyRound,
+  Signpost,
+  Star,
+  X,
+} from "lucide-react";
 import { BentoCard, BentoGrid, MetricCard, ProgressPair } from "@/components/dashboard/bento";
 import { ConfirmDialog } from "@/components/dashboard/confirm-dialog";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { QueryError } from "@/components/dashboard/query-error";
 import { StatusPill } from "@/components/dashboard/status-badge";
 import { EarningsChart, monthlyEarnings } from "@/components/landlord/earnings-chart";
+import { OfferStatusPill } from "@/components/offers/offer-status-pill";
 import { RecentActivityCard } from "@/components/notifications/recent-activity-card";
 import { EmptyState } from "@/components/shared/empty-state";
 import { UserAvatar } from "@/components/shared/user-avatar";
@@ -25,9 +41,11 @@ import {
 } from "@/hooks/use-landlord-properties";
 import { useLandlordReviews } from "@/hooks/use-landlord-reviews";
 import { useLandlordAccess } from "@/hooks/use-landlord-access";
+import { OWNER_OFFERS_PATH, useLandlordOffers } from "@/hooks/use-landlord-offers";
 import { useDecideRequest, useLandlordRequests } from "@/hooks/use-landlord-requests";
 import { formatCurrency, formatDate, formatNumber } from "@/lib/format";
-import { listingPriceLabel } from "@/lib/listing";
+import { availabilityLabel, listingPriceLabel } from "@/lib/listing";
+import { isOpenOffer } from "@/lib/offers";
 import { formatLocation } from "@/lib/us-states";
 import { cn } from "@/lib/utils";
 import type { LandlordBooking, PropertyWithRelations } from "@/types";
@@ -55,7 +73,7 @@ function PropertyObject({ property }: { property: PropertyWithRelations }) {
             available ? "bg-background/85" : "bg-foreground/80 text-background",
           )}
         >
-          {available ? "Available" : "Rented"}
+          {availabilityLabel(property.availabilityStatus)}
         </span>
         {canWrite && (
           <Link
@@ -73,17 +91,22 @@ function PropertyObject({ property }: { property: PropertyWithRelations }) {
           <p className="shrink-0 text-sm font-semibold">{listingPriceLabel(property)}</p>
         </div>
         <p className="truncate text-xs text-muted-foreground">{formatLocation(property.city, property.division)}</p>
-        <label className="flex items-center justify-between gap-2 pt-2 text-xs text-muted-foreground">
-          Listed as available
-          <ApprovalTooltip>
-            <Switch
-              checked={available}
-              disabled={toggle.isPending || !canWrite}
-              onCheckedChange={(checked) => toggle.mutate({ id: property.id, status: checked ? "AVAILABLE" : "RENTED" })}
-              aria-label={`${property.title} is available`}
-            />
-          </ApprovalTooltip>
-        </label>
+        {/* Homes for sale change status through their offers, not by hand. */}
+        {property.listingType === "SALE" ? (
+          <p className="pt-2 text-xs text-muted-foreground">For sale · status set by offers</p>
+        ) : (
+          <label className="flex items-center justify-between gap-2 pt-2 text-xs text-muted-foreground">
+            Listed as available
+            <ApprovalTooltip>
+              <Switch
+                checked={available}
+                disabled={toggle.isPending || !canWrite}
+                onCheckedChange={(checked) => toggle.mutate({ id: property.id, status: checked ? "AVAILABLE" : "RENTED" })}
+                aria-label={`${property.title} is available`}
+              />
+            </ApprovalTooltip>
+          </label>
+        )}
       </div>
     </li>
   );
@@ -93,6 +116,7 @@ export function LandlordOverview() {
   const { user } = useAuth();
   const properties = useAllLandlordProperties();
   const requests = useLandlordRequests();
+  const offers = useLandlordOffers();
   const reviews = useLandlordReviews();
   const decide = useDecideRequest();
   const { canWrite } = useLandlordAccess();
@@ -101,7 +125,20 @@ export function LandlordOverview() {
   const propertyList = properties.data?.data ?? [];
   const requestList = requests.data ?? [];
   const reviewList = reviews.data?.data ?? [];
-  const available = propertyList.filter((p) => p.availabilityStatus === "AVAILABLE").length;
+  const rentals = propertyList.filter((p) => p.listingType === "RENT");
+  const available = rentals.filter((p) => p.availabilityStatus === "AVAILABLE").length;
+  const offerList = offers.data ?? [];
+  const forSale = propertyList.filter((p) => p.listingType === "SALE" && p.availabilityStatus !== "SOLD").length;
+  const openOffers = offerList.filter((offer) => isOpenOffer(offer.status)).length;
+  const salesCompleted = offerList.filter((offer) => offer.status === "COMPLETED").length;
+  // Deposits that came in (paid offers, whether or not the sale has closed yet).
+  const depositsReceived = offerList
+    .filter((offer) => offer.payment?.paymentStatus === "PAID")
+    .reduce((sum, offer) => sum + Number(offer.payment?.amount ?? 0), 0);
+  // Offers waiting for an answer first, then the newest.
+  const incomingOffers = [...offerList]
+    .sort((a, b) => Number(b.status === "PENDING") - Number(a.status === "PENDING") || b.createdAt.localeCompare(a.createdAt))
+    .slice(0, REQUEST_COUNT);
   const count = (status: string) => requestList.filter((r) => r.bookingStatus === status).length;
   // Full lease value of every paid-for rental (ACTIVE) and finished one (COMPLETED).
   const earnings = requestList
@@ -120,7 +157,7 @@ export function LandlordOverview() {
     <div className="space-y-6">
       <PageHeader
         title={user ? `Welcome back, ${user.name.split(" ")[0]}` : <Skeleton className="h-10 w-64" />}
-        description="Your listings, requests and earnings at a glance."
+        description="Your listings, requests, offers and earnings at a glance."
         actions={
           <AddPropertyButton />
         }
@@ -142,7 +179,7 @@ export function LandlordOverview() {
           ) : (
             <ProgressPair
               left={{ label: "Available", value: available }}
-              right={{ label: "Rented", value: propertyList.length - available }}
+              right={{ label: "Rented", value: rentals.length - available }}
             />
           )}
         </BentoCard>
@@ -281,6 +318,81 @@ export function LandlordOverview() {
                       </ApprovalTooltip>
                     )}
                   </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </BentoCard>
+
+        <MetricCard
+          label="Homes for sale"
+          value={formatNumber(forSale)}
+          hint="Listed, not yet sold"
+          icon={Signpost}
+          isLoading={properties.isPending}
+          className="md:col-span-3 lg:col-span-3"
+        />
+        <MetricCard
+          label="Open offers"
+          value={offers.isError ? "—" : formatNumber(openOffers)}
+          hint="Pending, countered or accepted"
+          icon={HandCoins}
+          href={OWNER_OFFERS_PATH}
+          isLoading={offers.isPending}
+          className="md:col-span-3 lg:col-span-3"
+        />
+        <MetricCard
+          label="Sales completed"
+          value={offers.isError ? "—" : formatNumber(salesCompleted)}
+          hint="Homes marked sold"
+          icon={BadgeCheck}
+          isLoading={offers.isPending}
+          className="md:col-span-3 lg:col-span-3"
+        />
+        <MetricCard
+          label="Deposits received"
+          value={offers.isError ? "—" : formatCurrency(depositsReceived)}
+          hint="Paid earnest-money deposits"
+          icon={Banknote}
+          isLoading={offers.isPending}
+          className="md:col-span-3 lg:col-span-3"
+        />
+
+        <BentoCard title="Incoming offers" href={OWNER_OFFERS_PATH} className="md:col-span-6 lg:col-span-12">
+          {offers.isError ? (
+            <QueryError error={offers.error} onRetry={() => void offers.refetch()} />
+          ) : offers.isPending ? (
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {Array.from({ length: 4 }, (_, index) => (
+                <Skeleton key={index} className="h-24 rounded-2xl" />
+              ))}
+            </div>
+          ) : incomingOffers.length === 0 ? (
+            <EmptyState
+              icon={HandCoins}
+              title="No offers yet"
+              description="List a home for sale and buyers' offers will show up here."
+            />
+          ) : (
+            <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {incomingOffers.map((offer) => (
+                <li key={offer.id}>
+                  <Link
+                    href={OWNER_OFFERS_PATH}
+                    className="flex h-full flex-col gap-3 rounded-2xl bg-foreground/3 p-3 transition-colors outline-none hover:bg-foreground/5 focus-visible:ring-3 focus-visible:ring-ring/50"
+                  >
+                    <div className="flex items-center gap-3">
+                      <UserAvatar name={offer.buyer.name} className="size-9" />
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium">{offer.buyer.name}</p>
+                        <p className="truncate text-xs text-muted-foreground">{offer.property.title}</p>
+                      </div>
+                    </div>
+                    <div className="mt-auto flex items-center justify-between gap-2">
+                      <p className="text-sm font-semibold">{formatCurrency(offer.agreedAmount ?? offer.offerAmount)}</p>
+                      <OfferStatusPill status={offer.status} />
+                    </div>
+                  </Link>
                 </li>
               ))}
             </ul>

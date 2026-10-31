@@ -2,7 +2,9 @@
 
 import { useSyncExternalStore } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { ArrowLeft, CircleX, CreditCard } from "lucide-react";
+import { DepositCancelView } from "@/components/payment/deposit-cancel-view";
 import { Button } from "@/components/ui/button";
 import { PENDING_PAYMENT_KEY } from "@/hooks/use-payments";
 import { TENANT_REQUESTS_PATH } from "@/hooks/use-rentals";
@@ -20,7 +22,14 @@ function readPendingBooking() {
 // sessionStorage doesn't change while this page is open.
 const subscribe = () => () => {};
 
+/** /payment/cancel: a sale deposit (?type=deposit&offerId=) or, as before, a rental payment. */
 export function PaymentCancelView() {
+  const searchParams = useSearchParams();
+  if (searchParams.get("type") === "deposit") return <DepositCancelView offerId={searchParams.get("offerId")} />;
+  return <RentalPaymentCancel />;
+}
+
+function RentalPaymentCancel() {
   const bookingId = useSyncExternalStore(subscribe, readPendingBooking, () => null);
 
   return (
