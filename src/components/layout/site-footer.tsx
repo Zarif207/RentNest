@@ -79,7 +79,7 @@ async function CurrentYear() {
  */
 export function SiteFooter() {
   return (
-    <footer className="dark mt-2 overflow-hidden bg-background text-foreground">
+    <footer data-defer-render className="dark mt-2 overflow-hidden bg-background text-foreground">
       <div className="border-y border-white/10 py-4 text-sm tracking-[0.3em] text-white/60 uppercase">
         <Marquee duration={30} pauseOnHover={false}>
           {Array.from({ length: 6 }, (_, i) => (

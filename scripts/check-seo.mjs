@@ -75,6 +75,11 @@ for (const loc of urls) {
   const h1s = (html.match(/<h1[\s>]/g) ?? []).length;
   if (h1s !== 1) fail(path, `${h1s} <h1> elements`);
   if (!/<link rel="canonical"/.test(html)) fail(path, "no canonical link");
+  // Crawlers that don't run JavaScript (and Lighthouse) read only <head>.
+  const head = html.slice(0, html.indexOf("</head>"));
+  for (const [tag, pattern] of [["title", /<title>/], ["description", /<meta name="description"/], ["canonical", /<link rel="canonical"/]]) {
+    if (!pattern.test(head)) fail(path, `${tag} isn't in <head> (streamed metadata)`);
+  }
   if (/<meta name="robots" content="noindex/.test(html)) fail(path, "is in the sitemap but noindex");
   for (const tag of ["<main", "<nav", "<footer"]) if (!html.includes(tag)) fail(path, `no ${tag}> landmark`);
   if (!/<meta property="og:image"/.test(html)) fail(path, "no og:image");
@@ -107,6 +112,11 @@ for (const attempt of ["first", "repeat"]) {
   const html = await response.text();
   if (attempt === "repeat" && response.status !== 404) fail(unknownListing, `expected 404 on repeat, got ${response.status}`);
   if (!/<meta name="robots" content="noindex/.test(html)) fail(unknownListing, `${attempt} request is not noindex`);
+}
+// Browse lists: noindex (as a header) only when narrowed by more than one filter.
+for (const [path, noindex] of [["/rent?city=Austin", false], ["/buy?city=Austin&propertyType=HOUSE", true], ["/properties?division=Texas&minPrice=1000", true]]) {
+  const header = (await fetch(`${base}${path}`)).headers.get("x-robots-tag") ?? "";
+  if (header.includes("noindex") !== noindex) fail(path, `expected ${noindex ? "a" : "no"} noindex header, got "${header}"`);
 }
 for (const privatePath of ["/auth/login", "/payment/cancel"]) {
   const html = await (await fetch(`${base}${privatePath}`)).text();

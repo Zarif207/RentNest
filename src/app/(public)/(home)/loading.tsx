@@ -1,4 +1,4 @@
-import { PropertyGridSkeleton } from "@/components/properties/property-card-skeleton";
+import { HomeSectionsSkeleton } from "@/components/home/home-sections-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
 
 // Home page skeleton: the dark full-screen hero and the featured grid.
@@ -15,10 +15,7 @@ export default function Loading() {
           <Skeleton className="mt-3 h-16 w-full max-w-4xl rounded-full bg-white/10" />
         </div>
       </div>
-      <div className="mx-auto max-w-7xl space-y-10 px-4 pt-24 pb-20 sm:px-6 lg:px-8">
-        <Skeleton className="h-12 w-full max-w-lg" />
-        <PropertyGridSkeleton />
-      </div>
+      <HomeSectionsSkeleton />
     </div>
   );
 }

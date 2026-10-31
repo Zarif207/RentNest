@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Image from "next/image";
+import Image from "@/components/shared/photo";
 import { BrandLogo } from "@/components/brand/brand-logo";
 import { SerifAccent } from "@/components/shared/serif-accent";
 import { ThemeToggle } from "@/components/shared/theme-toggle";

@@ -1,4 +1,4 @@
-import Image from "next/image";
+import Image from "@/components/shared/photo";
 import Link from "next/link";
 import { ArrowUpRight, Bath, BedDouble, House, MapPin, Ruler, Tag } from "lucide-react";
 import { TiltCard } from "@/components/motion/tilt-card";

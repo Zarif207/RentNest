@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import Image from "next/image";
+import Image from "@/components/shared/photo";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, ArrowUpRight, Bath, BedDouble, House, Ruler } from "lucide-react";
 import { FavoriteButton } from "@/components/properties/favorite-button";

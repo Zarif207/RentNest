@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import Image from "@/components/shared/photo";
 import { Parallax } from "@/components/motion/parallax";
 import { SplitText } from "@/components/motion/split-text";
 import { useIntroDone } from "@/hooks/use-intro-done";

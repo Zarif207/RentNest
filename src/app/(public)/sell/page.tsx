@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Image from "next/image";
+import Image from "@/components/shared/photo";
 import { BellRing, HandCoins, ShieldCheck, Signature, Tag, UserCheck } from "lucide-react";
 import { HomeFaq, type FaqItem } from "@/components/home/home-faq";
 import { JsonLd } from "@/components/seo/json-ld";

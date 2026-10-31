@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import Image from "@/components/shared/photo";
 import Link from "next/link";
 import { ArrowRight, Bath, BedDouble, Heart, House, MapPin, Ruler } from "lucide-react";
 import { PageHeader } from "@/components/dashboard/page-header";

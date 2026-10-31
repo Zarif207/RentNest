@@ -1,16 +1,18 @@
 import type { NextConfig } from "next";
+import { OPTIMIZED_IMAGE_HOSTS } from "./src/lib/image-loader";
 
 const nextConfig: NextConfig = {
   cacheComponents: true,
+  // Unsplash photos skip the optimizer (components/shared/photo.tsx).
   images: {
-    loader: "custom",
-    loaderFile: "./src/lib/image-loader.ts",
-    remotePatterns: [
-      { protocol: "https", hostname: "images.unsplash.com" },
-      { protocol: "https", hostname: "i.ibb.co" },
-    ],
+    formats: ["image/avif", "image/webp"],
+    minimumCacheTTL: 60 * 60 * 24 * 30,
+    remotePatterns: OPTIMIZED_IMAGE_HOSTS.map((hostname) => ({ protocol: "https", hostname })),
   },
   partialPrefetching: true,
+  // Import only the Radix primitives in use from the unified package
+  // (lucide-react and date-fns are on Next's default list already).
+  experimental: { optimizePackageImports: ["radix-ui"] },
   // Old links that filtered /properties by listing type go to the type's own page.
   async redirects() {
     return [

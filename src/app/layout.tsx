@@ -4,6 +4,7 @@ import Script from "next/script";
 import { CookieConsent } from "@/components/consent/cookie-consent";
 import { INTRO_GATE_SCRIPT } from "@/components/motion/intro-gate";
 import { AuthProvider } from "@/components/providers/auth-provider";
+import { MotionProvider } from "@/components/providers/motion-provider";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
@@ -81,11 +82,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         </Script>
         <ThemeProvider>
           <QueryProvider>
-            <AuthProvider>
-              <TooltipProvider>{children}</TooltipProvider>
-            </AuthProvider>
-            <Toaster position="top-center" closeButton />
-            <CookieConsent />
+            <MotionProvider>
+              <AuthProvider>
+                <TooltipProvider>{children}</TooltipProvider>
+              </AuthProvider>
+              <Toaster position="top-center" closeButton />
+              <CookieConsent />
+            </MotionProvider>
           </QueryProvider>
         </ThemeProvider>
       </body>

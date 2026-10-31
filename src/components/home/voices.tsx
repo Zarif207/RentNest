@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import * as m from "motion/react-m";
+import { AnimatePresence, useReducedMotion } from "motion/react";
 import { ArrowLeft, ArrowRight, MessageSquareQuote } from "lucide-react";
 import { Reveal } from "@/components/motion/reveal";
 import { StarRating } from "@/components/shared/star-rating";
@@ -83,7 +84,7 @@ export function Voices({ items, summary }: { items: Voice[]; summary: VoicesSumm
     <Reveal className="rounded-3xl border border-border bg-card p-6 sm:p-12">
       <div aria-live="polite" className="min-h-72 sm:min-h-64">
         <AnimatePresence mode="wait" initial={false}>
-          <motion.figure
+          <m.figure
             key={current.id}
             initial={reduceMotion ? false : { opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
@@ -106,7 +107,7 @@ export function Voices({ items, summary }: { items: Voice[]; summary: VoicesSumm
                 </Link>
               </div>
             </figcaption>
-          </motion.figure>
+          </m.figure>
         </AnimatePresence>
       </div>
 

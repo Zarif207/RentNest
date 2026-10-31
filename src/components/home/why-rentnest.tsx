@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import Image from "next/image";
+import Image from "@/components/shared/photo";
 import { CreditCard, LayoutDashboard, Lock, Moon, ShieldCheck, Sun } from "lucide-react";
 import { Reveal } from "@/components/motion/reveal";
 import { Badge } from "@/components/ui/badge";

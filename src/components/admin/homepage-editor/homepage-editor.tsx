@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Image from "next/image";
+import Image from "@/components/shared/photo";
 import Link from "next/link";
 import { ArrowUpRight, House, ImagePlus, Loader2, Plus, Trash2, TriangleAlert } from "lucide-react";
 import { BentoCard } from "@/components/dashboard/bento";

@@ -1,6 +1,7 @@
 "use client";
 
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import * as m from "motion/react-m";
+import { AnimatePresence, useReducedMotion } from "motion/react";
 import { Building2, Check, Search } from "lucide-react";
 import type { UseFormRegisterReturn } from "react-hook-form";
 import { FieldError } from "@/components/ui/field";
@@ -59,7 +60,7 @@ export function RolePicker({ registration, value, error }: RolePickerProps) {
             >
               <input type="radio" value={role} className="sr-only" {...registration} />
               {selected && (
-                <motion.span
+                <m.span
                   layoutId="role-picker-outline"
                   transition={reduceMotion ? { duration: 0 } : { type: "spring", bounce: 0.2, duration: 0.5 }}
                   aria-hidden
@@ -80,7 +81,7 @@ export function RolePicker({ registration, value, error }: RolePickerProps) {
               </span>
               <AnimatePresence>
                 {selected && (
-                  <motion.span
+                  <m.span
                     key="check"
                     initial={reduceMotion ? false : { scale: 0, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
@@ -90,7 +91,7 @@ export function RolePicker({ registration, value, error }: RolePickerProps) {
                     className="absolute top-3 right-3 grid size-6 place-items-center rounded-full bg-gold text-gold-foreground"
                   >
                     <Check className="size-3.5" />
-                  </motion.span>
+                  </m.span>
                 )}
               </AnimatePresence>
             </label>

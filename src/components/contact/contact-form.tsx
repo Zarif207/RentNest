@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import * as m from "motion/react-m";
+import { AnimatePresence, useReducedMotion } from "motion/react";
 import { ArrowRight, CircleCheck, Loader2 } from "lucide-react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -43,7 +44,7 @@ export function ContactForm() {
     <div className="rounded-3xl border border-border bg-card/70 p-6 shadow-2xl shadow-black/5 backdrop-blur-xl sm:p-8 dark:shadow-black/30">
       <AnimatePresence mode="wait" initial={false}>
         {sentTo ? (
-          <motion.div key="thanks" {...fade} className="flex min-h-120 flex-col items-center justify-center text-center" role="status">
+          <m.div key="thanks" {...fade} className="flex min-h-120 flex-col items-center justify-center text-center" role="status">
             <span className="grid size-16 place-items-center rounded-full bg-gold/15 text-bronze">
               <CircleCheck className="size-7" aria-hidden />
             </span>
@@ -55,9 +56,9 @@ export function ContactForm() {
             <Button variant="outline" className="mt-8" onClick={() => setSentTo(null)}>
               Write another message
             </Button>
-          </motion.div>
+          </m.div>
         ) : (
-          <motion.form key="form" {...fade} onSubmit={form.handleSubmit(onSubmit)} noValidate className="space-y-5">
+          <m.form key="form" {...fade} onSubmit={form.handleSubmit(onSubmit)} noValidate className="space-y-5">
             <div>
               <h2 className="text-2xl font-medium tracking-tight">Send a message</h2>
               <p className="mt-1 text-sm text-muted-foreground">All fields are required.</p>
@@ -121,7 +122,7 @@ export function ContactForm() {
                 </>
               )}
             </Button>
-          </motion.form>
+          </m.form>
         )}
       </AnimatePresence>
     </div>

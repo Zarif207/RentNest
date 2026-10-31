@@ -1,7 +1,7 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import Image from "next/image";
+import Image from "@/components/shared/photo";
 import Link from "next/link";
 import {
   ArrowRight,

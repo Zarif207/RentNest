@@ -3,7 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { motion, useReducedMotion } from "motion/react";
+import * as m from "motion/react-m";
+import { useReducedMotion } from "motion/react";
 import { House, LogOut, MoreHorizontal, Search } from "lucide-react";
 import { BrandLogo } from "@/components/brand/brand-logo";
 import { NotificationsMenu } from "@/components/dashboard/notifications-menu";
@@ -107,7 +108,7 @@ function PillNav({ variant }: { variant: "inline" | "row" }) {
                 )}
               >
                 {isActive && (
-                  <motion.span
+                  <m.span
                     layoutId={`dashboard-pill-${variant}`}
                     transition={reduceMotion ? { duration: 0 } : { type: "spring", bounce: 0.15, duration: 0.5 }}
                     className="absolute inset-0 rounded-full bg-foreground"

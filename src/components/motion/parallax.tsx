@@ -42,7 +42,7 @@ export function Parallax({
   );
 
   return (
-    <div ref={ref} className={cn("will-change-transform", className)}>
+    <div ref={ref} className={cn(motionOk && "will-change-transform", className)}>
       {children}
     </div>
   );

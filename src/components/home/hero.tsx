@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import Image from "next/image";
+import Image from "@/components/shared/photo";
 import { HeroMosaic, MOSAIC_FACETS, type HeroCard } from "@/components/home/hero-mosaic";
 import { HeroSearch, type HeroSuggestion } from "@/components/home/hero-search";
 import { SplitText } from "@/components/motion/split-text";

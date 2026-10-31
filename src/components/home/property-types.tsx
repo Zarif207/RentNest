@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import Image from "next/image";
+import Image from "@/components/shared/photo";
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { useMotionOk } from "@/hooks/use-motion";

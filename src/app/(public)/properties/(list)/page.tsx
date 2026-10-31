@@ -1,18 +1,15 @@
 import type { Metadata } from "next";
 import { BrowsePage } from "@/components/properties/browse/browse-page";
 import { SerifAccent } from "@/components/shared/serif-accent";
-import { browseMetadata } from "@/lib/seo";
+import { pageMetadata } from "@/lib/seo";
 
-export async function generateMetadata({ searchParams }: PageProps<"/properties">): Promise<Metadata> {
-  return browseMetadata(
-    {
-      title: "Properties",
-      description: "Browse homes for rent and for sale across the US by city, price, type and amenities.",
-      path: "/properties",
-    },
-    await searchParams,
-  );
-}
+// Static, so it's in <head>. Lists narrowed by several filters get a
+// noindex header from the proxy instead (canonical stays the bare path).
+export const metadata: Metadata = pageMetadata({
+  title: "Properties",
+  description: "Browse homes for rent and for sale across the US by city, price, type and amenities.",
+  path: "/properties",
+});
 
 export default async function PropertiesPage({ searchParams }: PageProps<"/properties">) {
   return (

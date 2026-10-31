@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import Image from "next/image";
+import Image from "@/components/shared/photo";
 import { useMotionOk } from "@/hooks/use-motion";
 import { gsap, useGSAP } from "@/lib/gsap";
 import { cn } from "@/lib/utils";

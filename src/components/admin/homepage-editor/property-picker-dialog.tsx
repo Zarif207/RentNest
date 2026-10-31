@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
+import Image from "@/components/shared/photo";
 import { Check, House, Search } from "lucide-react";
 import { DebouncedInput } from "@/components/shared/debounced-input";
 import { Button } from "@/components/ui/button";

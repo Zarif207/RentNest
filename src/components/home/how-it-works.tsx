@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { motion } from "motion/react";
+import * as m from "motion/react-m";
 import { MOCKS, type MockKey, type MockListing } from "@/components/home/how-it-works-mocks";
 import { Reveal } from "@/components/motion/reveal";
 import { SerifAccent } from "@/components/shared/serif-accent";
@@ -144,7 +144,7 @@ export function HowItWorks({ listing }: { listing: MockListing }) {
           className="relative rounded-full px-4 py-2 text-sm font-medium outline-none focus-visible:ring-3 focus-visible:ring-ring/50 sm:px-5"
         >
           {audience === key && (
-            <motion.span
+            <m.span
               layoutId="how-it-works-toggle"
               transition={{ type: "spring", bounce: 0.15, duration: 0.5 }}
               className="absolute inset-0 rounded-full bg-foreground"

@@ -1,10 +1,11 @@
-import { Fragment } from "react";
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { CtaBanner } from "@/components/home/cta-banner";
 import { FeaturedCollection, type FeaturedHome } from "@/components/home/featured-collection";
 import { Hero, type HeroCard } from "@/components/home/hero";
 import type { HeroSuggestion } from "@/components/home/hero-search";
 import { HomeFaq, type FaqItem } from "@/components/home/home-faq";
+import { HomeSectionsSkeleton } from "@/components/home/home-sections-skeleton";
 import { HomeStatement } from "@/components/home/home-statement";
 import { HowItWorks } from "@/components/home/how-it-works";
 import type { MockListing } from "@/components/home/how-it-works-mocks";
@@ -321,15 +322,40 @@ function toFaq(properties: PropertyWithRelations[]): FaqItem[] {
 }
 
 export default async function HomePage() {
-  const [available, all, homepage, states] = await Promise.all([
-    orNull(getPublicProperties({ availabilityStatus: "AVAILABLE", limit: 1 })),
+  const [all, homepage, states] = await Promise.all([
     orNull(getPublicProperties({ limit: 100 })),
     orNull(getPublicHomepage()),
     orNull(getPublicPropertyStates()),
   ]);
-
   const listings = all?.data ?? [];
   // The admin's homepage config (revalidated every 60 s and on save).
+  const settings = homepage ?? fallbackHomepage(listings);
+  const showFaq = settings.sectionOrder.includes("faq");
+
+  return (
+    <>
+      <JsonLd data={[organizationLd(), websiteLd(), ...(showFaq ? [faqLd(toFaq(listings))] : [])]} />
+      <Hero
+        suggestions={toHeroSuggestions(states ?? [], listings)}
+        cards={toHeroCards(settings.hero.properties)}
+      />
+      {/* Its own boundary, so the hero's HTML (the LCP) is revealed without
+          waiting for the rest of the page's markup to arrive. */}
+      <Suspense fallback={<HomeSectionsSkeleton />}>
+        <HomeSections />
+      </Suspense>
+    </>
+  );
+}
+
+/** Everything below the hero. The listing requests are cached, so they're shared with HomePage. */
+async function HomeSections() {
+  const [available, all, homepage] = await Promise.all([
+    orNull(getPublicProperties({ availabilityStatus: "AVAILABLE", limit: 1 })),
+    orNull(getPublicProperties({ limit: 100 })),
+    orNull(getPublicHomepage()),
+  ]);
+  const listings = all?.data ?? [];
   const settings = homepage ?? fallbackHomepage(listings);
   const { voices, summary } = await loadVoices(listings);
   // Featured and latest, split by listing type for their Rent | Buy switches.
@@ -477,23 +503,26 @@ export default async function HomePage() {
   };
 
   const faq = toFaq(listings);
-  const showFaq = settings.sectionOrder.includes("faq");
 
   return (
     <>
-      <JsonLd data={[organizationLd(), websiteLd(), ...(showFaq ? [faqLd(faq)] : [])]} />
-      <Hero
-        suggestions={toHeroSuggestions(states ?? [], listings)}
-        cards={toHeroCards(settings.hero.properties)}
-      />
+      {/* Sections in the admin's order; anything left out of the order is hidden.
+          On phones each one skips rendering until it nears the viewport (data-defer-render). */}
+      {settings.sectionOrder.map((id) => {
+        const section = sections[id]();
+        return (
+          section && (
+            <div key={id} data-defer-render>
+              {section}
+            </div>
+          )
+        );
+      })}
 
-      {/* Sections in the admin's order; anything left out of the order is hidden. */}
-      {settings.sectionOrder.map((id) => (
-        <Fragment key={id}>{sections[id]()}</Fragment>
-      ))}
-
-      <SellBand />
-      <CtaBanner />
+      <div data-defer-render>
+        <SellBand />
+        <CtaBanner />
+      </div>
     </>
   );
 }

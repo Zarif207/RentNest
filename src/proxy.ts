@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { decodeToken, isTokenExpired, roleHome, TOKEN_COOKIE } from "@/lib/auth";
+import { BROWSE_PATHS, shouldNoindexBrowse } from "@/lib/seo";
 import { stateFromSlug } from "@/lib/us-states";
 import { isUuid } from "@/lib/utils";
 import { USER_ROLES, type UserRole } from "@/types";
@@ -15,6 +16,14 @@ import { USER_ROLES, type UserRole } from "@/types";
  */
 export function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
+
+  if (BROWSE_PATHS.includes(pathname)) {
+    const response = NextResponse.next();
+    if (shouldNoindexBrowse(Object.fromEntries(request.nextUrl.searchParams))) {
+      response.headers.set("X-Robots-Tag", "noindex, follow");
+    }
+    return response;
+  }
 
   if (isPublicDetail(pathname)) {
     return isMissingPage(pathname) ? NextResponse.rewrite(new URL("/not-found", request.url)) : NextResponse.next();
@@ -76,8 +85,18 @@ function dashboardRole(pathname: string): UserRole | null {
   );
 }
 
-// Only the protected, auth and public detail routes run the proxy, so static
-// files, /_next assets, images and /api route handlers never reach it.
+// Only the protected, auth, browse and public detail routes run the proxy, so
+// static files, /_next assets, images and /api route handlers never reach it.
 export const config = {
-  matcher: ["/dashboard", "/dashboard/:path*", "/auth/:path*", "/properties/:id", "/rent/:state", "/buy/:state"],
+  matcher: [
+    "/dashboard",
+    "/dashboard/:path*",
+    "/auth/:path*",
+    "/rent",
+    "/buy",
+    "/properties",
+    "/properties/:id",
+    "/rent/:state",
+    "/buy/:state",
+  ],
 };

@@ -65,7 +65,7 @@ export function SplitText({
       <span ref={ref} aria-hidden data-split={trigger}>
         {words.map((word, index) => (
           <span key={index} className="inline-block overflow-hidden pb-[0.08em] align-top">
-            <span data-word className="inline-block will-change-transform">
+            <span data-word className="inline-block">
               {word}
               {index < words.length - 1 && " "}
             </span>

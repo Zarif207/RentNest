@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect } from "react";
-import Image from "next/image";
+import Image from "@/components/shared/photo";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowUpRight, LayoutDashboard, LogOut, UserRound, X } from "lucide-react";
-import { motion, useReducedMotion } from "motion/react";
+import * as m from "motion/react-m";
+import { useReducedMotion } from "motion/react";
 import { Dialog as DialogPrimitive } from "radix-ui";
 import { BrandLogo } from "@/components/brand/brand-logo";
 import { setSmoothScrollPaused } from "@/components/motion/smooth-scroll-provider";
@@ -179,17 +180,17 @@ export function MobileNav({ open, onOpenChange }: { open: boolean; onOpenChange:
           <nav aria-label="Mobile" className="mx-auto w-full max-w-6xl flex-1 px-6 pt-10 pb-8 sm:px-10">
             <ul className="space-y-3">
               {rows.map((links, index) => (
-                <motion.li key={links[0].href} {...item(index)}>
+                <m.li key={links[0].href} {...item(index)}>
                   <MenuRow number={index + 1} links={links} pathname={pathname} />
-                </motion.li>
+                </m.li>
               ))}
             </ul>
-            <motion.div {...item(rows.length)} className="mt-10">
+            <m.div {...item(rows.length)} className="mt-10">
               <FeaturedHome enabled={open} />
-            </motion.div>
+            </m.div>
           </nav>
 
-          <motion.div {...item(rows.length + 1)} className="mx-auto w-full max-w-6xl space-y-3 px-6 pb-8 sm:px-10">
+          <m.div {...item(rows.length + 1)} className="mx-auto w-full max-w-6xl space-y-3 px-6 pb-8 sm:px-10">
             <div className="flex items-center justify-between rounded-3xl border border-border bg-card py-2 pr-2 pl-5">
               <span className="text-sm text-muted-foreground">Theme</span>
               <ThemeToggle className="size-11" />
@@ -240,7 +241,7 @@ export function MobileNav({ open, onOpenChange }: { open: boolean; onOpenChange:
                 </DialogPrimitive.Close>
               </div>
             )}
-          </motion.div>
+          </m.div>
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
     </DialogPrimitive.Root>

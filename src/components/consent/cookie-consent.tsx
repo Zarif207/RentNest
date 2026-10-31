@@ -108,7 +108,7 @@ export function CookieConsent() {
                 We use essential cookies to keep you signed in. With your permission we&apos;d also use analytics
                 cookies to improve RentNest.{" "}
                 <Link href="/cookies" className="text-foreground underline underline-offset-4">
-                  Learn more
+                  Read the cookie policy
                 </Link>
               </p>
             </div>

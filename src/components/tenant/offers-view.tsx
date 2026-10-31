@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
+import Image from "@/components/shared/photo";
 import Link from "next/link";
 import { CreditCard, HandCoins, House, Hourglass, MapPin, Undo2, Check } from "lucide-react";
 import { ConfirmDialog } from "@/components/dashboard/confirm-dialog";

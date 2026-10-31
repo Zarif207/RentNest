@@ -16,7 +16,7 @@ import {
   ZOOM_SNAP,
 } from "@/components/maps/map-base";
 import { listingPriceLabel } from "@/lib/listing";
-import imageLoader from "@/lib/image-loader";
+import { photoUrl } from "@/lib/image-loader";
 import { formatLocation } from "@/lib/us-states";
 import type { MapProperty } from "@/types";
 
@@ -29,7 +29,7 @@ function popupContent(pin: MapProperty, navigate: (href: string) => void) {
   root.className = "rn-popup-card";
   if (pin.image) {
     const image = document.createElement("img");
-    image.src = imageLoader({ src: pin.image, width: 480, quality: 70 });
+    image.src = photoUrl(pin.image, 640);
     image.alt = "";
     image.loading = "lazy";
     root.append(image);

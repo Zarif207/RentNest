@@ -432,6 +432,17 @@ html:not([data-intro-seen]) [data-cookie-banner] {
   animation-delay: 1700ms;
 }
 
+/* Phones: long pages skip style, layout, paint and animation work for the
+   sections far from the viewport (the home sections and the footer). Not on
+   md+, where pinned ScrollTrigger scenes need every section's real height up
+   front; lib/gsap re-measures triggers as deferred sections first render. */
+@media (max-width: 767px) {
+  [data-defer-render] {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 800px;
+  }
+}
+
 /* WhatsApp button: a soft ring that pulses out every few seconds. */
 @keyframes wa-pulse {
   0% {

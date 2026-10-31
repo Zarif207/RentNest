@@ -1,4 +1,4 @@
-import Image from "next/image";
+import Image from "@/components/shared/photo";
 import Link from "next/link";
 import { House } from "lucide-react";
 import { formatLocation } from "@/lib/us-states";

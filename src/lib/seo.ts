@@ -14,9 +14,6 @@ export function absoluteUrl(path = "/") {
   return `${SITE_URL}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
-/** Search engines skip the page but follow its links. */
-export const NOINDEX: Metadata["robots"] = { index: false, follow: true };
-
 // The root app/opengraph-image.tsx (and its alt text).
 const DEFAULT_IMAGE = { url: "/opengraph-image", alt: "RentNest — Find a home worth coming home to" };
 
@@ -31,14 +28,12 @@ export function pageMetadata({
   description,
   path,
   image,
-  noindex = false,
 }: {
   title: string;
   description: string;
   /** The canonical path, without query strings. */
   path: string;
   image?: { url: string; alt: string } | "route";
-  noindex?: boolean;
 }): Metadata {
   const share = image === "route" ? null : (image ?? DEFAULT_IMAGE);
   return {
@@ -60,7 +55,6 @@ export function pageMetadata({
       description,
       ...(share && { images: [share.url] }),
     },
-    ...(noindex && { robots: NOINDEX }),
   };
 }
 
@@ -77,7 +71,7 @@ const FILTER_PARAMS = [
 ] as const;
 
 /** How many filters a browse URL has; a min/max price pair counts once. */
-export function countFilters(params: Record<string, string | string[] | undefined>) {
+function countFilters(params: Record<string, string | string[] | undefined>) {
   const has = (key: string) => {
     const value = params[key];
     return Array.isArray(value) ? value.some(Boolean) : Boolean(value);
@@ -86,12 +80,11 @@ export function countFilters(params: Record<string, string | string[] | undefine
 }
 
 /**
- * Browse pages: the canonical URL never carries filters, and a list narrowed
- * by more than one filter isn't indexed (its links are still followed).
+ * Browse pages (/rent, /buy, /properties): the canonical URL never carries
+ * filters, and a list narrowed by more than one filter isn't indexed, though
+ * its links are followed. The proxy sends that as an X-Robots-Tag header, so
+ * the pages' metadata can stay static.
  */
-export function browseMetadata(
-  page: { title: string; description: string; path: string },
-  params: Record<string, string | string[] | undefined>,
-): Metadata {
-  return pageMetadata({ ...page, noindex: countFilters(params) > 1 });
-}
+export const BROWSE_PATHS = ["/rent", "/buy", "/properties"];
+
+export const shouldNoindexBrowse = (params: Record<string, string | string[] | undefined>) => countFilters(params) > 1;

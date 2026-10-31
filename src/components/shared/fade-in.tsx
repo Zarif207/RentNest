@@ -1,6 +1,7 @@
 "use client";
 
-import { motion, useReducedMotion } from "motion/react";
+import * as m from "motion/react-m";
+import { useReducedMotion } from "motion/react";
 import { fadeUp } from "@/lib/motion";
 
 /** Fades a section up the first time it scrolls into view. */
@@ -14,7 +15,7 @@ export function FadeIn({
   const reduceMotion = useReducedMotion();
 
   return (
-    <motion.div
+    <m.div
       className={className}
       variants={fadeUp}
       initial={reduceMotion ? false : "hidden"}
@@ -22,6 +23,6 @@ export function FadeIn({
       viewport={{ once: true, amount: 0.2 }}
     >
       {children}
-    </motion.div>
+    </m.div>
   );
 }

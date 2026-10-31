@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronDown, LayoutDashboard } from "lucide-react";
-import { motion } from "motion/react";
+import * as m from "motion/react-m";
 import { BrandLogo } from "@/components/brand/brand-logo";
 import { NotificationsMenu } from "@/components/dashboard/notifications-menu";
 import { MobileNav } from "@/components/layout/mobile-nav";
@@ -90,7 +90,7 @@ function NavItem({
           )}
         </span>
         {active && (
-          <motion.span
+          <m.span
             layoutId="nav-active-dot"
             aria-hidden
             transition={{ type: "spring", stiffness: 420, damping: 34 }}

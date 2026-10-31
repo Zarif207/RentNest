@@ -1,6 +1,7 @@
 "use client";
 
-import { motion, useReducedMotion } from "motion/react";
+import * as m from "motion/react-m";
+import { useReducedMotion } from "motion/react";
 import { PropertyCard } from "@/components/properties/property-card";
 import { fadeUp, staggerContainer } from "@/lib/motion";
 import type { Property } from "@/types";
@@ -18,7 +19,7 @@ export function PropertyGrid({
   const reduceMotion = useReducedMotion();
 
   return (
-    <motion.ul
+    <m.ul
       // A new result set remounts the list, so the stagger plays again.
       key={properties.map((property) => property.id).join()}
       className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3"
@@ -29,10 +30,10 @@ export function PropertyGrid({
       viewport={{ once: true, amount: 0.1 }}
     >
       {properties.map((property, index) => (
-        <motion.li key={property.id} variants={fadeUp}>
+        <m.li key={property.id} variants={fadeUp}>
           <PropertyCard property={property} eager={index < eagerCount} />
-        </motion.li>
+        </m.li>
       ))}
-    </motion.ul>
+    </m.ul>
   );
 }
