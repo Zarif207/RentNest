@@ -37,6 +37,17 @@ function ogImage(src: string | undefined) {
   return url.toString();
 }
 
+/**
+ * Prerender the current listings at build time, so their HTML (and the hero
+ * photo's preload) is ready at once instead of streaming in after the data
+ * fetch; that late preload was most of the details page's mobile LCP. New
+ * listings still render on demand, and PROPERTIES_TAG keeps all of them fresh.
+ */
+export async function generateStaticParams() {
+  const listings = await orNull(getPublicProperties({ limit: 100, sortBy: "createdAt", sortOrder: "desc" }));
+  return (listings?.data ?? []).map((property) => ({ id: property.id }));
+}
+
 export async function generateMetadata({
   params,
 }: PageProps<"/properties/[id]">): Promise<Metadata> {

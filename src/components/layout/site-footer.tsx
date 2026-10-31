@@ -5,6 +5,7 @@ import { BrandLogo } from "@/components/brand/brand-logo";
 import { BackToTop, FooterWordmark } from "@/components/layout/footer-motion";
 import { NewsletterForm } from "@/components/layout/newsletter-form";
 import { Magnetic } from "@/components/motion/magnetic";
+import { CookieSettingsButton } from "@/components/consent/cookie-consent";
 import { Marquee } from "@/components/motion/marquee";
 import { SerifAccent } from "@/components/shared/serif-accent";
 import type { NavLink } from "@/lib/navigation";
@@ -193,6 +194,14 @@ export function SiteFooter() {
             <Link href="/terms" className="transition-colors hover:text-foreground">
               Terms of use
             </Link>
+          </li>
+          <li>
+            <Link href="/cookies" className="transition-colors hover:text-foreground">
+              Cookies
+            </Link>
+          </li>
+          <li>
+            <CookieSettingsButton className="transition-colors outline-none hover:text-foreground focus-visible:text-foreground" />
           </li>
         </ul>
       </div>

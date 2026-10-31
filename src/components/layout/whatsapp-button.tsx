@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { X } from "lucide-react";
 import { WHATSAPP_NUMBER, whatsappLink } from "@/lib/site-config";
+import { useConsentStore } from "@/store/consent-store";
 import { cn } from "@/lib/utils";
 
 const DEFAULT_MESSAGE = "Hi RentNest, I have a question.";
@@ -44,6 +45,8 @@ export function WhatsAppButton() {
   const pathname = usePathname();
   const [greeting, setGreeting] = useState(false);
   const [hidden, setHidden] = useState(false);
+  // On phones the cookie banner is a full-width bottom sheet: stay out of it.
+  const consentPending = useConsentStore((state) => state.loaded && !state.consent);
 
   useEffect(() => {
     if (readDismissed()) return;
@@ -78,6 +81,7 @@ export function WhatsAppButton() {
       className={cn(
         "fixed right-[max(1.25rem,env(safe-area-inset-right))] bottom-[max(1.25rem,env(safe-area-inset-bottom))] z-40 flex items-end gap-3 transition-[opacity,translate] duration-300",
         hidden && "pointer-events-none translate-y-4 opacity-0",
+        consentPending && "max-md:pointer-events-none max-md:translate-y-4 max-md:opacity-0",
       )}
     >
       {greeting && (

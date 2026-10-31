@@ -373,6 +373,25 @@ html[data-intro-seen] [data-intro] {
   text-decoration: none;
 }
 
+/* Cookie banner: server-rendered, so it paints with the page (it was the
+   home page's late LCP when it mounted after hydration). Hidden before paint
+   once a choice is saved; on desktop it waits for the intro curtain to lift. */
+html[data-consent] [data-cookie-banner] {
+  display: none;
+}
+@keyframes cookie-banner-in {
+  from {
+    opacity: 0;
+    transform: translateY(2.5rem);
+  }
+}
+[data-cookie-banner] {
+  animation: cookie-banner-in 500ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+html:not([data-intro-seen]) [data-cookie-banner] {
+  animation-delay: 1700ms;
+}
+
 /* WhatsApp button: a soft ring that pulses out every few seconds. */
 @keyframes wa-pulse {
   0% {

@@ -31,7 +31,7 @@ export function ContactForm() {
   const onSubmit = async (values: ContactValues) => {
     await new Promise((resolve) => setTimeout(resolve, SIMULATED_DELAY_MS));
     setSentTo(values.name.split(" ")[0]);
-    toast.success("Thanks for your message", { description: "Thanks for writing. This demo doesn't send messages yet." });
+    toast.success("Thanks for your message", { description: "This demo doesn't send messages yet." });
     form.reset();
   };
 

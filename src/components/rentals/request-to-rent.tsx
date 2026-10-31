@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { CircleCheck, Loader2 } from "lucide-react";
-import { RequestRentDialog } from "@/components/rentals/request-rent-dialog";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/use-auth";
@@ -20,6 +20,11 @@ type RequestToRentProps = {
 };
 
 const buttonClass = "h-13 w-full text-base";
+
+// The form (React Hook Form + Zod) loads on demand: it was ~45 KB of unused
+// JavaScript on every details page. Hovering or focusing the button warms it.
+const loadDialog = () => import("@/components/rentals/request-rent-dialog");
+const RequestRentDialog = dynamic(() => loadDialog().then((module) => module.RequestRentDialog));
 
 /** Disabled button with a reason: tooltip on hover/focus, plain text for touch. */
 function DisabledRequest({ reason }: { reason: string }) {
@@ -44,6 +49,8 @@ function DisabledRequest({ reason }: { reason: string }) {
 export function RequestToRent({ property }: RequestToRentProps) {
   const { user, isLoading } = useAuth();
   const [open, setOpen] = useState(false);
+  // Mounted on first open, then kept so the close animation still plays.
+  const [dialogMounted, setDialogMounted] = useState(false);
   const [sent, setSent] = useState(false);
 
   if (property.availabilityStatus !== "AVAILABLE") {
@@ -74,7 +81,16 @@ export function RequestToRent({ property }: RequestToRentProps) {
 
   return (
     <div className="space-y-3">
-      <Button size="lg" className={buttonClass} onClick={() => setOpen(true)}>
+      <Button
+        size="lg"
+        className={buttonClass}
+        onPointerEnter={() => void loadDialog()}
+        onFocus={() => void loadDialog()}
+        onClick={() => {
+          setDialogMounted(true);
+          setOpen(true);
+        }}
+      >
         {sent ? "Request another lease" : "Request to Rent"}
       </Button>
       {sent && (
@@ -86,12 +102,9 @@ export function RequestToRent({ property }: RequestToRentProps) {
           </Link>
         </p>
       )}
-      <RequestRentDialog
-        open={open}
-        onOpenChange={setOpen}
-        property={property}
-        onSent={() => setSent(true)}
-      />
+      {dialogMounted && (
+        <RequestRentDialog open={open} onOpenChange={setOpen} property={property} onSent={() => setSent(true)} />
+      )}
     </div>
   );
 }

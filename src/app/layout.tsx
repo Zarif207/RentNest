@@ -1,12 +1,14 @@
 import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, Geist } from "next/font/google";
 import Script from "next/script";
+import { CookieConsent } from "@/components/consent/cookie-consent";
 import { INTRO_GATE_SCRIPT } from "@/components/motion/intro-gate";
 import { AuthProvider } from "@/components/providers/auth-provider";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { CONSENT_GATE_SCRIPT } from "@/lib/consent";
 import "./globals.css";
 
 // Headings, UI and body: a clean, tight grotesk like the design references.
@@ -65,12 +67,17 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <Script id="intro-gate" strategy="beforeInteractive">
           {INTRO_GATE_SCRIPT}
         </Script>
+        {/* Hides the cookie banner before first paint once a choice is saved. */}
+        <Script id="consent-gate" strategy="beforeInteractive">
+          {CONSENT_GATE_SCRIPT}
+        </Script>
         <ThemeProvider>
           <QueryProvider>
             <AuthProvider>
               <TooltipProvider>{children}</TooltipProvider>
             </AuthProvider>
             <Toaster position="top-center" closeButton />
+            <CookieConsent />
           </QueryProvider>
         </ThemeProvider>
       </body>

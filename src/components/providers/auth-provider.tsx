@@ -4,7 +4,8 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { setSessionErrorHandler, type ApiError } from "@/lib/api/client";
+import { authService } from "@/lib/api/auth";
+import { isApiError, setSessionErrorHandler, type ApiError } from "@/lib/api/client";
 import { useAuthStore } from "@/store/auth-store";
 
 // One toast id, so a burst of failing requests shows a single message.
@@ -50,7 +51,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    setSessionErrorHandler((error: ApiError) => {
+    let verifying = false;
+
+    const endSession = (error: ApiError) => {
       // Several requests can fail together; only the first one acts.
       if (!useAuthStore.getState().token) return;
 
@@ -77,6 +80,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           ? "/auth/login"
           : `/auth/login?redirect=${encodeURIComponent(path)}`,
       );
+    };
+
+    setSessionErrorHandler((error: ApiError) => {
+      if (error.status === 403) {
+        endSession(error);
+        return;
+      }
+      // A lone 401 can be a backend blip (seen once in testing with a valid
+      // token), so confirm with /auth/me before signing the user out.
+      if (verifying || !useAuthStore.getState().token) return;
+      verifying = true;
+      authService
+        .getMe({ skipSessionHandling: true })
+        .then(
+          () => void queryClient.invalidateQueries(),
+          (check: unknown) => {
+            if (isApiError(check) && check.status === 401) endSession(error);
+          },
+        )
+        .finally(() => {
+          verifying = false;
+        });
     });
 
     return () => setSessionErrorHandler(undefined);
