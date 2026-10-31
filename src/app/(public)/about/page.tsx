@@ -4,6 +4,7 @@ import { ArrowUpRight } from "lucide-react";
 import { AboutHero } from "@/components/about/about-hero";
 import { ImageReveal } from "@/components/about/image-reveal";
 import { SafetyTimeline } from "@/components/about/safety-timeline";
+import { Signature } from "@/components/about/signature";
 import { ValuesStack } from "@/components/about/values-stack";
 import { CtaBanner } from "@/components/home/cta-banner";
 import { LiveStats } from "@/components/home/live-stats";
@@ -103,16 +104,12 @@ export default async function AboutPage() {
 
       <section aria-labelledby="built-title" className="py-24 sm:py-32">
         <Reveal className="mx-auto flex max-w-4xl flex-col items-center px-4 text-center sm:px-6">
-          <span
-            aria-hidden
-            className="grid size-20 place-items-center rounded-full bg-foreground font-serif text-3xl text-background lining-nums"
-          >
-            ZH
-          </span>
+   
           <p className="mt-8 text-xs font-medium tracking-[0.25em] text-bronze uppercase">Built by</p>
           <h2 id="built-title" className="mt-3 text-4xl font-medium tracking-tighter sm:text-5xl">
             Zarif Hasan
           </h2>
+          <Signature className="mt-4" />
           <p className="mt-5 max-w-2xl font-serif text-2xl leading-snug sm:text-3xl">
             Designed and built to make renting in the US simpler, clearer and safer, for both sides of the door.
           </p>
