@@ -13,12 +13,14 @@ import { SectionHeading } from "@/components/shared/section-heading";
 import { SerifAccent } from "@/components/shared/serif-accent";
 import { getPublicProperties, orNull } from "@/lib/data/public";
 import { toLiveStats } from "@/lib/live-stats";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "About",
   description:
     "Why RentNest exists, what it stands for and how it keeps renting and buying safe: Stripe payments, role-based access and moderation.",
-};
+  path: "/about",
+});
 
 const STORY_IMAGE = "https://images.unsplash.com/photo-1505691938895-1758d7feb511";
 

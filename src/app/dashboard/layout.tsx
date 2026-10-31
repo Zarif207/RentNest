@@ -1,5 +1,9 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { DashboardTopbar } from "@/components/dashboard/dashboard-topbar";
+
+// Dashboards are private: keep them out of search results.
+export const metadata: Metadata = { robots: { index: false, follow: false } };
 
 // The top bar reads the pathname; dynamic dashboard routes
 // (e.g. /requests/[id]/pay) need a boundary around it to prerender.

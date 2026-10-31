@@ -1,3 +1,3 @@
 "use client";
 
-export { default } from "../../properties/error";
+export { default } from "../../properties/(list)/error";

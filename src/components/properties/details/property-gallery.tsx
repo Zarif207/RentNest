@@ -15,6 +15,8 @@ import { cn } from "@/lib/utils";
 type PropertyGalleryProps = {
   images: string[];
   title: string;
+  /** What the home is, for alt text: "3-bed house for sale in Austin, TX". */
+  summary: string;
 };
 
 // Tiles on the right of the bento, by how many there are (up to four).
@@ -30,8 +32,11 @@ const SIDE_TILE_SPANS: Record<number, string[]> = {
  * single photo with a counter on small screens. Any photo opens the
  * full-screen lightbox at that photo (← → to browse).
  */
-export function PropertyGallery({ images, title }: PropertyGalleryProps) {
+export function PropertyGallery({ images, title, summary }: PropertyGalleryProps) {
   const [active, setActive] = useState(0);
+  // "Photo 2 of 5 of the 3-bed house for sale in Austin, TX: Sunny bungalow"
+  const photoAlt = (index: number) =>
+    `Photo ${index + 1} of ${images.length} of the ${summary.charAt(0).toLowerCase()}${summary.slice(1)}: ${title}`;
   const [open, setOpen] = useState(false);
   const count = images.length;
 
@@ -77,7 +82,7 @@ export function PropertyGallery({ images, title }: PropertyGalleryProps) {
         >
           <Image
             src={images[0]}
-            alt={`${title}, photo 1`}
+            alt={photoAlt(0)}
             fill
             preload
             fetchPriority="high"
@@ -93,7 +98,7 @@ export function PropertyGallery({ images, title }: PropertyGalleryProps) {
             className={cn(tileClass, "hidden lg:block", SIDE_TILE_SPANS[side.length][index])}
             aria-label={`Open photo ${index + 2} of ${count} full screen`}
           >
-            <Image src={image} alt={`${title}, photo ${index + 2}`} fill sizes="25vw" className={imageClass} />
+            <Image src={image} alt={photoAlt(index + 1)} fill sizes="25vw" className={imageClass} />
           </button>
         ))}
       </div>
@@ -121,7 +126,7 @@ export function PropertyGallery({ images, title }: PropertyGalleryProps) {
           <div className="relative aspect-4/3 sm:aspect-16/10">
             <Image
               src={images[active]}
-              alt={`${title}, photo ${active + 1} of ${count}`}
+              alt={photoAlt(active)}
               fill
               sizes="(min-width: 1024px) 1152px, 100vw"
               className="object-contain"

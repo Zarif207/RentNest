@@ -9,6 +9,7 @@ import { ThemeProvider } from "@/components/providers/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { CONSENT_GATE_SCRIPT } from "@/lib/consent";
+import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/seo";
 import "./globals.css";
 
 // Headings, UI and body: a clean, tight grotesk like the design references.
@@ -34,25 +35,25 @@ const jost = Jost({
   display: "swap",
 });
 
-const description =
-  "RentNest is a rental marketplace connecting tenants with landlords.";
-
+// Defaults for every page; public pages add their own title, description and
+// canonical URL (lib/seo.ts), private ones opt out of indexing in their layouts.
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
+  metadataBase: new URL(SITE_URL),
+  applicationName: SITE_NAME,
   title: {
-    default: "RentNest — Find. Request. Move in.",
-    template: "%s · RentNest",
+    default: `${SITE_NAME} — Rent or buy homes across the US`,
+    template: `%s · ${SITE_NAME}`,
   },
-  description,
+  description: SITE_DESCRIPTION,
   openGraph: {
-    siteName: "RentNest",
-    title: "RentNest — Find. Request. Move in.",
-    description,
+    siteName: SITE_NAME,
+    title: `${SITE_NAME} — Rent or buy homes across the US`,
+    description: SITE_DESCRIPTION,
     type: "website",
     locale: "en_US",
-    url: "/",
   },
   twitter: { card: "summary_large_image" },
+  appleWebApp: { title: SITE_NAME },
 };
 
 export const viewport: Viewport = {

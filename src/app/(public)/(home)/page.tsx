@@ -1,4 +1,5 @@
 import { Fragment } from "react";
+import type { Metadata } from "next";
 import { CtaBanner } from "@/components/home/cta-banner";
 import { FeaturedCollection, type FeaturedHome } from "@/components/home/featured-collection";
 import { Hero, type HeroCard } from "@/components/home/hero";
@@ -14,6 +15,7 @@ import { PropertyTypes, type TypeTile } from "@/components/home/property-types";
 import { SellBand } from "@/components/home/sell-band";
 import { Voices, type Voice, type VoicesSummary } from "@/components/home/voices";
 import { WhyRentNest } from "@/components/home/why-rentnest";
+import { JsonLd } from "@/components/seo/json-ld";
 import { FadeIn } from "@/components/shared/fade-in";
 import { SectionHeading } from "@/components/shared/section-heading";
 import { SerifAccent } from "@/components/shared/serif-accent";
@@ -27,6 +29,8 @@ import {
 import { formatCurrency, formatEnumLabel } from "@/lib/format";
 import { listingPriceLabel } from "@/lib/listing";
 import { toLiveStats } from "@/lib/live-stats";
+import { pageMetadata, SITE_DESCRIPTION, SITE_NAME } from "@/lib/seo";
+import { faqLd, organizationLd, websiteLd } from "@/lib/structured-data";
 import { formatLocation, stateSlug, US_STATES } from "@/lib/us-states";
 import {
   HOMEPAGE_SECTIONS,
@@ -37,6 +41,12 @@ import {
   type PropertyType,
   type PropertyWithRelations,
 } from "@/types";
+
+export const metadata: Metadata = {
+  ...pageMetadata({ title: `${SITE_NAME} — Rent or buy homes across the US`, description: SITE_DESCRIPTION, path: "/" }),
+  // The home page's title stands alone (no " · RentNest" suffix).
+  title: { absolute: `${SITE_NAME} — Rent or buy homes across the US` },
+};
 
 // Used for a type tile only when no listing of that type has a photo yet.
 const TYPE_FALLBACK_IMAGES: Record<PropertyType, string> = {
@@ -459,15 +469,19 @@ export default async function HomePage() {
             />
           </FadeIn>
           <FadeIn>
-            <HomeFaq items={toFaq(listings)} />
+            <HomeFaq items={faq} />
           </FadeIn>
         </div>
       </section>
     ),
   };
 
+  const faq = toFaq(listings);
+  const showFaq = settings.sectionOrder.includes("faq");
+
   return (
     <>
+      <JsonLd data={[organizationLd(), websiteLd(), ...(showFaq ? [faqLd(faq)] : [])]} />
       <Hero
         suggestions={toHeroSuggestions(states ?? [], listings)}
         cards={toHeroCards(settings.hero.properties)}

@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import { LegalPage } from "@/components/shared/legal-page";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Privacy policy",
-  description: "What RentNest stores about you and how it's used.",
-};
+  description:
+    "What RentNest stores about you and how it's used.",
+  path: "/privacy",
+});
 
 export default function PrivacyPage() {
   return (

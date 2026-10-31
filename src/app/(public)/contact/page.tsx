@@ -6,11 +6,14 @@ import { Reveal } from "@/components/motion/reveal";
 import { SerifAccent } from "@/components/shared/serif-accent";
 import { formatAddress, SITE_CONTACT } from "@/lib/site-config";
 import { PageShell } from "@/components/layout/page-shell";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Contact",
-  description: "Questions about renting or listing on RentNest? Email, call or send us a message.",
-};
+  description:
+    "Questions about renting, buying, selling or listing on RentNest? Email, call or send us a message.",
+  path: "/contact",
+});
 
 const FAQ_LINKS = [
   { href: "/#faq", label: "How does requesting a home work?" },

@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import { LegalPage } from "@/components/shared/legal-page";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Cookies",
-  description: "The cookies and browser storage RentNest uses, and how to change your choice.",
-};
+  description:
+    "The cookies and browser storage RentNest uses, and how to change your choice.",
+  path: "/cookies",
+});
 
 export default function CookiesPage() {
   return (

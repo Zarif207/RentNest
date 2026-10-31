@@ -2,12 +2,14 @@ import Link from "next/link";
 import { ArrowLeft, ArrowRight, SearchX } from "lucide-react";
 import { PageShell } from "@/components/layout/page-shell";
 import { PropertyGrid } from "@/components/properties/property-grid";
+import { JsonLd } from "@/components/seo/json-ld";
 import { EmptyState } from "@/components/shared/empty-state";
 import { SerifAccent } from "@/components/shared/serif-accent";
 import { Button } from "@/components/ui/button";
 import { getPublicProperties, getPublicPropertyStates, orNull } from "@/lib/data/public";
 import { formatCurrency } from "@/lib/format";
 import { LISTING_PATHS, listingPrice } from "@/lib/listing";
+import { breadcrumbLd } from "@/lib/structured-data";
 import { stateSlug, US_STATES } from "@/lib/us-states";
 import type { ListingType, PropertyWithRelations } from "@/types";
 
@@ -66,6 +68,13 @@ export async function StateLanding({ listingType, state }: { listingType: Listin
 
   return (
     <PageShell>
+      <JsonLd
+        data={breadcrumbLd([
+          { name: "Home", path: "/" },
+          { name: listingType === "SALE" ? "Buy" : "Rent", path: browsePath },
+          { name: state, path: `${browsePath}/${stateSlug(state)}` },
+        ])}
+      />
       <header className="max-w-3xl space-y-5 border-b border-border pb-10">
         <Link
           href={browsePath}

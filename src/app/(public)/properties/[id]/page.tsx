@@ -11,13 +11,17 @@ import { MortgageCalculator } from "@/components/properties/details/mortgage-cal
 import { SaleCard } from "@/components/properties/details/sale-card";
 import { PropertyReviews } from "@/components/properties/details/property-reviews";
 import { FavoriteButton } from "@/components/properties/favorite-button";
+import { JsonLd } from "@/components/seo/json-ld";
 import { PropertyGrid } from "@/components/properties/property-grid";
 import { SerifAccent } from "@/components/shared/serif-accent";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getPublicMapProperties, getPublicProperties, getPublicProperty, getPublicPropertyReviews, orNull } from "@/lib/data/public";
 import { formatDate, formatEnumLabel, formatNumber } from "@/lib/format";
-import { LISTING_LABELS, LISTING_PATHS } from "@/lib/listing";
+import { LISTING_LABELS, LISTING_PATHS, listingPriceLabel, listingSummary } from "@/lib/listing";
+import { pageMetadata } from "@/lib/seo";
+import { breadcrumbLd, listingLd } from "@/lib/structured-data";
+import { stateSlug } from "@/lib/us-states";
 import { formatLocation } from "@/lib/us-states";
 import { isUuid } from "@/lib/utils";
 import type { PropertyWithRelations } from "@/types";
@@ -26,18 +30,6 @@ import { PageShell } from "@/components/layout/page-shell";
 async function loadProperty(id: string) {
   // Skip the API call for ids that can't exist.
   return isUuid(id) ? getPublicProperty(id) : null;
-}
-
-/** OG images: ask Unsplash for a 1200px version instead of the multi-MB original. */
-function ogImage(src: string | undefined) {
-  if (!src) return undefined;
-  const url = new URL(src);
-  if (url.hostname === "images.unsplash.com") {
-    url.searchParams.set("w", "1200");
-    url.searchParams.set("q", "80");
-    url.searchParams.set("auto", "format");
-  }
-  return url.toString();
 }
 
 /**
@@ -58,20 +50,14 @@ export async function generateMetadata({
   const property = await loadProperty(id);
   if (!property) return { title: "Property not found" };
 
-  const description = property.description.slice(0, 160);
-  const image = ogImage(property.images[0]);
-
-  return {
-    title: property.title,
-    description,
-    openGraph: {
-      title: property.title,
-      description,
-      siteName: "RentNest",
-      type: "website",
-      images: image ? [{ url: image, alt: property.title }] : undefined,
-    },
-  };
+  // e.g. "3-bed house for sale in Austin, TX · $450,000"; the share image is
+  // this route's opengraph-image (photo, price and city).
+  return pageMetadata({
+    title: `${listingSummary(property)} · ${listingPriceLabel(property)}`,
+    description: `${property.title}. ${property.description}`.slice(0, 160),
+    path: `/properties/${property.id}`,
+    image: "route",
+  });
 }
 
 /**
@@ -120,6 +106,17 @@ export default async function PropertyDetailsPage({ params }: PageProps<"/proper
 
   return (
     <PageShell width="full">
+      <JsonLd
+        data={[
+          listingLd(property),
+          breadcrumbLd([
+            { name: "Home", path: "/" },
+            { name: forSale ? "Buy" : "Rent", path: browsePath },
+            { name: property.division, path: `${browsePath}/${stateSlug(property.division)}` },
+            { name: property.title, path: `/properties/${property.id}` },
+          ]),
+        ]}
+      />
       <header className="mx-auto max-w-7xl space-y-5 px-4 sm:px-6 lg:px-8">
         <Link
           href={browsePath}
@@ -174,7 +171,7 @@ export default async function PropertyDetailsPage({ params }: PageProps<"/proper
 
       {/* Full-bleed: the gallery runs nearly edge to edge. */}
       <div className="mt-8 px-2 sm:px-3">
-        <PropertyGallery images={property.images} title={property.title} />
+        <PropertyGallery images={property.images} title={property.title} summary={listingSummary(property)} />
       </div>
 
       <div className="mx-auto mt-12 grid max-w-7xl gap-12 px-4 sm:px-6 lg:grid-cols-[1fr_24rem] lg:items-start lg:px-8">

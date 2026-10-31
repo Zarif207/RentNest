@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import { LegalPage } from "@/components/shared/legal-page";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Terms of use",
-  description: "The rules for renting and listing homes on RentNest.",
-};
+  description:
+    "The rules for renting and listing homes on RentNest.",
+  path: "/terms",
+});
 
 export default function TermsPage() {
   return (

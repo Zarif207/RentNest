@@ -1,5 +1,6 @@
-import { formatCurrency, formatNumber } from "@/lib/format";
-import type { AvailabilityStatus, ListingType } from "@/types";
+import { formatCurrency } from "@/lib/format";
+import { formatLocation } from "@/lib/us-states";
+import type { AvailabilityStatus, ListingType, PropertyType } from "@/types";
 
 // Rent vs sale in one place: which price applies, how it reads, and the
 // labels for the listing type and status chips.
@@ -59,4 +60,27 @@ export function availabilityLabel(status: AvailabilityStatus) {
   return AVAILABILITY_LABELS[status];
 }
 
-export { formatNumber };
+const TYPE_WORD: Record<PropertyType, string> = {
+  APARTMENT: "apartment",
+  HOUSE: "house",
+  STUDIO: "studio",
+  VILLA: "villa",
+};
+
+/**
+ * A plain description of the home for titles and alt text, e.g. "3-bed house
+ * for sale in Austin, TX" or "Studio for rent in Chicago, IL".
+ */
+export function listingSummary(property: {
+  listingType: ListingType;
+  propertyType: PropertyType;
+  bedrooms: number;
+  city: string;
+  division: string;
+}) {
+  const home =
+    property.propertyType === "STUDIO" || property.bedrooms === 0
+      ? "Studio"
+      : `${property.bedrooms}-bed ${TYPE_WORD[property.propertyType]}`;
+  return `${home} ${LISTING_LABELS[property.listingType].toLowerCase()} in ${formatLocation(property.city, property.division)}`;
+}

@@ -1,7 +1,11 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import { BrandLogo } from "@/components/brand/brand-logo";
 import { SerifAccent } from "@/components/shared/serif-accent";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
+
+// Sign-in and registration are private: keep them out of search results.
+export const metadata: Metadata = { robots: { index: false, follow: false } };
 
 const AUTH_IMAGE = "https://images.unsplash.com/photo-1613490493576-7fde63acd811";
 

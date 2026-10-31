@@ -1,5 +1,9 @@
+import type { Metadata } from "next";
 import { BrandLogo } from "@/components/brand/brand-logo";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
+
+// Payment results are private: keep them out of search results.
+export const metadata: Metadata = { robots: { index: false, follow: false } };
 
 export default function PaymentLayout({ children }: LayoutProps<"/payment">) {
   return (

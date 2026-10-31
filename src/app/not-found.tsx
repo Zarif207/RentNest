@@ -5,7 +5,7 @@ import { NotFoundState } from "@/components/shared/not-found-state";
 import { SerifAccent } from "@/components/shared/serif-accent";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 
-export const metadata: Metadata = { title: "Page not found" };
+export const metadata: Metadata = { title: "Page not found", robots: { index: false, follow: true } };
 
 // Unmatched URLs anywhere in the app land here (inside the root layout only).
 export default function NotFound() {

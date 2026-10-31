@@ -2,18 +2,22 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { BellRing, HandCoins, ShieldCheck, Signature, Tag, UserCheck } from "lucide-react";
 import { HomeFaq, type FaqItem } from "@/components/home/home-faq";
+import { JsonLd } from "@/components/seo/json-ld";
 import { SellCta } from "@/components/sell/sell-cta";
 import { FadeIn } from "@/components/shared/fade-in";
 import { SectionHeading } from "@/components/shared/section-heading";
 import { SerifAccent } from "@/components/shared/serif-accent";
 import { getPublicProperties, orNull } from "@/lib/data/public";
 import { formatNumber } from "@/lib/format";
+import { breadcrumbLd, faqLd } from "@/lib/structured-data";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Sell your home",
   description:
     "List your home for sale on RentNest: receive offers online, accept, counter or decline, and secure the buyer with a deposit through Stripe.",
-};
+  path: "/sell",
+});
 
 const HERO_IMAGE = "https://images.unsplash.com/photo-1564013799919-ab600027ffc6";
 
@@ -105,6 +109,15 @@ export default async function SellPage() {
 
   return (
     <>
+      <JsonLd
+        data={[
+          faqLd(FAQ),
+          breadcrumbLd([
+            { name: "Home", path: "/" },
+            { name: "Sell", path: "/sell" },
+          ]),
+        ]}
+      />
       <section className="px-2 pt-2 sm:px-3 sm:pt-3">
         <div className="relative isolate flex min-h-[86svh] items-end overflow-hidden rounded-3xl bg-[#12100e] text-white">
           <Image src={HERO_IMAGE} alt="" fill preload sizes="100vw" className="-z-10 object-cover" />

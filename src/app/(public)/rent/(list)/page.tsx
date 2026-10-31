@@ -1,11 +1,18 @@
 import type { Metadata } from "next";
 import { BrowsePage } from "@/components/properties/browse/browse-page";
 import { SerifAccent } from "@/components/shared/serif-accent";
+import { browseMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Homes for rent",
-  description: "Rental homes across the US: filter by city, monthly rent, type and amenities, then request online.",
-};
+export async function generateMetadata({ searchParams }: PageProps<"/rent">): Promise<Metadata> {
+  return browseMetadata(
+    {
+      title: "Homes for rent",
+      description: "Rental homes across the US: filter by city, monthly rent, type and amenities, then request online.",
+      path: "/rent",
+    },
+    await searchParams,
+  );
+}
 
 export default async function RentPage({ searchParams }: PageProps<"/rent">) {
   return (

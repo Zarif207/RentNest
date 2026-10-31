@@ -4,7 +4,7 @@ import { ArrowUpRight, Bath, BedDouble, House, MapPin, Ruler, Tag } from "lucide
 import { TiltCard } from "@/components/motion/tilt-card";
 import { FavoriteButton } from "@/components/properties/favorite-button";
 import { formatNumber } from "@/lib/format";
-import { availabilityLabel, formatListingPrice, LISTING_LABELS, pricePerSqft } from "@/lib/listing";
+import { availabilityLabel, formatListingPrice, LISTING_LABELS, listingSummary, pricePerSqft } from "@/lib/listing";
 import { formatLocation } from "@/lib/us-states";
 import { cn } from "@/lib/utils";
 import type { AvailabilityStatus, Property } from "@/types";
@@ -44,7 +44,7 @@ export function PropertyCard({
           {image ? (
             <Image
               src={image}
-              alt={property.title}
+              alt={`${property.title}: ${listingSummary(property)}`}
               fill
               loading={eager ? "eager" : undefined}
               sizes={PROPERTY_CARD_IMAGE_SIZES}

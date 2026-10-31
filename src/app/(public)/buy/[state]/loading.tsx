@@ -1,1 +1,1 @@
-export { default } from "../../properties/loading";
+export { default } from "../../properties/(list)/loading";
