@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
-import { useFinePointer, useMotionOk } from "@/hooks/use-motion";
+import { useMotionOk } from "@/hooks/use-motion";
 import { gsap, useGSAP } from "@/lib/gsap";
 import { cn } from "@/lib/utils";
 import type { PropertyType } from "@/types";
@@ -42,16 +42,13 @@ function Crossfade({ types, active, sizes }: { types: TypeTile[]; active: number
 /**
  * "A place for every chapter": an interactive type index. Desktop shows the
  * types as huge serif lines; hovering one underlines it in gold, dims the
- * rest, floats its photo after the cursor (lagging, with a slight 3D tilt)
- * and crossfades the sticky photo on the right. Lines rise in one by one on
- * scroll. Phones get horizontal snap cards instead.
+ * rest and crossfades the sticky photo on the right. Lines rise in one by
+ * one on scroll. Phones get horizontal snap cards instead.
  */
 export function PropertyTypes({ types }: { types: TypeTile[] }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
-  const followRef = useRef<HTMLDivElement>(null);
   const motionOk = useMotionOk();
-  const finePointer = useFinePointer();
   // Start on the first type that has homes, so the panel never opens on an empty one.
   const [active, setActive] = useState(() => Math.max(0, types.findIndex((tile) => (tile.count ?? 0) > 0)));
   const [hovering, setHovering] = useState(false);
@@ -72,62 +69,13 @@ export function PropertyTypes({ types }: { types: TypeTile[] }) {
     { scope: rootRef, dependencies: [motionOk] },
   );
 
-  // Hover image reveal: the frame trails the cursor and tilts with its speed.
-  useGSAP(
-    () => {
-      const list = listRef.current;
-      const follow = followRef.current;
-      if (!motionOk || !finePointer || !list || !follow) return;
-      gsap.set(follow, { xPercent: -50, yPercent: -50, transformPerspective: 900 });
-      const toX = gsap.quickTo(follow, "x", { duration: 0.7, ease: "power3.out" });
-      const toY = gsap.quickTo(follow, "y", { duration: 0.7, ease: "power3.out" });
-      const toTiltY = gsap.quickTo(follow, "rotationY", { duration: 0.6, ease: "power3.out" });
-      const toTiltX = gsap.quickTo(follow, "rotationX", { duration: 0.6, ease: "power3.out" });
-      let last = { x: 0, y: 0 };
-      let settle = 0;
-
-      const local = (event: PointerEvent) => {
-        const rect = list.getBoundingClientRect();
-        return { x: event.clientX - rect.left, y: event.clientY - rect.top };
-      };
-      const onEnter = (event: PointerEvent) => {
-        // Appear under the cursor instead of gliding in from the last spot.
-        const point = local(event);
-        gsap.set(follow, { x: point.x, y: point.y, rotationX: 0, rotationY: 0 });
-        last = { x: event.clientX, y: event.clientY };
-      };
-      const onMove = (event: PointerEvent) => {
-        const point = local(event);
-        toX(point.x);
-        toY(point.y);
-        toTiltY(gsap.utils.clamp(-14, 14, (event.clientX - last.x) * 0.8));
-        toTiltX(gsap.utils.clamp(-10, 10, -(event.clientY - last.y) * 0.8));
-        last = { x: event.clientX, y: event.clientY };
-        // Level out once the cursor rests.
-        window.clearTimeout(settle);
-        settle = window.setTimeout(() => {
-          toTiltX(0);
-          toTiltY(0);
-        }, 90);
-      };
-      list.addEventListener("pointerenter", onEnter);
-      list.addEventListener("pointermove", onMove);
-      return () => {
-        window.clearTimeout(settle);
-        list.removeEventListener("pointerenter", onEnter);
-        list.removeEventListener("pointermove", onMove);
-      };
-    },
-    { scope: rootRef, dependencies: [motionOk, finePointer] },
-  );
-
   if (!current) return null;
 
   return (
     <div ref={rootRef}>
       {/* Desktop: the type index. */}
       <div className="hidden gap-12 lg:grid lg:grid-cols-[1.25fr_1fr] xl:gap-20">
-        <div className="relative">
+        <div>
           <ul
             ref={listRef}
             onPointerEnter={() => setHovering(true)}
@@ -185,20 +133,6 @@ export function PropertyTypes({ types }: { types: TypeTile[] }) {
               );
             })}
           </ul>
-
-          {/* Cursor-following photo (mouse only, hidden under reduced motion). */}
-          {motionOk && finePointer && (
-            <div
-              ref={followRef}
-              aria-hidden
-              className={cn(
-                "pointer-events-none absolute top-0 left-0 z-10 aspect-4/3 w-60 overflow-hidden rounded-2xl shadow-2xl shadow-black/25 transition-opacity duration-300",
-                hovering ? "opacity-100" : "opacity-0",
-              )}
-            >
-              <Crossfade types={types} active={active} sizes="240px" />
-            </div>
-          )}
         </div>
 
         <div className="sticky top-28 self-start">
