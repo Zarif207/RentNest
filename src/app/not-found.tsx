@@ -12,7 +12,7 @@ export default function NotFound() {
   return (
     <div className="flex min-h-svh flex-col bg-linear-to-b from-wash-from to-wash-to">
       <header className="flex h-16 items-center justify-between px-4 sm:px-6">
-        <BrandLogo />
+        <BrandLogo className="[--logo-eye:var(--wash-from)]" />
         <ThemeToggle />
       </header>
       <main id="main" className="flex flex-1 items-center justify-center">

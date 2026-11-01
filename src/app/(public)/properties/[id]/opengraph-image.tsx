@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { cacheLife } from "next/cache";
 import { ImageResponse } from "next/og";
-import { NEST_MARK } from "@/components/brand/brand-logo";
+import { NEST_MARK, nestMarkShapes } from "@/components/brand/brand-logo";
 import { getPublicProperty } from "@/lib/data/public";
 import { formatListingPrice, LISTING_LABELS, listingSummary } from "@/lib/listing";
 import { formatLocation } from "@/lib/us-states";
@@ -45,7 +45,6 @@ export default async function PropertyOpengraphImage({ params }: { params: Promi
   ]);
   const photo = property?.images[0];
   const price = property ? formatListingPrice(property) : null;
-  const { egg, twigs } = NEST_MARK;
 
   return new ImageResponse(
     (
@@ -61,13 +60,9 @@ export default async function PropertyOpengraphImage({ params }: { params: Promi
           }}
         />
         <div style={{ position: "absolute", top: 48, left: 56, display: "flex", alignItems: "center", gap: 14, color: "#f2eee7" }}>
-          <svg width={60} height={46} viewBox={NEST_MARK.viewBox}>
-            <ellipse cx={egg.cx} cy={egg.cy} rx={egg.rx} ry={egg.ry} fill="#c2a878" />
-            <g fill="none" stroke="#f2eee7" strokeWidth={2.4} strokeLinecap="round">
-              {twigs.map((d) => (
-                <path key={d} d={d} />
-              ))}
-            </g>
+          {/* Ink eyes, so they read on the champagne heads over any photo. */}
+          <svg width={70} height={56} viewBox={NEST_MARK.viewBox}>
+            {nestMarkShapes({ accent: "#c2a878", eye: "#12100e", nest: "#f2eee7", twigWidth: 2.4 })}
           </svg>
           <span style={{ fontSize: 30, fontWeight: 500, letterSpacing: 7 }}>RENTNEST</span>
         </div>

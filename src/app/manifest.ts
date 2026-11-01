@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { SITE_DESCRIPTION, SITE_NAME } from "@/lib/seo";
 
-/** Web app manifest: name, colors and the egg-in-nest icons. */
+/** Web app manifest: name, colors and the birds-and-egg nest icons. */
 export default function manifest(): MetadataRoute.Manifest {
   return {
     name: `${SITE_NAME} — Rent or buy homes across the US`,

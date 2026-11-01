@@ -13,7 +13,7 @@ const LIFT_AT = 1050;
 const LIFT_MS = 550;
 
 /**
- * First-visit intro: ink screen, the egg drops into the nest, "RENT" and
+ * First-visit intro: ink screen, the mark drops in, "RENT" and
  * "NEST" fade in, a 0→100 counter runs, then the curtain lifts. Plays once per browser session; skipped (and
  * hidden before paint by IntroGate) for repeat visits and reduced motion.
  */
@@ -46,11 +46,11 @@ export function IntroPreloader() {
     <div
       data-intro
       aria-hidden
-      className="fixed inset-0 z-100 grid place-items-center bg-[#12100e] text-[#f2eee7] [--logo-accent:#c2a878] animate-[intro-lift_550ms_cubic-bezier(0.76,0,0.24,1)_1050ms_forwards]"
+      className="fixed inset-0 z-100 grid place-items-center bg-[#12100e] text-[#f2eee7] [--logo-accent:#c2a878] [--logo-eye:#12100e] animate-[intro-lift_550ms_cubic-bezier(0.76,0,0.24,1)_1050ms_forwards]"
     >
       <LogoLockup
         className="text-[28px] sm:text-[40px]"
-        eggClassName="motion-safe:animate-[logo-egg-drop_520ms_cubic-bezier(0.3,0,0.2,1)_80ms_both]"
+        markClassName="motion-safe:animate-[logo-mark-drop_520ms_cubic-bezier(0.3,0,0.2,1)_80ms_both]"
         lettersClassName="inline-block motion-safe:animate-[logo-letters-in_420ms_ease-out_520ms_both]"
       />
       {/* 000 → 100 in CSS (an animated integer custom property feeding a counter). */}

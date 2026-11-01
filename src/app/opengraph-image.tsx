@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { cacheLife } from "next/cache";
 import { ImageResponse } from "next/og";
-import { NEST_MARK } from "@/components/brand/brand-logo";
+import { NEST_MARK, nestMarkShapes } from "@/components/brand/brand-logo";
 
 // Default social preview for every page that doesn't set its own image.
 // The font files come from node_modules.
@@ -30,7 +30,6 @@ const TRACKING = 0.22 * FONT_SIZE;
 
 export default async function OpengraphImage() {
   const { medium, regular } = await loadFonts();
-  const { egg, twigs } = NEST_MARK;
 
   return new ImageResponse(
     (
@@ -51,17 +50,12 @@ export default async function OpengraphImage() {
         <div style={{ display: "flex", alignItems: "flex-end", fontSize: FONT_SIZE, fontWeight: 500, lineHeight: 1 }}>
           <span style={{ letterSpacing: TRACKING }}>RENT</span>
           <svg
-            width={FONT_SIZE * 1.5}
-            height={FONT_SIZE * 1.15}
+            width={FONT_SIZE * 1.9}
+            height={FONT_SIZE * 1.5}
             viewBox={NEST_MARK.viewBox}
-            style={{ margin: `0 ${FONT_SIZE * 0.1}px`, position: "relative", top: FONT_SIZE * 0.06 }}
+            style={{ margin: `${-FONT_SIZE * 0.6}px ${FONT_SIZE * 0.1}px 0`, position: "relative", top: FONT_SIZE * 0.3 }}
           >
-            <ellipse cx={egg.cx} cy={egg.cy} rx={egg.rx} ry={egg.ry} fill="#c2a878" />
-            <g fill="none" stroke="#f2eee7" strokeWidth={2} strokeLinecap="round">
-              {twigs.map((d) => (
-                <path key={d} d={d} />
-              ))}
-            </g>
+            {nestMarkShapes({ accent: "#c2a878", eye: "#12100e", nest: "#f2eee7" })}
           </svg>
           {/* No tracking after the last letter, so the lockup stays centered. */}
           <span style={{ letterSpacing: TRACKING, marginRight: -TRACKING }}>NEST</span>

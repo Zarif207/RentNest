@@ -1,6 +1,6 @@
 import { nestIconResponse } from "@/lib/brand-icon";
 
-// Favicon (32) and the large app icon (512): the egg-in-nest mark on ink.
+// Favicon (32) and the large app icon (512): the simplified birds-and-egg mark on ink.
 
 const SIZES = [32, 512] as const;
 

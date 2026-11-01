@@ -107,8 +107,11 @@
   /* RentNest brand tokens */
   --gold: #c2a878; /* champagne: fills and lines, never small text on ivory */
   --gold-foreground: #12100e;
-  /* The egg in the logo: bronze reads better than champagne on ivory. */
+  /* The logo's birds and egg: bronze reads better than champagne on ivory.
+     --logo-eye is the surface behind the logo (the birds' eyes and wing
+     shade); places on another surface set their own. */
   --logo-accent: #8a6d3b;
+  --logo-eye: #f6f3ee;
   --logo-tracking: 0.22em;
   /* Roof-peak navbar glass and outline; the "solid" fill is used once scrolled. */
   --roof-fill: rgb(246 243 238 / 0.78);
@@ -160,6 +163,7 @@
   --gold: #c2a878;
   --gold-foreground: #12100e;
   --logo-accent: #c2a878;
+  --logo-eye: #0c0b0a;
   --roof-fill: rgb(18 16 14 / 0.62);
   --roof-fill-solid: rgb(18 16 14 / 0.8);
   --roof-stroke: rgb(194 168 120 / 0.65);
@@ -198,10 +202,10 @@ html[data-intro-seen] [data-intro] {
   display: none;
 }
 
-/* Intro preloader, all CSS so it runs before scripts load: the egg drops
-   into the nest, the letters fade in, a 000→100 counter runs, then the
+/* Intro preloader, all CSS so it runs before scripts load: the mark drops
+   in, the letters fade in, a 000→100 counter runs, then the
    curtain lifts (see intro-preloader). */
-@keyframes logo-egg-drop {
+@keyframes logo-mark-drop {
   from {
     opacity: 0;
     transform: translateY(-26px);
@@ -576,8 +580,8 @@ html:not([data-intro-seen]) [data-cookie-banner] {
 }
 
 /* Roof-peak navbar. First visit only (when the intro plays, desktop): after
-   the curtain lifts at 1.6 s the outline draws itself, the egg drops into
-   the nest, then the links fade in one by one. */
+   the curtain lifts at 1.6 s the outline draws itself, the mark drops in
+   as one piece, then the links fade in one by one. */
 @keyframes roof-draw {
   from {
     stroke-dashoffset: 1;
@@ -587,7 +591,7 @@ html:not([data-intro-seen]) [data-cookie-banner] {
   }
 }
 
-@keyframes roof-egg-in {
+@keyframes roof-mark-in {
   from {
     opacity: 0;
     transform: translateY(-8px);
@@ -614,7 +618,8 @@ html:not([data-intro-seen]) [data-cookie-banner] {
   }
 }
 
-.roof-logo ellipse {
+/* On hover the egg between the birds wobbles. */
+.roof-logo .logo-egg {
   transform-box: fill-box;
   transform-origin: 50% 100%;
 }
@@ -624,20 +629,14 @@ html:not([data-intro-seen]) [data-cookie-banner] {
     stroke-dasharray: 1;
     animation: roof-draw 900ms cubic-bezier(0.65, 0, 0.35, 1) 1600ms both;
   }
-  html:not([data-intro-seen]) .roof-logo ellipse {
-    animation: roof-egg-in 500ms cubic-bezier(0.3, 0, 0.2, 1) 2350ms both;
+  html:not([data-intro-seen]) .roof-logo svg {
+    animation: roof-mark-in 500ms cubic-bezier(0.3, 0, 0.2, 1) 2350ms both;
   }
   html:not([data-intro-seen]) [data-nav-enter] {
     animation: roof-link-in 450ms ease-out both;
     animation-delay: calc(2500ms + var(--nav-i, 0) * 70ms);
   }
-  .roof-logo:hover ellipse {
+  .roof-logo:hover .logo-egg {
     animation: roof-egg-wobble 700ms ease-in-out;
-  }
-  /* Keep the entrance first in the list so un-hovering doesn't restart it. */
-  html:not([data-intro-seen]) .roof-logo:hover ellipse {
-    animation:
-      roof-egg-in 500ms cubic-bezier(0.3, 0, 0.2, 1) 2350ms both,
-      roof-egg-wobble 700ms ease-in-out;
   }
 }
