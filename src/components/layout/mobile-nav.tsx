@@ -15,7 +15,8 @@ import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { UserAvatar } from "@/components/shared/user-avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useAuth, useLogout } from "@/hooks/use-auth";
+import { useLogoutConfirm } from "@/components/auth/logout-confirm";
+import { useAuth } from "@/hooks/use-auth";
 import { siteSettingsService } from "@/lib/api/site-settings";
 import { roleHome } from "@/lib/auth";
 import { formatEnumLabel } from "@/lib/format";
@@ -118,7 +119,7 @@ function FeaturedHome({ enabled }: { enabled: boolean }) {
 export function MobileNav({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const pathname = usePathname();
   const { user } = useAuth();
-  const logout = useLogout();
+  const { requestLogout: logout, dialog: logoutDialog } = useLogoutConfirm();
   const reduceMotion = useReducedMotion();
 
   // Following a link (or the browser's back button) closes the panel.
@@ -244,6 +245,8 @@ export function MobileNav({ open, onOpenChange }: { open: boolean; onOpenChange:
           </m.div>
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
+      {/* Outside the panel, so it stays open after the panel closes. */}
+      {logoutDialog}
     </DialogPrimitive.Root>
   );
 }

@@ -646,3 +646,8 @@ html:not([data-intro-seen]) [data-cookie-banner] {
     animation: roof-egg-wobble 700ms ease-in-out;
   }
 }
+
+/* Pauses a CSS animation (the listings marquee on hover and keyboard focus). */
+@utility paused {
+  animation-play-state: paused;
+}

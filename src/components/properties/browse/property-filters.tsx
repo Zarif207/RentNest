@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { formatAmenity, formatEnumLabel } from "@/lib/format";
+import { categoryIcon, PROPERTY_TYPE_ICONS } from "@/lib/property-taxonomy";
 import { US_STATES } from "@/lib/us-states";
 import { cn } from "@/lib/utils";
 import { PROPERTY_TYPES, type Category } from "@/types";
@@ -149,6 +150,7 @@ export function PropertyFilters({ categories, amenities }: FilterOptions) {
         <div className="flex flex-wrap gap-2">
           {[null, ...PROPERTY_TYPES].map((type) => {
             const active = filters.propertyType === type;
+            const TypeIcon = type ? PROPERTY_TYPE_ICONS[type] : null;
             return (
               <button
                 key={type ?? ANY}
@@ -156,12 +158,13 @@ export function PropertyFilters({ categories, amenities }: FilterOptions) {
                 aria-pressed={active}
                 onClick={() => setParams({ propertyType: type })}
                 className={cn(
-                  "rounded-full border px-4 py-1.5 text-sm font-medium transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+                  "inline-flex items-center gap-1.5 rounded-full border px-4 py-1.5 text-sm font-medium transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
                   active
                     ? "border-foreground bg-foreground text-background"
                     : "hover:bg-secondary",
                 )}
               >
+                {TypeIcon && <TypeIcon className="size-4" aria-hidden />}
                 {type ? formatEnumLabel(type) : "Any"}
               </button>
             );
@@ -169,23 +172,29 @@ export function PropertyFilters({ categories, amenities }: FilterOptions) {
         </div>
       </FilterSection>
 
+      {/* Type is the building; category is the segment, so it gets sand chips with their own icons. */}
       <FilterSection title="Category" activeCount={filters.categoryId ? 1 : 0}>
-        <Select
-          value={filters.categoryId ?? ANY}
-          onValueChange={(value) => setParams({ categoryId: value === ANY ? null : value })}
-        >
-          <SelectTrigger aria-label="Category" className="w-full">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={ANY}>Any category</SelectItem>
-            {categories.map((category) => (
-              <SelectItem key={category.id} value={category.id}>
-                {category.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="flex flex-wrap gap-2">
+          {[null, ...categories].map((category) => {
+            const active = (filters.categoryId ?? null) === (category?.id ?? null);
+            const CategoryIcon = category ? categoryIcon(category.name) : null;
+            return (
+              <button
+                key={category?.id ?? ANY}
+                type="button"
+                aria-pressed={active}
+                onClick={() => setParams({ categoryId: category?.id ?? null })}
+                className={cn(
+                  "inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+                  active ? "bg-gold text-gold-foreground" : "bg-sand text-foreground hover:bg-sand/70",
+                )}
+              >
+                {CategoryIcon && <CategoryIcon className="size-3.5" aria-hidden />}
+                {category ? category.name : "Any segment"}
+              </button>
+            );
+          })}
+        </div>
       </FilterSection>
 
       {/* One price scale per listing type, so browsing both has no price filter. */}

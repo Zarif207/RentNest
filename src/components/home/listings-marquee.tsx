@@ -24,17 +24,17 @@ export function ListingsMarquee({ properties }: { properties: Property[] }) {
       <div className="overflow-hidden motion-reduce:overflow-x-auto">
         {/* No backdrop blur on the cards' chips here: blurring behind ~50 moving
             chips every frame is the most expensive paint on the page. */}
-        <ul className="flex w-max animate-marquee gap-6 hover:paused motion-reduce:animate-none **:backdrop-blur-none">
+        <ul className="flex w-max animate-marquee gap-6 hover:paused focus-within:paused motion-reduce:animate-none **:backdrop-blur-none">
           {[...loop, ...loop].map((property, index) => (
-            // Only the first copy of each listing is exposed; repeats are
-            // decorative and hidden from screen readers and the tab order.
+            // Only the first copy of each listing is exposed to screen readers
+            // and Tab; repeats stay clickable (not inert: most of the cards on
+            // screen are repeats, and inert swallowed their clicks).
             <li
               key={`${property.id}-${index}`}
-              className="w-72 shrink-0 rounded-3xl bg-background p-3 shadow-lg shadow-black/5 sm:w-80"
+              className="pointer-events-auto w-72 shrink-0 rounded-3xl bg-background p-3 shadow-lg shadow-black/5 sm:w-80"
               aria-hidden={index >= properties.length || undefined}
-              inert={index >= properties.length || undefined}
             >
-              <PropertyCard property={property} />
+              <PropertyCard property={property} decorative={index >= properties.length} />
             </li>
           ))}
         </ul>

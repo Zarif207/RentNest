@@ -26,6 +26,18 @@ export function safeRedirect(path: string | null | undefined) {
   return path.startsWith("/auth") ? null : path;
 }
 
+/**
+ * Where to go after signing in: the ?redirect= path when this role may open
+ * it, else the role's dashboard. Another role's dashboard would make the proxy
+ * redirect the client navigation, and redirected RSC requests 404.
+ */
+export function afterSignIn(redirectTo: string | null, role: UserRole) {
+  const home = roleHome(role);
+  if (!redirectTo) return home;
+  const isDashboard = redirectTo === "/dashboard" || redirectTo.startsWith("/dashboard/");
+  return !isDashboard || redirectTo === home || redirectTo.startsWith(`${home}/`) ? redirectTo : home;
+}
+
 function isUserRole(value: unknown): value is UserRole {
   return USER_ROLES.includes(value as UserRole);
 }

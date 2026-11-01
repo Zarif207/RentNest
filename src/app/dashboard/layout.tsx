@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { DashboardSessionGate } from "@/components/dashboard/dashboard-session-gate";
 import { DashboardTopbar } from "@/components/dashboard/dashboard-topbar";
 
 // Dashboards are private: keep them out of search results.
@@ -15,7 +16,9 @@ export default function DashboardLayout({ children }: LayoutProps<"/dashboard">)
       </Suspense>
       {/* Bottom padding clears the floating tab bar on phones. */}
       <main id="main" className="px-3 pt-6 pb-28 sm:px-4 sm:pt-8 md:pb-12">
-        <div className="mx-auto w-full max-w-7xl lg:px-2">{children}</div>
+        <div className="mx-auto w-full max-w-7xl lg:px-2">
+          <DashboardSessionGate>{children}</DashboardSessionGate>
+        </div>
       </main>
     </div>
   );

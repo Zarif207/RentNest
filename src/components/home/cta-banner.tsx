@@ -6,7 +6,9 @@ import { Reveal } from "@/components/motion/reveal";
 import { SerifAccent } from "@/components/shared/serif-accent";
 import { Button } from "@/components/ui/button";
 
-const CTA_IMAGE = "https://images.unsplash.com/photo-1613977257363-707ba9348227";
+// Two hands passing a set of house keys (Alena Darmel on Pexels, photo 7642000,
+// free licence), served from /public so it needs no remote image host.
+const CTA_IMAGE = "/images/cta-keys-handover.jpg";
 
 /** Closing call to action: full-width photo with parallax under a dark wash. */
 export function CtaBanner() {
@@ -15,7 +17,7 @@ export function CtaBanner() {
       <div className="relative isolate overflow-hidden rounded-3xl bg-[#12100e] text-white">
         {/* Taller than the frame so the parallax never shows an edge. */}
         <Parallax speed={0.25} className="absolute -inset-y-24 inset-x-0 -z-10">
-          <Image src={CTA_IMAGE} alt="" fill sizes="100vw" className="object-cover" />
+          <Image src={CTA_IMAGE} alt="" fill sizes="100vw" className="object-cover object-[50%_40%]" />
         </Parallax>
         <div aria-hidden className="absolute inset-0 -z-10 bg-linear-to-t from-black/85 via-black/55 to-black/35" />
 

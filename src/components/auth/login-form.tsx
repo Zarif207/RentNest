@@ -13,7 +13,7 @@ import { FieldGroup } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useLogin } from "@/hooks/use-auth";
 import { getErrorMessage, isApiError } from "@/lib/api/client";
-import { roleHome, safeRedirect } from "@/lib/auth";
+import { afterSignIn, safeRedirect } from "@/lib/auth";
 import { applyServerErrors } from "@/lib/forms";
 import { loginSchema, type LoginValues } from "@/schemas/auth";
 
@@ -40,7 +40,7 @@ export function LoginForm() {
 
   const onSubmit = (values: LoginValues) => {
     login.mutate(values, {
-      onSuccess: ({ user }) => router.replace(redirectTo ?? roleHome(user.role)),
+      onSuccess: ({ user }) => router.replace(afterSignIn(redirectTo, user.role)),
       onError: (error) => {
         if (applyServerErrors(error, form.setError, LOGIN_FIELDS)) return;
 

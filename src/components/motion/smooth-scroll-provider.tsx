@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { usePathname } from "next/navigation";
 import type Lenis from "lenis";
 import "lenis/dist/lenis.css";
 import { useFinePointer, useMotionOk } from "@/hooks/use-motion";
@@ -29,6 +30,7 @@ export function setSmoothScrollPaused(paused: boolean) {
 export function SmoothScrollProvider({ children }: { children: React.ReactNode }) {
   const motionOk = useMotionOk();
   const finePointer = useFinePointer();
+  const pathname = usePathname();
 
   useEffect(() => {
     if (!motionOk || !finePointer) return;
@@ -56,6 +58,16 @@ export function SmoothScrollProvider({ children }: { children: React.ReactNode }
       cleanup?.();
     };
   }, [motionOk, finePointer]);
+
+  // A new page: restart Lenis if an overlay left it stopped (a menu closed by
+  // navigating), jump to the top and re-measure the new page's triggers.
+  useEffect(() => {
+    if (!activeLenis) return;
+    activeLenis.start();
+    activeLenis.scrollTo(0, { immediate: true, force: true });
+    activeLenis.resize();
+    void import("@/lib/gsap").then(({ ScrollTrigger }) => ScrollTrigger.refresh());
+  }, [pathname]);
 
   return children;
 }

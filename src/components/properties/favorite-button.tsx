@@ -17,11 +17,13 @@ export function FavoriteButton({
   title,
   size = "default",
   className,
+  tabIndex,
 }: {
   propertyId: string;
   title: string;
   size?: "default" | "lg";
   className?: string;
+  tabIndex?: number;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -56,6 +58,7 @@ export function FavoriteButton({
       // Until the session is known a click can't be handled, so it can't be lost either.
       disabled={isLoading}
       onClick={onClick}
+      tabIndex={tabIndex}
       className={cn(
         "grid place-items-center rounded-full bg-background/85 backdrop-blur-md transition-[transform,background-color] outline-none hover:scale-110 focus-visible:ring-3 focus-visible:ring-ring/50 active:scale-95 motion-reduce:hover:scale-100",
         size === "lg" ? "size-12 border border-border" : "size-9",

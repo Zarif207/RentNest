@@ -21,7 +21,8 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useAuth, useLogout } from "@/hooks/use-auth";
+import { useLogoutConfirm } from "@/components/auth/logout-confirm";
+import { useAuth } from "@/hooks/use-auth";
 import { usePendingOfferCount } from "@/hooks/use-landlord-offers";
 import { usePendingRequestCount } from "@/hooks/use-landlord-requests";
 import { useMarkSectionRead, useNotificationSummary } from "@/hooks/use-notifications";
@@ -208,7 +209,7 @@ function SearchButton() {
 function MobileTabBar() {
   const { items, active, badgeFor, labelFor } = useDashboardNav();
   const { user } = useAuth();
-  const logout = useLogout();
+  const { requestLogout: logout, dialog: logoutDialog } = useLogoutConfirm();
   const [moreOpen, setMoreOpen] = useState(false);
   const primary = items.slice(0, 4);
   // A dot on "More" when a page inside it has a badge.
@@ -307,6 +308,7 @@ function MobileTabBar() {
           </Sheet>
         </li>
       </ul>
+      {logoutDialog}
     </nav>
   );
 }

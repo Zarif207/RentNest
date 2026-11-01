@@ -79,3 +79,11 @@ export function formatLocation(city: string, division: string) {
   const state = CODE_BY_NAME.get(division.trim().toLowerCase()) ?? division;
   return [city, state].filter(Boolean).join(", ");
 }
+
+/**
+ * The state a stored `division` names, whatever its form ("Florida",
+ * "FL", "Florida, FL"); null when none of it is a US state.
+ */
+export function normalizeUsState(division: string) {
+  return matchUsState(division) ?? division.split(",").map(matchUsState).find(Boolean) ?? null;
+}

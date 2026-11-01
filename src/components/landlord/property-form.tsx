@@ -21,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { useCategories } from "@/hooks/use-categories";
 import {
@@ -36,6 +37,7 @@ import { depositFor } from "@/lib/offers";
 import { applyServerErrors } from "@/lib/forms";
 import { cn } from "@/lib/utils";
 import { COMMON_AMENITIES } from "@/lib/property-filters";
+import { CATEGORY_HINT, categoryIcon, PROPERTY_TYPE_HINT, PROPERTY_TYPE_ICONS } from "@/lib/property-taxonomy";
 import { US_STATES } from "@/lib/us-states";
 import {
   changedFields,
@@ -281,7 +283,12 @@ export function PropertyForm({ property }: { property?: PropertyWithRelations })
             />
           </FormField>
           <div className="grid gap-5 sm:grid-cols-2">
-            <FormField label="Property type" htmlFor="propertyType" error={errors.propertyType}>
+            <FormField
+              label="Property type"
+              htmlFor="propertyType"
+              error={errors.propertyType}
+              description={PROPERTY_TYPE_HINT}
+            >
               <Controller
                 control={form.control}
                 name="propertyType"
@@ -291,37 +298,66 @@ export function PropertyForm({ property }: { property?: PropertyWithRelations })
                       <SelectValue placeholder="Choose a type" />
                     </SelectTrigger>
                     <SelectContent>
-                      {PROPERTY_TYPES.map((type) => (
-                        <SelectItem key={type} value={type}>
-                          {formatEnumLabel(type)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-            </FormField>
-            <FormField label="Category" htmlFor="categoryId" error={errors.categoryId}>
-              <Controller
-                control={form.control}
-                name="categoryId"
-                render={({ field }) => (
-                  <Select value={field.value || undefined} onValueChange={field.onChange} disabled={categories.isPending}>
-                    <SelectTrigger id="categoryId" className="w-full" aria-invalid={Boolean(errors.categoryId)}>
-                      <SelectValue placeholder={categories.isError ? "Couldn't load categories" : "Choose a category"} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {categories.data?.map((category) => (
-                        <SelectItem key={category.id} value={category.id}>
-                          {category.name}
-                        </SelectItem>
-                      ))}
+                      {PROPERTY_TYPES.map((type) => {
+                        const TypeIcon = PROPERTY_TYPE_ICONS[type];
+                        return (
+                          <SelectItem key={type} value={type}>
+                            <TypeIcon aria-hidden /> {formatEnumLabel(type)}
+                          </SelectItem>
+                        );
+                      })}
                     </SelectContent>
                   </Select>
                 )}
               />
             </FormField>
           </div>
+          <FormField label="Category" htmlFor="categoryId" error={errors.categoryId} description={CATEGORY_HINT}>
+            <Controller
+              control={form.control}
+              name="categoryId"
+              render={({ field }) =>
+                categories.isPending ? (
+                  <div className="flex flex-wrap gap-2" aria-busy="true">
+                    {Array.from({ length: 6 }, (_, index) => (
+                      <Skeleton key={index} className="h-9 w-32 rounded-full" />
+                    ))}
+                  </div>
+                ) : categories.isError ? (
+                  <p className="text-sm text-destructive">Couldn&apos;t load categories. Reload the page to try again.</p>
+                ) : (
+                  // Native radios styled as chips: arrow keys, focus and the form label all work.
+                  <div id="categoryId" role="radiogroup" aria-label="Category" className="flex flex-wrap gap-2">
+                    {categories.data?.map((category) => {
+                      const CategoryIcon = categoryIcon(category.name);
+                      const checked = field.value === category.id;
+                      return (
+                        <label
+                          key={category.id}
+                          className={cn(
+                            "inline-flex cursor-pointer items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-colors has-focus-visible:ring-3 has-focus-visible:ring-ring/50",
+                            checked ? "border-foreground bg-foreground text-background" : "border-border bg-card hover:bg-secondary",
+                          )}
+                        >
+                          <input
+                            type="radio"
+                            name={field.name}
+                            value={category.id}
+                            checked={checked}
+                            onChange={() => field.onChange(category.id)}
+                            onBlur={field.onBlur}
+                            className="sr-only"
+                          />
+                          <CategoryIcon className="size-4" aria-hidden />
+                          {category.name}
+                        </label>
+                      );
+                    })}
+                  </div>
+                )
+              }
+            />
+          </FormField>
         </Section>
 
         <Section id="location" index={1} title="Location" description="Listings are US-only. Renters filter by city and state.">

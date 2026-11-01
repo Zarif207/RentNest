@@ -58,7 +58,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (!useAuthStore.getState().token) return;
 
       useAuthStore.getState().clearSession();
-      queryClient.clear();
+      void queryClient.cancelQueries();
+      queryClient.removeQueries();
 
       if (error.status === 403) {
         toast.error("Your account has been blocked", {

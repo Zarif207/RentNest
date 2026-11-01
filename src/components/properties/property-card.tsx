@@ -2,12 +2,14 @@ import Image from "@/components/shared/photo";
 import Link from "next/link";
 import { ArrowUpRight, Bath, BedDouble, House, MapPin, Ruler, Tag } from "lucide-react";
 import { TiltCard } from "@/components/motion/tilt-card";
+import { CategoryIcon } from "@/components/properties/category-icon";
 import { FavoriteButton } from "@/components/properties/favorite-button";
-import { formatNumber } from "@/lib/format";
+import { formatEnumLabel, formatNumber } from "@/lib/format";
 import { availabilityLabel, formatListingPrice, LISTING_LABELS, listingSummary, pricePerSqft } from "@/lib/listing";
+import { PROPERTY_TYPE_ICONS } from "@/lib/property-taxonomy";
 import { formatLocation } from "@/lib/us-states";
 import { cn } from "@/lib/utils";
-import type { AvailabilityStatus, Property } from "@/types";
+import type { AvailabilityStatus, CategorySummary, Property } from "@/types";
 
 // Status dot colors: sage when it can be had, ochre under contract, stone otherwise.
 const STATUS_DOT: Record<AvailabilityStatus, string> = {
@@ -28,14 +30,19 @@ const PROPERTY_CARD_IMAGE_SIZES =
 export function PropertyCard({
   property,
   eager = false,
+  decorative = false,
 }: {
-  property: Property;
+  /** Lists include the category; a bare Property just shows the type. */
+  property: Property & { category?: CategorySummary | null };
   /** Above-the-fold cards load their photo immediately (it's often the LCP). */
   eager?: boolean;
+  /** A repeated copy (e.g. in a marquee): still clickable, but skipped by Tab. */
+  decorative?: boolean;
 }) {
   const image = property.images[0];
   const price = formatListingPrice(property);
   const perSqft = pricePerSqft(property);
+  const TypeIcon = PROPERTY_TYPE_ICONS[property.propertyType];
 
   return (
     <TiltCard max={5} className="h-full rounded-3xl">
@@ -74,6 +81,7 @@ export function PropertyCard({
           <h3 className="line-clamp-1 text-lg font-medium tracking-tight">
             <Link
               href={`/properties/${property.id}`}
+              tabIndex={decorative ? -1 : undefined}
               className="outline-none after:absolute after:inset-0 after:rounded-3xl"
             >
               {property.title}
@@ -82,6 +90,19 @@ export function PropertyCard({
           <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
             <MapPin className="size-4 shrink-0" aria-hidden />
             <span className="truncate">{formatLocation(property.city, property.division)}</span>
+          </p>
+          {/* The building (icon + label) and its segment (a sand chip) read as two different things. */}
+          <p className="flex flex-wrap items-center gap-2 text-sm">
+            <span className="inline-flex items-center gap-1.5 font-medium">
+              <TypeIcon className="size-4 text-bronze" aria-hidden />
+              {formatEnumLabel(property.propertyType)}
+            </span>
+            {property.category && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-sand px-2.5 py-0.5 text-xs text-foreground">
+                <CategoryIcon name={property.category.name} className="size-3" />
+                {property.category.name}
+              </span>
+            )}
           </p>
 
           <div className="mt-auto flex items-center justify-between gap-3 border-t border-border pt-3.5 text-sm text-muted-foreground">
@@ -117,6 +138,7 @@ export function PropertyCard({
       <FavoriteButton
         propertyId={property.id}
         title={property.title}
+        tabIndex={decorative ? -1 : undefined}
         className="absolute top-5 right-5 z-10 translate-z-6"
       />
     </TiltCard>

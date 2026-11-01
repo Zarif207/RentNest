@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { ClipboardList, LogOut, PlusCircle, UserRound } from "lucide-react";
+import { useLogoutConfirm } from "@/components/auth/logout-confirm";
 import { UserAvatar } from "@/components/shared/user-avatar";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -12,14 +13,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useLogout } from "@/hooks/use-auth";
 import { formatEnumLabel } from "@/lib/format";
 import { profilePath, roleShortcut } from "@/lib/navigation";
 import type { User } from "@/types";
 
 /** Avatar dropdown: who's signed in, the role shortcut, Profile and Log out. */
 export function UserMenu({ user }: { user: User }) {
-  const logout = useLogout();
+  const { requestLogout: logout, dialog: logoutDialog } = useLogoutConfirm();
   const shortcut = roleShortcut(user.role);
   const ShortcutIcon = user.role === "LANDLORD" ? PlusCircle : ClipboardList;
 
@@ -57,6 +57,8 @@ export function UserMenu({ user }: { user: User }) {
           <LogOut aria-hidden /> Log out
         </DropdownMenuItem>
       </DropdownMenuContent>
+      {/* Outside the menu content, so it stays open after the menu closes. */}
+      {logoutDialog}
     </DropdownMenu>
   );
 }
