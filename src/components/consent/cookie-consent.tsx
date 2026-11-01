@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Cookie } from "lucide-react";
 import { toast } from "sonner";
@@ -89,11 +89,31 @@ export function CookieConsent() {
   // the page; a saved choice hides it before paint (CONSENT_GATE_SCRIPT) and
   // removes it here once the cookie has been read.
   const showBanner = !(loaded && consent) && !settingsOpen;
+  const bannerRef = useRef<HTMLElement>(null);
+
+  // Phones: the banner is a bottom sheet, so the page gets that much extra
+  // room at the end and its last content (the footer) can scroll above it.
+  useEffect(() => {
+    const banner = bannerRef.current;
+    if (!showBanner || !banner) return;
+    const root = document.documentElement;
+    const sheet = window.matchMedia("(max-width: 767px)");
+    const update = () => root.style.setProperty("--cookie-banner-space", sheet.matches ? `${banner.offsetHeight}px` : "0px");
+    const observer = new ResizeObserver(update);
+    observer.observe(banner);
+    sheet.addEventListener("change", update);
+    return () => {
+      observer.disconnect();
+      sheet.removeEventListener("change", update);
+      root.style.removeProperty("--cookie-banner-space");
+    };
+  }, [showBanner]);
 
   return (
     <>
       {showBanner && (
         <section
+          ref={bannerRef}
           aria-label="Cookie consent"
           data-cookie-banner
           className="fixed inset-x-0 bottom-0 z-50 rounded-t-3xl border-t border-border bg-card/95 px-5 pt-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-2xl shadow-black/20 backdrop-blur-xl md:inset-x-auto md:bottom-6 md:left-6 md:w-[26rem] md:rounded-3xl md:border md:bg-card/85 md:p-6"

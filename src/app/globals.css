@@ -416,6 +416,10 @@ html[data-intro-seen] [data-intro] {
 /* Cookie banner: server-rendered, so it paints with the page (it was the
    home page's late LCP when it mounted after hydration). Hidden before paint
    once a choice is saved; on desktop it waits for the intro curtain to lift. */
+/* Room for the cookie bottom sheet on phones (set by CookieConsent while it shows). */
+body {
+  padding-bottom: var(--cookie-banner-space, 0px);
+}
 html[data-consent] [data-cookie-banner] {
   display: none;
 }

@@ -1,6 +1,7 @@
 import Cookies from "js-cookie";
 import { create } from "zustand";
 import { authService } from "@/lib/api/auth";
+import { isApiError } from "@/lib/api/client";
 import { decodeToken, isTokenExpired, TOKEN_COOKIE } from "@/lib/auth";
 import type { User } from "@/types";
 
@@ -64,8 +65,15 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
       // Quietly drop a token the backend rejects; no "expired" toast on load.
       const user = await authService.getMe({ token, skipSessionHandling: true });
       set({ user, status: "authenticated" });
-    } catch {
-      get().clearSession();
+    } catch (error) {
+      if (isApiError(error) && (error.status === 401 || error.status === 403)) {
+        get().clearSession();
+        return;
+      }
+      // No answer (offline, or the request was cut off by leaving the page):
+      // signed out for now, but the cookie stays, so the next page load can
+      // still restore the session instead of logging the user out.
+      set({ token: null, user: null, status: "unauthenticated" });
     }
   },
 

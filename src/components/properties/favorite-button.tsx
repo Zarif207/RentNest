@@ -39,7 +39,6 @@ export function FavoriteButton({
     // Cards are links; the heart must not open the listing.
     event.preventDefault();
     event.stopPropagation();
-    if (isLoading) return;
     if (!user) {
       const here = `${pathname}${window.location.search}`;
       router.push(`/auth/login?redirect=${encodeURIComponent(here)}`);
@@ -54,6 +53,8 @@ export function FavoriteButton({
       type="button"
       aria-pressed={saved}
       aria-label={saved ? `Remove ${title} from saved homes` : `Save ${title}`}
+      // Until the session is known a click can't be handled, so it can't be lost either.
+      disabled={isLoading}
       onClick={onClick}
       className={cn(
         "grid place-items-center rounded-full bg-background/85 backdrop-blur-md transition-[transform,background-color] outline-none hover:scale-110 focus-visible:ring-3 focus-visible:ring-ring/50 active:scale-95 motion-reduce:hover:scale-100",

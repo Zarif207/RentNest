@@ -14,6 +14,7 @@ import { SerifAccent } from "@/components/shared/serif-accent";
 import { getPublicProperties, orNull } from "@/lib/data/public";
 import { toLiveStats } from "@/lib/live-stats";
 import { pageMetadata } from "@/lib/seo";
+import { SITE_CONTACT } from "@/lib/site-config";
 
 export const metadata: Metadata = pageMetadata({
   title: "About",
@@ -118,7 +119,7 @@ export default async function AboutPage() {
             the door.
           </p>
           <Link
-            href="https://github.com/Zarif207/RentNest"
+            href={SITE_CONTACT.github}
             target="_blank"
             rel="noreferrer"
             className="mt-8 inline-flex items-center gap-1.5 text-sm font-medium underline-offset-4 hover:underline"
