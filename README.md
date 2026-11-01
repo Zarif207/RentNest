@@ -1,266 +1,527 @@
-# RentNest — Frontend
+<a id="top"></a>
 
-RentNest is a US home marketplace where people can **rent** a home or **buy** one. It has three roles:
+<div align="center">
 
-- **Tenants and buyers** browse homes, request rentals, pay rent online and make offers on homes for sale.
-- **Landlords and sellers** list homes, answer rental requests and handle purchase offers.
-- **Admins** approve landlords and review every listing before it goes live. They also run the users, categories and homepage.
+<img src="docs/screenshots/logo.png" alt="RentNest logo" height="56" />
 
-This repository is the Next.js frontend. It talks to a separate Express + Prisma backend ([rentnest-backend](https://github.com/Zarif207/rentnest-backend)). For how the frontend uses that backend, see [API_INTEGRATION.md](API_INTEGRATION.md).
+# RentNest
 
-| | URL |
-| --- | --- |
-| Live frontend | `https://<your-frontend>.vercel.app` (add after deploy) |
-| Live backend API | `https://<your-backend>.vercel.app/api` (add after deploy) |
+**A US home marketplace to rent or buy, with verified landlords, Stripe payments, offers and admin-reviewed listings.**
 
----
+![Next.js](https://img.shields.io/badge/Next.js_16-000000?logo=nextdotjs&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS_v4-06B6D4?logo=tailwindcss&logoColor=white)
+![TanStack Query](https://img.shields.io/badge/TanStack_Query_v5-FF4154?logo=reactquery&logoColor=white)
+![Stripe](https://img.shields.io/badge/Stripe_Checkout-635BFF?logo=stripe&logoColor=white)
+![Vercel](https://img.shields.io/badge/Vercel-000000?logo=vercel&logoColor=white)
+![Playwright](https://img.shields.io/badge/tested_with-Playwright-2EAD33?logo=playwright&logoColor=white)
 
-## Demo accounts
+[**Live site**](https://YOUR-FRONTEND.vercel.app) · [**Backend API**](https://YOUR-BACKEND.vercel.app/api) · [**API docs**](https://github.com/Zarif207/rentnest-backend/blob/main/docs/api.md) · [**API integration**](API_INTEGRATION.md)
 
-These accounts come from the backend seed (`prisma/seed.ts`):
+<img src="docs/screenshots/home-hero.png" alt="RentNest home page hero with search" width="900" />
 
-| Role | Email | Password |
-| --- | --- | --- |
-| Admin | `admin@rentnest.com` | `Admin@123` |
-| Landlord | `landlord1@rentnest.com` | `Password@123` |
-| Landlord | `landlord2@rentnest.com` | `Password@123` |
-| Tenant | `tenant1@rentnest.com` | `Password@123` |
-| Tenant | `tenant2@rentnest.com` | `Password@123` |
-
-The login page has one-click buttons for the tenant, landlord and admin demo accounts. Admins can't sign up themselves; the seed creates the admin account.
-
-**Stripe test card:** `4242 4242 4242 4242`, with any future expiry date, any CVC and any ZIP code. Stripe runs in test mode, so no real money is charged.
+</div>
 
 ---
 
-## Features
+## Contents
 
-### Everyone (public)
-
-- **Separate rent and buy sections.**
-  - `/rent` and `/buy` each have their own filters: keyword, location (state and city), property type, category, price range, amenities and "available only".
-  - Each listing type also has a page per US state (`/rent/texas`, `/buy/florida`).
-  - `/properties` shows both rentals and homes for sale.
-- **Map.** Leaflet with OpenStreetMap tiles and marker clusters, on the browse pages and each home's page.
-- **Home page.**
-  - The hero, featured homes and state tiles are chosen by an admin. With nothing chosen, the page falls back to live data.
-  - It also has the latest-listings marquee, property types, "how it works" and the closing call to action.
-- **A home's page.**
-  - Photo gallery, details, amenities and location map.
-  - Reviews, and the landlord's details.
-  - A mortgage calculator on homes for sale.
-  - "More homes in {State}": other homes in the same state, then the same city.
-- **What's public.** Only listings an admin approved are shown. Rented and sold homes drop out of the lists but stay reachable by a direct link, which shows a banner and a disabled action.
-- **Other pages.**
-  - `/sell` explains selling on RentNest.
-  - `/about`, `/contact`, `/privacy`, `/terms` and `/cookies`.
-  - A WhatsApp chat button and a cookie consent banner.
-- **Theme and design.** Light and dark themes, a responsive layout, and animation that respects reduced-motion settings.
-
-### Tenant and buyer
-
-- **Saving and renting.**
-  - Save homes with the heart icon and see them under **Favorites**.
-  - Request a rental with a move-in date and lease length, then follow the request: Pending → Approved → paid (Active) → Completed.
-  - Pay rent with **Stripe Checkout** once the landlord approves. The success page confirms the payment.
-  - See payment history and review a home after an active or completed rental.
-- **Buying.**
-  - Make an **offer** on a home for sale, withdraw it, or accept the seller's counter-offer.
-  - Pay the **earnest-money deposit** through Stripe once an offer is accepted.
-- **Staying up to date.**
-  - **Notifications:** a bell with the unread count and a full notifications page.
-  - **Section badges:** a red count on the dashboard section a notification belongs to; opening that section clears it.
-
-### Landlord and seller
-
-- **Approval.** New landlord accounts start as **Pending**. Until an admin approves them they can look around the dashboard, but they can't list homes or answer requests.
-- **Listings.**
-  - Create, edit and delete listings for rent or for sale.
-  - Each listing has a photo upload (ImgBB) and a map pin.
-  - Property type is the building (Apartment, House, Villa, Studio). Category is the market segment (for example Luxury or Family Homes).
-- **Listing review.**
-  - Every new listing goes to admin review and shows **Pending review**, **Live** or **Rejected**.
-  - A rejected listing shows the admin's note and an "Edit and resubmit" button.
-  - Owners can preview any of their listings in the dashboard, even before it's live.
-- **Rentals.**
-  - Approve or reject rental requests, then mark a rental completed.
-  - Read the reviews tenants leave.
-- **Sales.** Accept, reject or counter offers, then complete the sale after the deposit is paid.
-- **Notifications** and section badges, as for tenants.
-
-### Admin
-
-- **Overview.** Live counts for users, pending landlords, pending listings, rentals and offers.
-- **Users.**
-  - Search and filter users.
-  - Block and unblock accounts.
-  - Approve or reject landlord applications.
-- **Listing review.**
-  - The **Properties** page has tabs: **Pending** (opens first, oldest first, with a count), **Approved**, **Rejected** and **All**.
-  - Approve, or reject with a reason of 3–500 characters that the landlord sees.
-  - Preview any listing before deciding.
-  - Approving or rejecting updates the list straight away and is undone if the request fails.
-- **Records.** All rentals and all offers, with filters.
-- **Categories.** Create, rename and delete categories (the market segments).
-- **Homepage editor.** Choose the hero cards, featured homes, state tiles, property-type images, the number of latest listings and the order of the sections.
-- **Notifications** and section badges.
+1. [Overview](#overview)
+2. [Screenshots](#screenshots)
+3. [Features](#features)
+4. [How it works](#how-it-works)
+5. [Tech stack](#tech-stack)
+6. [Engineering highlights](#engineering-highlights)
+7. [Performance and quality](#performance-and-quality)
+8. [Design system](#design-system)
+9. [Project structure](#project-structure)
+10. [Getting started](#getting-started)
+11. [Demo access](#demo-access)
+12. [API integration](#api-integration)
+13. [Deployment](#deployment)
+14. [Decisions, trade-offs and limitations](#decisions-trade-offs-and-limitations)
+15. [Roadmap](#roadmap)
+16. [Author and license](#author-and-license)
 
 ---
 
-## Routes
+## Overview
 
-| Route | Who | What |
-| --- | --- | --- |
-| `/` | Public | Home page |
-| `/rent`, `/buy` | Public | Browse rentals / homes for sale with filters and a map |
-| `/rent/[state]`, `/buy/[state]` | Public | One US state's homes (e.g. `/rent/new-york`) |
-| `/properties` | Public | Browse rentals and homes for sale together |
-| `/properties/[id]` | Public | A home's page (approved listings only) |
-| `/sell` | Public | Selling on RentNest |
-| `/about`, `/contact` | Public | About page; contact form (see limitations) |
-| `/privacy`, `/terms`, `/cookies` | Public | Legal pages |
-| `/auth/login`, `/auth/register` | Signed out | Sign in; sign up as a tenant or landlord |
-| `/dashboard/tenant/...` | Tenant | Overview, requests (and `/requests/[id]/pay`), payments, offers, favorites, notifications, profile |
-| `/dashboard/landlord/...` | Landlord | Overview, properties (new, `[id]` preview, `[id]/edit`), requests, offers, reviews, notifications, profile |
-| `/dashboard/admin/...` | Admin | Overview, users, properties (`[id]` preview), rentals, offers, categories, homepage, notifications, profile |
-| `/payment/success`, `/payment/cancel` | Signed in | Stripe return pages for rent payments and, with `?type=deposit`, for offer deposits |
+Renting and buying a home usually means juggling listing sites, phone calls and bank transfers, with no way to tell a real landlord from a fake one. RentNest puts the whole journey in one place:
 
-**Route protection.** `src/proxy.ts` (Next 16's replacement for `middleware.ts`) reads the `rn_token` cookie.
+- **Renters and buyers** search homes on a map and request a rental or make an offer.
+- **Landlords** list homes, but only after an admin has approved them, and every listing is reviewed before it goes public.
+- **Payments** (rent and the buyer's deposit) go through Stripe Checkout.
 
-- **Signed out:** visitors to a dashboard go to `/auth/login?redirect=…`.
-- **Signed in:** users who open another role's dashboard go to their own, and signed-in users who open `/auth` go to their dashboard.
+The project is the frontend: a Next.js App Router app that consumes a separate Express + Prisma API.
 
-The backend still checks every request.
+**At a glance**
 
----
+- **Three roles:** tenant (renter and buyer), landlord (lister and seller) and admin, each with its own dashboard.
+- **Rent and buy:** rentals (request → approve → pay → complete) and sales (offer → counter → accept → deposit → sold).
+- **Stripe Checkout** for rent payments and earnest-money deposits, confirmed by the backend.
+- **Leaflet map** with marker clusters, plus a page per US state for each listing type.
+- **Trust workflow:** admins approve landlords, and review every listing (Pending → Live / Rejected with a note).
+- **Notifications:** an in-app bell and red badges on the matching dashboard section.
 
-## Tech stack
-
-| Area | Tools |
-| --- | --- |
-| Framework | Next.js 16 (App Router, Cache Components / partial prerendering), React 19, TypeScript (strict) |
-| Styling | Tailwind CSS v4, shadcn/ui on Radix, lucide-react icons |
-| Server state | TanStack Query v5 (optimistic updates with rollback) |
-| Auth state | Zustand, plus a `rn_token` cookie (`js-cookie`), with `jose` to read the token in the proxy |
-| Forms | React Hook Form + Zod; server `errorDetails` are mapped onto form fields |
-| Feedback | Sonner toasts |
-| Motion | Lenis smooth scroll (desktop with a mouse only), GSAP + ScrollTrigger (`@gsap/react`), `motion` (Framer Motion), CSS 3D tilt |
-| Maps | Leaflet, React Leaflet, `leaflet.markercluster`, OpenStreetMap tiles |
-| Payments | Stripe Checkout; the backend creates the session and the browser is redirected to it |
-| Images | `next/image` (through `components/shared/photo.tsx`); uploads go to ImgBB through a Next.js route handler, so the key never reaches the browser |
-| Theme | `next-themes` (light, dark, system) |
-| Testing | Playwright (smoke and full-flow projects), plus link and SEO check scripts |
-
-### Design system: "quiet luxury"
-
-- **Colours.**
-  - **Light theme:** ivory background `#F6F3EE`, cards `#FDFBF7`, sand `#E9E2D6`, ink `#12100E` for text and main buttons, champagne `#C2A878` for highlights, bronze `#806435` for gold-toned text, and stone `#6F685F` for secondary text.
-  - **Dark theme:** background `#0C0B0A`, cards `#161412`, text `#F2EEE7`, with the same champagne.
-  - **Red:** used only for errors, destructive actions and notification badges.
-- **Type.**
-  - Geist for headings and body.
-  - Cormorant Garamond, set upright, for occasional accent words.
-  - Jost for the logo wordmark.
-  - No italic anywhere.
-- **Shapes.**
-  - Pill-shaped buttons and chips.
-  - Cards with `rounded-3xl` corners and hairline borders.
-  - Frosted-glass panels over photos.
-  - Shadows only on things that float (menus, dialogs).
-- **Logo.** "RENT [two birds and an egg in a nest] NEST" (`components/brand/brand-logo.tsx`).
-- **Motion.**
-  - Lenis and GSAP scroll scenes on the public site.
-  - Animations use only `transform` and `opacity`.
-  - Everything turns off under `prefers-reduced-motion`.
-  - Phones get simpler 3D and no pinned sections.
-- **Dashboards.** Bento grids with pill navigation; on phones, a bottom tab bar plus a "More" sheet; tables become stacked cards on small screens.
-
----
-
-## Local setup
-
-Requirements: Node.js 20 or newer, npm, and a running RentNest backend (local or deployed).
-
-```bash
-git clone <this-repo-url> rentnest-frontend
-cd rentnest-frontend
-npm install
-cp .env.example .env.local   # or create it by hand (variables below)
-npm run dev                  # http://localhost:3000
-```
-
-### Environment variables (`.env.local`)
-
-| Variable | Where it's used | What it is |
-| --- | --- | --- |
-| `NEXT_PUBLIC_API_URL` | browser and server | Backend base URL, ending in `/api` |
-| `NEXT_PUBLIC_SITE_URL` | server (SEO) | The site's public URL, used for canonical links, the sitemap, robots and Open Graph |
-| `NEXT_PUBLIC_WHATSAPP_NUMBER` | browser | Number for the WhatsApp chat button, in international format with no `+` or spaces |
-| `IMGBB_API_KEY` | server only | ImgBB key used by `/api/upload`; never sent to the browser |
-
-The Stripe success and cancel URLs are set on the **backend** (`CLIENT_SUCCESS_URL`, `CLIENT_CANCEL_URL`). Point them at this app's `/payment/success` and `/payment/cancel`.
-
-### Scripts
-
-| Script | What it does |
-| --- | --- |
-| `npm run dev` | Development server |
-| `npm run build` / `npm start` | Production build / serve it |
-| `npm run lint` | ESLint |
-| `npm run seo:check` | Walks every sitemap URL on a running build and checks status, title, `h1`, canonical link, landmarks and JSON-LD, plus robots, the manifest and 404s |
-| `npm run test:e2e:smoke` | Playwright smoke tests (read-only; no `@writes` tests) |
-| `npm run test:e2e` | All Playwright tests, including the flows that create data (`@writes`) |
-| `npm run check:links` | Crawls public pages and reports broken links and images |
-
-The Playwright tests run against a production build and the API in `NEXT_PUBLIC_API_URL`, and they sign in with the demo accounts above.
-
----
-
-## Performance (Lighthouse)
-
-The D2 targets for a mobile Lighthouse run on a production build:
-
-| Metric | Target | Home | Details page |
-| --- | --- | --- | --- |
-| Performance | ≥ 85 | _to record_ | _to record_ |
-| Accessibility | ≥ 95 | _to record_ | _to record_ |
-| Best Practices | ≥ 95 | _to record_ | _to record_ |
-| SEO | 100 | _to record_ | _to record_ |
-| CLS / LCP / INP | < 0.05 / < 2.5 s / < 200 ms | _to record_ | _to record_ |
-
-What D2 changed:
-
-- Next's image optimizer is used for non-Unsplash hosts, and Unsplash photos are sized by Unsplash's own CDN.
-- GSAP and Lenis are loaded only where they're used, and Lenis never loads on touch devices or with reduced motion.
-- Font weights are trimmed, and far-down sections use `content-visibility`.
-
-Fill in the scores from a run on the live site after deploying.
+<p align="right"><a href="#top">Back to top</a></p>
 
 ---
 
 ## Screenshots
 
-_Add the images to `docs/screenshots/` and link them here._
+| | | |
+| :---: | :---: | :---: |
+| <img src="docs/screenshots/home-hero.png" alt="Home page hero, light theme" width="300" /><br/>Home (light) | <img src="docs/screenshots/home-dark.png" alt="Home page, dark theme" width="300" /><br/>Home (dark) | <img src="docs/screenshots/rent-filters.png" alt="Rent browse page with filters" width="300" /><br/>Rent with filters |
+| <img src="docs/screenshots/buy.png" alt="Buy browse page" width="300" /><br/>Buy | <img src="docs/screenshots/details-sale.png" alt="Home for sale with payment estimate" width="300" /><br/>Home for sale + payment estimate | <img src="docs/screenshots/map.png" alt="Location map on a home's page" width="300" /><br/>Map |
+| <img src="docs/screenshots/login.png" alt="Login page with photo panel" width="300" /><br/>Login | <img src="docs/screenshots/tenant-offers.png" alt="Tenant offers dashboard" width="300" /><br/>Tenant offers | <img src="docs/screenshots/landlord-properties.png" alt="Landlord properties with review status chips" width="300" /><br/>Landlord listings + review chips |
+| <img src="docs/screenshots/landlord-offers.png" alt="Landlord offers dashboard" width="300" /><br/>Landlord offers | <img src="docs/screenshots/admin-properties-pending.png" alt="Admin properties, Pending review tab" width="300" /><br/>Admin review (Pending) | <img src="docs/screenshots/admin-overview.png" alt="Admin overview bento dashboard" width="300" /><br/>Admin overview |
+| <img src="docs/screenshots/notifications-open.png" alt="Notifications menu open in the dashboard" width="300" /><br/>Notifications | <img src="docs/screenshots/mobile-home.png" alt="Home page on a phone" width="180" /><br/>Mobile home | <img src="docs/screenshots/mobile-menu.png" alt="Mobile menu open" width="180" /><br/>Mobile menu |
 
-- Home: light and dark
-- Rent browse with filters and map
-- A home's page
-- Tenant dashboard
-- Landlord dashboard (listing review chips)
-- Admin listing review (Pending tab)
-- Login and register
+A full-page capture of the home page is in [`docs/screenshots/home-full.png`](docs/screenshots/home-full.png). To regenerate every image, run `node scripts/screenshots.mjs <baseUrl>` against a running build.
+
+<p align="right"><a href="#top">Back to top</a></p>
 
 ---
 
-## Known limitations
+## Features
 
-- **Contact form and newsletter:** neither sends anything.
-  - The contact form validates, waits briefly, then shows a thank-you panel. Its toast says "This demo doesn't send messages yet."
-  - The newsletter field only shows a toast.
-- **Sessions:** there is no refresh token. When the token expires, you are signed out and sent to the login page with a "Session expired" message.
-- **Uploads:** images must be JPEG, PNG or WebP, up to 5 MB each.
-- **Locations:** the US only, with states as the regions.
+### Tenant (renter and buyer)
+
+| Area | What they can do |
+| --- | --- |
+| Rent | Request a home with a move-in date and lease length; track Pending → Approved → Active → Completed; pay with Stripe once approved |
+| Buy | Make an offer (amount, financing, message); withdraw it or accept a counter-offer; pay the earnest-money deposit with Stripe |
+| Saved homes | Heart any listing; a Favorites page in the dashboard |
+| Reviews | Rate and review a home after an active or completed rental |
+| History | Payments and deposits, with receipts details |
+| Notifications | Bell with an unread count and a full page; red badges on the matching section, cleared when it's opened |
+
+### Landlord (lister and seller)
+
+| Area | What they can do |
+| --- | --- |
+| Approval | New landlord accounts start **Pending**. They can look around but can't list homes or answer requests until an admin approves them |
+| Listings | Create, edit and delete listings for rent or sale: photos (ImgBB), a map pin, a property type (the building) and a category (the market segment) |
+| Review status | Each listing shows **Pending review**, **Live** or **Rejected** (with the admin's note and an "Edit and resubmit" action); a private preview for listings that aren't live yet |
+| Requests | Approve or reject rental requests; mark a rental completed |
+| Offers | Accept, reject or counter; complete the sale after the deposit |
+| Reviews | Read what tenants wrote, filtered by property |
+
+### Admin
+
+| Area | What they can do |
+| --- | --- |
+| Overview | Live counts from the API: users, pending landlords, pending listings, rentals and offers |
+| Users | Search and filter; block or unblock; approve or reject landlords |
+| Listing review | Tabs **Pending** (default, oldest first, with a count), Approved, Rejected, All; Approve, or Reject with a 3–500 character reason; preview before deciding |
+| Records | All rentals and all offers, with filters |
+| Catalog | Categories: create, rename, delete |
+| Homepage | Choose the hero cards, featured homes, state tiles, type images, the number of latest listings and the section order |
+
+### Public and SEO
+
+| Area | What it does |
+| --- | --- |
+| Browse | `/rent`, `/buy` and `/properties`; filters in the URL (keyword, state, city, type, category, price, amenities, available only); map view |
+| State pages | `/rent/[state]` and `/buy/[state]` for every US state that has listings |
+| A home's page | Gallery, details, amenities, location map, reviews, landlord card, payment estimate (sale), "More homes in {State}" |
+| Visibility | Only approved listings are public; rented and sold homes leave the lists but keep their page, which shows a banner and a disabled action |
+| SEO | Per-page metadata, `sitemap.ts`, `robots.ts`, `manifest.ts`, dynamic Open Graph images, JSON-LD (`lib/structured-data.ts`); dashboards, auth pages and thin filter combinations are `noindex` |
+| Extras | WhatsApp chat button, cookie consent banner, light and dark themes |
+
+<p align="right"><a href="#top">Back to top</a></p>
+
+---
+
+## How it works
+
+### System architecture
+
+```mermaid
+flowchart LR
+  B[Browser] --> P["proxy.ts<br/>(reads the rn_token cookie, redirects by role)"]
+  P --> N["Next.js App Router<br/>Server Components: public pages, cached 60 s<br/>Client Components: dashboards, TanStack Query"]
+  N -->|"lib/api/client.ts<br/>Bearer token"| A["Express API on Vercel"]
+  N -->|"/api/upload route handler"| I[ImgBB]
+  A --> D[(PostgreSQL via Prisma)]
+  A --> S[Stripe]
+  B -->|Checkout redirect| S
+  B -->|map tiles| O[OpenStreetMap]
+```
+
+### Rental lifecycle
+
+```mermaid
+stateDiagram-v2
+  [*] --> PENDING: tenant requests
+  PENDING --> APPROVED: landlord approves
+  PENDING --> REJECTED: landlord rejects
+  APPROVED --> ACTIVE: tenant pays (Stripe Checkout)
+  ACTIVE --> COMPLETED: landlord completes
+  COMPLETED --> [*]
+```
+
+### Offer lifecycle
+
+```mermaid
+stateDiagram-v2
+  [*] --> PENDING: buyer makes an offer
+  PENDING --> COUNTERED: seller counters
+  PENDING --> ACCEPTED: seller accepts
+  PENDING --> REJECTED: seller rejects
+  COUNTERED --> ACCEPTED: buyer accepts the counter
+  COUNTERED --> REJECTED: seller rejects
+  PENDING --> WITHDRAWN: buyer withdraws
+  COUNTERED --> WITHDRAWN: buyer withdraws
+  ACCEPTED --> DEPOSIT_PAID: buyer pays the deposit (Stripe)<br/>home becomes UNDER_CONTRACT
+  DEPOSIT_PAID --> COMPLETED: seller completes the sale<br/>home becomes SOLD
+```
+
+### Listing review
+
+```mermaid
+flowchart LR
+  L[Landlord submits or edits] --> P[PENDING]
+  P -->|admin approves| A[APPROVED: live on the public site]
+  P -->|admin rejects with a note| R[REJECTED: only the owner sees it]
+  R -->|landlord edits and saves| P
+  R -->|admin approves| A
+```
+
+Each decision sends the landlord a notification, and each new submission notifies the admins. If two admins decide at the same moment, the second gets a 409.
+
+### Auth and route protection
+
+```mermaid
+sequenceDiagram
+  participant U as Browser
+  participant F as Next.js (client)
+  participant X as proxy.ts
+  participant API as Express API
+  U->>F: submit the login form
+  F->>API: POST /auth/login
+  API-->>F: { accessToken, user }
+  F->>F: store the session (Zustand) and set the rn_token cookie (expires with the JWT)
+  F->>X: navigate to the role's dashboard
+  X->>X: decode the JWT (jose), check exp and role
+  alt valid token, matching role
+    X-->>U: dashboard
+  else another role's dashboard
+    X-->>U: redirect to your own dashboard
+  else missing or expired
+    X-->>U: /auth/login?redirect=…
+  end
+  Note over F,API: Every API call sends a Bearer token. A confirmed 401 clears the session.
+```
+
+<p align="right"><a href="#top">Back to top</a></p>
+
+---
+
+## Tech stack
+
+| Layer | Choice | Why |
+| --- | --- | --- |
+| Framework | Next.js 16 App Router, React 19, Cache Components | Static or cached public pages for SEO and speed; client islands only where they're needed |
+| Language | TypeScript (strict) | Types written from the backend's responses; no `any` |
+| Styling | Tailwind CSS v4, shadcn/ui on Radix | Design tokens in CSS variables; accessible primitives |
+| Server state | TanStack Query v5 | Caching, background refetch, optimistic updates with rollback |
+| Client state | Zustand | A small auth store that's easy to read outside React (the API client) |
+| Forms | React Hook Form + Zod | Schema validation, and server `errorDetails` mapped onto fields |
+| Motion | Lenis, GSAP + ScrollTrigger, `motion`, CSS 3D | Scroll scenes on the public site; lightweight transitions elsewhere |
+| Maps | Leaflet, React Leaflet, `leaflet.markercluster`, OSM tiles | Free, no API key, clustering for many pins |
+| Payments | Stripe Checkout (session created by the backend) | No card data touches this app |
+| Images | `next/image` through `components/shared/photo.tsx`, ImgBB uploads | AVIF and WebP; the upload key stays on the server |
+| Feedback | Sonner | One toast system for every mutation |
+| Testing | Playwright | End-to-end smoke tests and flows that write data, against a production build |
+
+<p align="right"><a href="#top">Back to top</a></p>
+
+---
+
+## Engineering highlights
+
+- **One typed API client.** `src/lib/api/client.ts`
+  - Every backend call goes through `apiRequest()`. It adds the Bearer token, unwraps the `{ success, message, meta, data }` envelope and throws a typed `ApiError { status, message, errorDetails }`.
+  - Each resource has a service file in `src/lib/api/`.
+- **Error handling.** `lib/forms.ts`, `app/**/error.tsx`
+  - Every mutation shows a success and a failure toast.
+  - Each `errorDetails[].path` is set on the matching form field with `setError`.
+  - Every route segment that fetches has a skeleton `loading.tsx` and an `error.tsx` whose **Try again** re-fetches the segment; there are also a `not-found.tsx` and a `global-error.tsx`.
+- **Optimistic updates with rollback.** `src/hooks/`
+  - Covers request decisions, listing review, blocking users, favorites and marking notifications read.
+  - The cache is updated first, a snapshot is restored on error, and the data is refetched when the request settles. If two admins review the same listing, the second gets a 409 and their change is rolled back.
+- **URL-driven filters.** `hooks/use-url-params.ts`, `components/properties/browse/`
+  - Browse filters, tabs and pagination live in the search params, so pages are shareable and back-button friendly.
+  - Text inputs are debounced.
+- **Server Components with ISR.** `lib/data/public.ts`
+  - Public data uses `"use cache"` with a 60-second `cacheLife` and tags. Approving a listing or saving the homepage expires the tag at once.
+  - Failed reads are returned, not thrown, so an error is never cached.
+- **Route protection.** `src/proxy.ts`
+  - Decodes the JWT from the `rn_token` cookie, checks `exp` and redirects by role.
+  - Dashboards also wait for a confirmed session (`DashboardSessionGate`), so no query runs without a token.
+- **Image pipeline.** `components/shared/photo.tsx`, `lib/image-loader.ts`
+  - Unsplash photos are resized by Unsplash's CDN. Other hosts go through Next's optimizer, which serves AVIF and WebP.
+  - Uploads go through `app/api/upload/route.ts`, which checks the file's type and size.
+- **Motion system.** `components/motion/`, `lib/gsap.ts`
+  - Lenis loads only on desktops with a mouse, and never when reduced motion is on.
+  - GSAP is imported dynamically, and `useGSAP` cleans up on unmount.
+  - A global CSS rule plus per-component checks stop motion under `prefers-reduced-motion`.
+- **Accessibility.**
+  - Semantic landmarks and labelled controls; a visible focus ring.
+  - Status is never shown by colour alone.
+  - Badges carry labels such as "Properties, 2 new"; dialogs use Radix focus management.
+- **Security headers.** `next.config.ts`
+  - Sets `X-Content-Type-Options`, `Referrer-Policy`, `X-Frame-Options: DENY`, a `frame-ancestors`/`base-uri`/`object-src` CSP and a strict `Permissions-Policy`.
+  - The token cookie is `secure` in production and `sameSite: lax`.
+- **Notification badges.** `lib/dashboard-nav.ts`, `hooks/use-notifications.ts`
+  - The bell polls `GET /notifications/summary` every 30 seconds and when the tab regains focus.
+  - Unread counts are matched to nav items by link prefix. Opening a section calls `PATCH /notifications/read-by-link` to clear its badge.
+
+<p align="right"><a href="#top">Back to top</a></p>
+
+---
+
+## Performance and quality
+
+### Lighthouse
+
+The D2 targets were set for mobile Lighthouse on a production build. The measured scores weren't recorded in this repo, so they still need to be filled in from a run on the live site.
+
+| Category | Target | Home | A home's page |
+| --- | --- | --- | --- |
+| Performance | ≥ 85 | _to measure_ | _to measure_ |
+| Accessibility | ≥ 95 | _to measure_ | _to measure_ |
+| Best Practices | ≥ 95 | _to measure_ | _to measure_ |
+| SEO | 100 | _to measure_ | _to measure_ |
+| CLS / LCP / INP | < 0.05 / < 2.5 s / < 200 ms | _to measure_ | _to measure_ |
+
+What D2 changed:
+
+- GSAP and Lenis load only where they're used.
+- Next's image optimizer is used for non-Unsplash hosts.
+- Font weights are trimmed.
+- Far-down sections use `content-visibility`.
+- `optimizePackageImports` is set for `radix-ui`.
+
+### SEO
+
+- `metadata` on every page, built with the helpers in `lib/seo.ts`.
+- Also: `sitemap.ts`, `robots.ts`, a web manifest, Open Graph images and JSON-LD.
+- `noindex` is set on dashboards, auth pages and filter combinations not worth indexing (`X-Robots-Tag` from the proxy).
+- `npm run seo:check` walks every sitemap URL and checks its status, title, `h1`, canonical link, landmarks and JSON-LD.
+
+### Tests (Playwright, `tests/e2e/`)
+
+| Project | Covers |
+| --- | --- |
+| `smoke` (read-only) | The home hero and search; filtering on `/rent` and `/buy`; the Rent/Buy switch keeping filters; opening a listing; login and dashboard redirect for each role; wrong credentials; signed-out redirect and return; the notifications bell; the blocked flow for a pending landlord; real 404s; sitemap and robots |
+| `flows` (`@writes`) | Saving and removing a favorite; a rental request from tenant to landlord decision; an offer that is countered, accepted and sent to Stripe for the deposit (stops at the Stripe URL) |
+
+The tests fail on any unexpected `console.error` or failed request. `npm run check:links` crawls public pages for broken links and images.
+
+<p align="right"><a href="#top">Back to top</a></p>
+
+---
+
+## Design system
+
+"Quiet luxury": ink and ivory, a champagne accent, editorial type and plenty of space.
+
+| Token | Light | Dark | Use |
+| --- | --- | --- | --- |
+| background | `#F6F3EE` ivory | `#0C0B0A` | Page |
+| card | `#FDFBF7` | `#161412` | Cards, panels |
+| sand / secondary | `#E9E2D6` | `#1C1815` espresso | Chips, category tags |
+| foreground (ink) | `#12100E` | `#F2EEE7` | Text, primary buttons |
+| muted text (stone) | `#6F685F` | `#A39A8E` | Secondary text |
+| gold (champagne) | `#C2A878` | `#C2A878` | Highlights, key CTA, selection (never small text on ivory) |
+| bronze | `#806435` | – | Gold-toned text on light backgrounds (AA contrast) |
+| destructive | `#9F3A2C` | `#E08F80` | Errors and destructive actions only |
+| alert | `#FF291B` | `#FF291B` | Notification count badges |
+
+- **Type:**
+  - **Geist** for headings, UI and body: medium or semibold headings with tight tracking.
+  - **Cormorant Garamond**, upright, for occasional accent words.
+  - **Jost** for the logo wordmark.
+  - No italic anywhere.
+- **Shapes:**
+  - Pill buttons and chips; cards with `rounded-3xl` corners and hairline borders; `rounded-2xl` inputs.
+  - Frosted-glass panels over photos.
+  - Shadows only on things that float.
+- **Dark mode:** a full theme of its own (`next-themes`, light, dark or system), with primary buttons switching to champagne on ink.
+- **Dashboards:**
+  - Bento grids with pill navigation.
+  - On phones, a floating bottom tab bar with a "More" sheet.
+  - Tables become stacked cards below `md`.
+
+<p align="right"><a href="#top">Back to top</a></p>
+
+---
+
+## Project structure
+
+```text
+src/
+├── app/                 # Routes: (public), auth, dashboard/{tenant,landlord,admin}, payment, api/ route handlers, SEO files
+├── components/
+│   ├── ui/              # shadcn/ui primitives, restyled
+│   ├── shared/          # Cross-feature pieces (photo wrapper, empty/error states, form field)
+│   ├── home/, properties/, maps/, offers/, rentals/, payment/   # Public and buying/renting features
+│   ├── dashboard/, admin/, landlord/, tenant/, notifications/   # Dashboard shell and role views
+│   ├── motion/, layout/, brand/, seo/, providers/               # Animation, navigation, logo, JSON-LD, app providers
+├── hooks/               # TanStack Query hooks per resource, plus UI hooks (URL params, motion)
+├── lib/
+│   ├── api/             # The typed fetch client and one service file per resource
+│   ├── data/public.ts   # Cached server reads for public pages
+│   └── …                # Formatting, SEO, query keys, US states, image loader
+├── store/               # Zustand stores (auth, cookie consent)
+├── schemas/             # Zod form schemas
+├── types/               # API types written from the backend's responses
+└── proxy.ts             # Route protection (Next 16 middleware)
+tests/e2e/               # Playwright specs
+scripts/                 # SEO check, link checker, screenshots
+```
+
+<p align="right"><a href="#top">Back to top</a></p>
+
+---
+
+## Getting started
+
+**Prerequisites:** Node.js 20+, npm, and a running [RentNest backend](https://github.com/Zarif207/rentnest-backend) (local or deployed).
+
+```bash
+git clone https://github.com/Zarif207/rentnest-frontend.git   # placeholder: use this repo's URL
+cd rentnest-frontend
+npm install
+cp .env.example .env.local    # then fill in the values
+npm run dev                   # http://localhost:3000
+```
+
+### Environment variables (`.env.local`)
+
+| Variable | Scope | Description |
+| --- | --- | --- |
+| `NEXT_PUBLIC_API_URL` | Browser and server | Backend base URL, ending in `/api` |
+| `NEXT_PUBLIC_SITE_URL` | Server | The site's public URL, used for canonical links, the sitemap, robots and Open Graph |
+| `NEXT_PUBLIC_WHATSAPP_NUMBER` | Browser | Number for the WhatsApp button (international format, digits only) |
+| `IMGBB_API_KEY` | Server only | ImgBB key used by `/api/upload`; never sent to the browser |
+
+### Scripts
+
+| Command | What it does |
+| --- | --- |
+| `npm run dev` | Development server |
+| `npm run build` / `npm start` | Production build / serve it |
+| `npm run lint` | ESLint |
+| `npm run seo:check [url]` | SEO checks against a running build |
+| `npm run test:e2e:smoke` | Read-only Playwright tests |
+| `npm run test:e2e` | All Playwright tests, including the ones that write data |
+| `npm run check:links` | Crawl public pages for broken links and images |
+
+<p align="right"><a href="#top">Back to top</a></p>
+
+---
+
+## Demo access
+
+These are demo accounts from the backend seed, for evaluation only. The login page has one-click buttons for them.
+
+| Role | Email | Password |
+| --- | --- | --- |
+| Admin | `admin@rentnest.com` | `Admin@123` |
+| Landlord | `landlord1@rentnest.com` | `Password@123` |
+| Tenant | `tenant1@rentnest.com` | `Password@123` |
+
+`landlord2@rentnest.com` and `tenant2@rentnest.com` also exist, with the same password.
+
+**Stripe test card:** `4242 4242 4242 4242`, any future expiry date, any CVC. Stripe runs in test mode.
+
+**Try these flows:**
+
+1. **Rent:** as the tenant, open a home on `/rent` and request it.
+   - As the landlord, approve it under **Requests**.
+   - As the tenant, **Pay now** with the test card; the rental becomes Active.
+2. **Buy:** as the tenant, make an offer on a home on `/buy`.
+   - As the landlord, counter it under **Offers**.
+   - As the tenant, accept the counter and pay the deposit.
+   - As the landlord, complete the sale.
+3. **Review:** as the landlord, add a listing; it shows **Pending review**.
+   - As the admin, open **Properties**, which has a red badge and opens on the Pending tab. Approve the listing.
+   - It appears on the public site, and the landlord gets a notification.
+
+<p align="right"><a href="#top">Back to top</a></p>
+
+---
+
+## API integration
+
+- **The client:** every request goes through one typed client, with one service file and one TanStack Query hook per resource.
+- **What [API_INTEGRATION.md](API_INTEGRATION.md) covers:**
+  - Every endpoint the frontend calls: method, path, role, service function, hook, body and response.
+  - The 401/403 handling, the two Stripe flows, and the caching and query keys.
+- **The backend:** [rentnest-backend](https://github.com/Zarif207/rentnest-backend), whose [`docs/api.md`](https://github.com/Zarif207/rentnest-backend/blob/main/docs/api.md) is the full contract.
+
+<p align="right"><a href="#top">Back to top</a></p>
+
+---
+
+## Deployment
+
+1. Import the repository in Vercel. The framework preset is Next.js; no build settings need changing.
+2. Set the environment variables: `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_SITE_URL` (the real production URL), `NEXT_PUBLIC_WHATSAPP_NUMBER` and `IMGBB_API_KEY`.
+3. On the **backend**, set `CLIENT_SUCCESS_URL` to `https://<frontend>/payment/success` and `CLIENT_CANCEL_URL` to `https://<frontend>/payment/cancel`, then redeploy it.
+4. Deploy, then run `npm run test:e2e:smoke` and `npm run seo:check https://<frontend>` against the live URL.
+5. Submit `https://<frontend>/sitemap.xml` to Google Search Console.
+
+<p align="right"><a href="#top">Back to top</a></p>
+
+---
+
+## Decisions, trade-offs and limitations
+
+### Decisions and trade-offs
+
+- **No refresh token:** the backend issues none. A 401 is re-checked once against `/auth/me`. If it's confirmed, the session is cleared, the user sees "Session expired" and is sent to `/auth/login?redirect=…`.
+- **Money arrives as strings:** Prisma `Decimal` fields come as strings, so they're converted with `Number()` only at the point of formatting or maths.
+- **Leaflet and OpenStreetMap instead of Google Maps:** no API key or billing, and clustering works with many pins.
+- **Contact form:** it validates and shows a thank-you panel, but **sends nothing**; the toast says so. The backend has no contact endpoint, and no third-party email service was added.
+- **No script CSP:** Next's inline scripts would need a nonce on every request, which would make every static page dynamic. The headers still block framing, `<base>` hijacking and plugins.
+- **Token cookie set by the client:** the backend reads only the Bearer header. The cookie exists so the proxy can make redirect decisions on the server.
+
+### Known limitations
+
+- **Newsletter:** the signup only shows a toast.
+- **Hidden listing pages:** the first request to a hidden or unknown listing answers 200 with a `noindex` "not found" page, and later requests answer 404. This comes from partial prerendering.
+- **Public lists:** a listing can take up to about 60 seconds, the cache time, to appear in or leave a public list. Approving a listing and saving the homepage refresh the cache straight away.
+- **Locations:** the US only.
+- **Uploads:** JPEG, PNG or WebP, up to 5 MB.
 - **Payments:** Stripe runs in test mode.
-- **Public lists:** a listing appears in, or leaves, a public list within about 60 seconds, the public cache time. Approving a listing and saving the homepage editor refresh the cache straight away.
-- **Hidden listing pages:** the first request to a hidden listing's page (pending, rejected or deleted) answers HTTP 200 with a "not found" page marked noindex, and later requests answer 404. This comes from partial prerendering.
 - **Deleting users:** the API has no endpoint for it; admins block accounts instead.
+
+<p align="right"><a href="#top">Back to top</a></p>
+
+---
+
+## Roadmap
+
+- Send contact-form messages through a real email provider (for example Resend) via a route handler.
+- Refresh tokens or httpOnly session cookies, to avoid the hard sign-out on expiry.
+- Real-time notifications (server-sent events) instead of 30-second polling.
+- Saved searches with email alerts for new homes in a state.
+- In-app messaging between tenants and landlords.
+- Record Lighthouse scores in CI and fail the build when they fall.
+
+<p align="right"><a href="#top">Back to top</a></p>
+
+---
+
+## Author and license
+
+**Zarif Hasan** · [github.com/Zarif207](https://github.com/Zarif207)
+
+License: _not chosen yet; add a `LICENSE` file (for example MIT) and update this line._
+
+<p align="right"><a href="#top">Back to top</a></p>
