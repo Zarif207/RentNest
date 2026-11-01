@@ -22,6 +22,9 @@ export const NOTIFICATION_TYPES = [
   "DEPOSIT_RECEIVED",
   "DEPOSIT_PAID",
   "SALE_COMPLETED",
+  "PROPERTY_SUBMITTED",
+  "PROPERTY_APPROVED",
+  "PROPERTY_REJECTED",
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 
@@ -36,6 +39,13 @@ export type AppNotification = {
   link: string | null;
   isRead: boolean;
   createdAt: string;
+};
+
+/** GET /notifications/summary: unread counts, overall and per link. */
+export type NotificationSummary = {
+  unreadTotal: number;
+  /** Highest count first; notifications without a link count only in the total. */
+  byLink: { link: string; count: number }[];
 };
 
 export type NotificationQuery = PaginationQuery<"createdAt"> & {

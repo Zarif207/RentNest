@@ -10,6 +10,8 @@ import {
   BarChart3,
   Building2,
   Check,
+  ClipboardCheck,
+  Eye,
   HandCoins,
   Hourglass,
   House,
@@ -23,6 +25,7 @@ import { BentoCard, BentoGrid, MetricCard, ProgressPair } from "@/components/das
 import { ConfirmDialog } from "@/components/dashboard/confirm-dialog";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { QueryError } from "@/components/dashboard/query-error";
+import { ReviewStatusBadge } from "@/components/dashboard/review-status-badge";
 import { StatusPill } from "@/components/dashboard/status-badge";
 import { EarningsChart, monthlyEarnings } from "@/components/landlord/earnings-chart";
 import { OfferStatusPill } from "@/components/offers/offer-status-pill";
@@ -67,14 +70,19 @@ function PropertyObject({ property }: { property: PropertyWithRelations }) {
         ) : (
           <House className="m-auto h-full size-8 text-muted-foreground" aria-hidden />
         )}
-        <span
-          className={cn(
-            "absolute top-2 left-2 rounded-full px-2.5 py-1 text-xs font-medium backdrop-blur-md",
-            available ? "bg-background/85" : "bg-foreground/80 text-background",
-          )}
-        >
-          {availabilityLabel(property.availabilityStatus)}
-        </span>
+        {/* Until it's live, the review status matters more than availability. */}
+        {property.reviewStatus === "APPROVED" ? (
+          <span
+            className={cn(
+              "absolute top-2 left-2 rounded-full px-2.5 py-1 text-xs font-medium backdrop-blur-md",
+              available ? "bg-background/85" : "bg-foreground/80 text-background",
+            )}
+          >
+            {availabilityLabel(property.availabilityStatus)}
+          </span>
+        ) : (
+          <ReviewStatusBadge status={property.reviewStatus} className="absolute top-2 left-2 shadow-sm" />
+        )}
         {canWrite && (
           <Link
             href={`${LANDLORD_PROPERTIES_PATH}/${property.id}/edit`}
@@ -126,6 +134,9 @@ export function LandlordOverview() {
   const requestList = requests.data ?? [];
   const reviewList = reviews.data?.data ?? [];
   const rentals = propertyList.filter((p) => p.listingType === "RENT");
+  const live = propertyList.filter((p) => p.reviewStatus === "APPROVED").length;
+  const awaitingReview = propertyList.filter((p) => p.reviewStatus === "PENDING").length;
+  const rejected = propertyList.filter((p) => p.reviewStatus === "REJECTED").length;
   const available = rentals.filter((p) => p.availabilityStatus === "AVAILABLE").length;
   const offerList = offers.data ?? [];
   const forSale = propertyList.filter((p) => p.listingType === "SALE" && p.availabilityStatus !== "SOLD").length;
@@ -211,7 +222,23 @@ export function LandlordOverview() {
           icon={Building2}
           href={LANDLORD_PROPERTIES_PATH}
           isLoading={properties.isPending}
-          className="md:col-span-3 lg:col-span-3"
+          className="md:col-span-2 lg:col-span-2"
+        />
+        <MetricCard
+          label="Live"
+          value={formatNumber(live)}
+          hint="Approved and public"
+          icon={Eye}
+          isLoading={properties.isPending}
+          className="md:col-span-2 lg:col-span-2"
+        />
+        <MetricCard
+          label="Awaiting review"
+          value={formatNumber(awaitingReview)}
+          hint={rejected > 0 ? `${formatNumber(rejected)} rejected: edit to resubmit` : "Live once an admin approves"}
+          icon={ClipboardCheck}
+          isLoading={properties.isPending}
+          className="md:col-span-2 lg:col-span-2"
         />
         <MetricCard
           label="Pending requests"
@@ -219,7 +246,7 @@ export function LandlordOverview() {
           hint="Waiting for your decision"
           icon={Hourglass}
           isLoading={requests.isPending}
-          className="md:col-span-3 lg:col-span-3"
+          className="md:col-span-2 lg:col-span-2"
         />
         <MetricCard
           label="Active rentals"
@@ -227,7 +254,7 @@ export function LandlordOverview() {
           hint="Paid and in progress"
           icon={KeyRound}
           isLoading={requests.isPending}
-          className="md:col-span-3 lg:col-span-3"
+          className="md:col-span-2 lg:col-span-2"
         />
         <MetricCard
           label="Average rating"
@@ -235,7 +262,7 @@ export function LandlordOverview() {
           hint={reviewList.length ? `From ${reviewList.length} ${reviewList.length === 1 ? "review" : "reviews"}` : "No reviews yet"}
           icon={Star}
           isLoading={reviews.isPending}
-          className="md:col-span-3 lg:col-span-3"
+          className="md:col-span-2 lg:col-span-2"
         />
 
         <BentoCard title="Property objects" href={LANDLORD_PROPERTIES_PATH} className="md:col-span-6 lg:col-span-7">

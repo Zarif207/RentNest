@@ -39,7 +39,9 @@ export const queryKeys = {
   },
   notifications: {
     all: ["notifications"] as const,
+    lists: ["notifications", "list"] as const,
     list: (query: NotificationQuery = {}) => ["notifications", "list", query] as const,
+    summary: ["notifications", "summary"] as const,
   },
   offers: {
     all: ["offers"] as const,

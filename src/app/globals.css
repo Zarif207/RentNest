@@ -14,6 +14,8 @@
   /* Cormorant defaults to old-style figures (a "1" reads like "I"); use lining digits. */
   --font-serif--font-feature-settings: "lnum";
   --color-gold: var(--gold);
+  --color-alert: var(--alert);
+  --color-alert-foreground: var(--alert-foreground);
   --color-gold-foreground: var(--gold-foreground);
   --color-bronze: var(--bronze);
   --color-sand: var(--sand);
@@ -113,6 +115,10 @@
   --logo-accent: #8a6d3b;
   --logo-eye: #f6f3ee;
   --logo-tracking: 0.22em;
+  /* "New" count badges on the dashboard nav: the one bright red, used for
+     nothing else (destructive actions stay brick). */
+  --alert: #ff291b;
+  --alert-foreground: #ffffff;
   /* Roof-peak navbar glass and outline; the "solid" fill is used once scrolled. */
   --roof-fill: rgb(246 243 238 / 0.78);
   --roof-fill-solid: rgb(246 243 238 / 0.92);

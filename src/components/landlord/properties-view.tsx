@@ -7,6 +7,7 @@ import {
   Building2,
   ChevronLeft,
   ChevronRight,
+  ClipboardCheck,
   House,
   LayoutGrid,
   List,
@@ -22,6 +23,7 @@ import { DataTable, type DataTableColumn } from "@/components/dashboard/data-tab
 import { PageHeader } from "@/components/dashboard/page-header";
 import { PropertyCell } from "@/components/dashboard/property-cell";
 import { QueryError } from "@/components/dashboard/query-error";
+import { listingHref, REVIEW_LABELS, ReviewStatusBadge } from "@/components/dashboard/review-status-badge";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -44,10 +46,12 @@ import {
   AVAILABILITY_STATUSES,
   LISTING_TYPES,
   PROPERTY_TYPES,
+  REVIEW_STATUSES,
   type AvailabilityStatus,
   type ListingType,
   type PropertyType,
   type PropertyWithRelations,
+  type ReviewStatus,
 } from "@/types";
 
 const ANY = "any";
@@ -61,6 +65,10 @@ const LISTING_OPTIONS = [
   { value: ANY, label: "Rent and sale" },
   ...LISTING_TYPES.map((type) => ({ value: type, label: LISTING_LABELS[type] })),
 ];
+const REVIEW_OPTIONS = [
+  { value: ANY, label: "Any review status" },
+  ...REVIEW_STATUSES.map((status) => ({ value: status, label: REVIEW_LABELS[status] })),
+];
 const TYPE_OPTIONS = [
   { value: ANY, label: "Any type" },
   ...PROPERTY_TYPES.map((type) => ({ value: type, label: formatEnumLabel(type) })),
@@ -72,6 +80,19 @@ const STATUS_VARIANT = {
   UNDER_CONTRACT: "pending",
   SOLD: "completed",
 } as const satisfies Record<AvailabilityStatus, string>;
+
+/** The admin's reason for rejecting a listing, shown to its owner. */
+function RejectionNote({ property, compact }: { property: PropertyWithRelations; compact?: boolean }) {
+  if (property.reviewStatus !== "REJECTED") return null;
+  return (
+    <div className="rounded-2xl border border-destructive/25 bg-destructive/5 px-3 py-2 text-sm">
+      <p className="font-medium">Admin&apos;s note</p>
+      <p className={cn("text-muted-foreground", compact && "line-clamp-2")} title={property.reviewNote ?? undefined}>
+        {property.reviewNote ?? "No reason was given."}
+      </p>
+    </div>
+  );
+}
 
 /** "For sale" / "For rent" and the status, side by side. */
 function AvailabilityBadge({ property }: { property: PropertyWithRelations }) {
@@ -122,7 +143,9 @@ export function PropertiesView() {
 
   const meta = properties.data?.meta;
   const rows = properties.data?.data;
-  const filtered = Boolean(filters.availabilityStatus || filters.propertyType || filters.listingType);
+  const filtered = Boolean(
+    filters.availabilityStatus || filters.propertyType || filters.listingType || filters.reviewStatus,
+  );
 
   const setFilter = (patch: LandlordPropertyFilters) => {
     setFilters((current) => ({ ...current, ...patch }));
@@ -144,34 +167,50 @@ export function PropertiesView() {
       </ApprovalTooltip>
     );
 
-  const rowActions = (property: PropertyWithRelations) => (
-    <ApprovalTooltip className="w-full justify-end">
-      <div className="flex justify-end gap-2">
-        {canWrite ? (
-          <Button asChild size="sm" variant="outline">
-            <Link href={`${LANDLORD_PROPERTIES_PATH}/${property.id}/edit`}>
-              <Pencil data-icon="inline-start" /> Edit
-            </Link>
+  const rowActions = (property: PropertyWithRelations) => {
+    // A rejected listing is fixed by editing it, which sends it back for review.
+    const resubmit = property.reviewStatus === "REJECTED";
+    const editLabel = resubmit ? "Edit and resubmit" : "Edit";
+    return (
+      <ApprovalTooltip className="w-full justify-end">
+        <div className="flex flex-wrap justify-end gap-2">
+          {canWrite ? (
+            <Button asChild size="sm" variant={resubmit ? "default" : "outline"}>
+              <Link href={`${LANDLORD_PROPERTIES_PATH}/${property.id}/edit`}>
+                <Pencil data-icon="inline-start" /> {editLabel}
+                <span className="sr-only"> {property.title}</span>
+              </Link>
+            </Button>
+          ) : (
+            <Button size="sm" variant="outline" disabled>
+              <Pencil data-icon="inline-start" /> {editLabel}
+            </Button>
+          )}
+          <Button size="sm" variant="destructive" disabled={!canWrite} onClick={() => setDeleting(property)}>
+            <Trash2 data-icon="inline-start" /> Delete
           </Button>
-        ) : (
-          <Button size="sm" variant="outline" disabled>
-            <Pencil data-icon="inline-start" /> Edit
-          </Button>
-        )}
-        <Button size="sm" variant="destructive" disabled={!canWrite} onClick={() => setDeleting(property)}>
-          <Trash2 data-icon="inline-start" /> Delete
-        </Button>
-      </div>
-    </ApprovalTooltip>
-  );
+        </div>
+      </ApprovalTooltip>
+    );
+  };
 
   const columns: DataTableColumn<PropertyWithRelations>[] = [
     {
       key: "property",
       header: "Property",
-      cell: (property) => <PropertyCell property={property} />,
+      cell: (property) => <PropertyCell property={property} href={listingHref(property, LANDLORD_PROPERTIES_PATH)} />,
       className: "max-w-72",
       hideOnMobile: true,
+    },
+    {
+      key: "review",
+      header: "Review",
+      cell: (property) => (
+        <div className="max-w-60 space-y-2">
+          <ReviewStatusBadge status={property.reviewStatus} />
+          <RejectionNote property={property} compact />
+        </div>
+      ),
     },
     { key: "type", header: "Type", cell: (property) => formatEnumLabel(property.propertyType) },
     {
@@ -193,7 +232,9 @@ export function PropertiesView() {
     action: filtered ? (
       <Button
         variant="outline"
-        onClick={() => setFilter({ availabilityStatus: undefined, propertyType: undefined, listingType: undefined })}
+        onClick={() =>
+          setFilter({ availabilityStatus: undefined, propertyType: undefined, listingType: undefined, reviewStatus: undefined })
+        }
       >
         Clear filters
       </Button>
@@ -204,6 +245,13 @@ export function PropertiesView() {
 
   const toolbar = (
     <>
+      <FilterPill
+        icon={ClipboardCheck}
+        label="Review"
+        value={filters.reviewStatus ?? ANY}
+        onValueChange={(value) => setFilter({ reviewStatus: value === ANY ? undefined : (value as ReviewStatus) })}
+        options={REVIEW_OPTIONS}
+      />
       <FilterPill
         icon={Tags}
         label="Listing"
@@ -252,7 +300,9 @@ export function PropertiesView() {
             rows={rows}
             getRowKey={(property) => property.id}
             isLoading={properties.isPending}
-            mobileTitle={(property) => <PropertyCell property={property} />}
+            mobileTitle={(property) => (
+              <PropertyCell property={property} href={listingHref(property, LANDLORD_PROPERTIES_PATH)} />
+            )}
             empty={empty}
           />
         </div>
@@ -286,6 +336,7 @@ export function PropertiesView() {
                     <span className="absolute top-3 left-3">
                       <AvailabilityBadge property={property} />
                     </span>
+                    <ReviewStatusBadge status={property.reviewStatus} className="absolute top-3 right-3 shadow-sm" />
                     <span className="absolute bottom-3 left-3 rounded-full bg-gold px-3 py-1 text-sm font-semibold text-gold-foreground">
                       {formatListingPrice(property).amount}
                       {formatListingPrice(property).suffix && (
@@ -296,7 +347,7 @@ export function PropertiesView() {
                   <div className="flex flex-1 flex-col gap-3 px-3 pt-4 pb-3">
                     <div className="min-w-0">
                       <Link
-                        href={`/properties/${property.id}`}
+                        href={listingHref(property, LANDLORD_PROPERTIES_PATH)}
                         className="block truncate font-medium underline-offset-4 hover:underline"
                       >
                         {property.title}
@@ -305,6 +356,7 @@ export function PropertiesView() {
                         {formatEnumLabel(property.propertyType)} · {formatLocation(property.city, property.division)}
                       </p>
                     </div>
+                    <RejectionNote property={property} />
                     <label className="flex items-center justify-between gap-3 rounded-2xl bg-foreground/3 px-3 py-2 text-sm">
                       {property.listingType === "SALE" ? "Sale status" : "Listed as available"}
                       {availabilitySwitch(property)}

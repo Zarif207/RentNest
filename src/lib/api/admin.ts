@@ -4,6 +4,7 @@ import type {
   AdminUserQuery,
   LandlordStatusUpdate,
   PropertyQuery,
+  PropertyReviewInput,
   PropertyWithRelations,
   User,
   UserStatus,
@@ -26,6 +27,10 @@ export const adminService = {
 
   getProperties: (query?: PropertyQuery) =>
     api.getPaginated<PropertyWithRelations>("/admin/properties", { query }),
+
+  /** Approve or reject a listing (409 if another admin just decided it). */
+  reviewProperty: (id: string, input: PropertyReviewInput) =>
+    api.patch<PropertyWithRelations>(`/admin/properties/${id}/review`, input),
 
   getRentals: (query?: AdminRentalQuery) =>
     api.getPaginated<AdminBooking>("/admin/rentals", { query }),

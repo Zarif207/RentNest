@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { SearchX } from "lucide-react";
+import { SearchX, TriangleAlert } from "lucide-react";
 import { ApprovalGate } from "@/components/landlord/approval";
 import { PropertyForm } from "@/components/landlord/property-form";
 import { PageHeader } from "@/components/dashboard/page-header";
@@ -54,6 +54,19 @@ export function EditPropertyView({ propertyId }: { propertyId: string }) {
     <ApprovalGate>
       <div className="space-y-6">
         <PageHeader title="Edit property" description={property.data.title} />
+        {property.data.reviewStatus === "REJECTED" && (
+          <div role="status" className="flex items-start gap-3 rounded-3xl border border-destructive/25 bg-destructive/5 px-5 py-4 text-sm">
+            <TriangleAlert className="mt-0.5 size-5 shrink-0 text-destructive" aria-hidden />
+            <div className="space-y-1">
+              <p className="font-medium">Fix the issues and save to resubmit.</p>
+              {property.data.reviewNote && (
+                <p className="whitespace-pre-line text-muted-foreground">
+                  <span className="font-medium text-foreground">Admin&apos;s note:</span> {property.data.reviewNote}
+                </p>
+              )}
+            </div>
+          </div>
+        )}
         {/* key: start a fresh form if the listing is refetched with new data. */}
         <PropertyForm key={property.data.updatedAt} property={property.data} />
       </div>

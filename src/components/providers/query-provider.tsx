@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { MutationCache, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { toast } from "sonner";
 import { isApiError } from "@/lib/api/client";
+import { queryKeys } from "@/lib/query-keys";
 
 const MAX_RETRIES = 2;
 
@@ -17,7 +18,12 @@ function shouldRetry(failureCount: number, error: unknown) {
 }
 
 function createQueryClient() {
-  return new QueryClient({
+  const queryClient: QueryClient = new QueryClient({
+    // Any action (approving, paying, reviewing…) can create notifications for
+    // the current user too, so the nav badges refresh after every mutation.
+    mutationCache: new MutationCache({
+      onSettled: () => void queryClient.invalidateQueries({ queryKey: queryKeys.notifications.summary }),
+    }),
     defaultOptions: {
       queries: {
         staleTime: 30_000,
@@ -28,6 +34,7 @@ function createQueryClient() {
       },
     },
   });
+  return queryClient;
 }
 
 // One toast id, so "Back online" replaces the offline notice.

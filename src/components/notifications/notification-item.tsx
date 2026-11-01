@@ -13,6 +13,9 @@ import {
   CircleCheck,
   CircleX,
   CreditCard,
+  FilePen,
+  FileCheck2,
+  FileX2,
   Inbox,
   KeyRound,
   ShieldCheck,
@@ -48,6 +51,9 @@ export const NOTIFICATION_ICONS: Record<NotificationType, { icon: LucideIcon; to
   DEPOSIT_RECEIVED: { icon: Banknote, tone: "good" },
   DEPOSIT_PAID: { icon: Signature, tone: "good" },
   SALE_COMPLETED: { icon: House, tone: "good" },
+  PROPERTY_SUBMITTED: { icon: FilePen, tone: "neutral" },
+  PROPERTY_APPROVED: { icon: FileCheck2, tone: "good" },
+  PROPERTY_REJECTED: { icon: FileX2, tone: "bad" },
 };
 
 const TONES = {

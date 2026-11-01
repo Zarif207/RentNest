@@ -25,7 +25,13 @@ import { RecentActivityCard } from "@/components/notifications/recent-activity-c
 import { EmptyState } from "@/components/shared/empty-state";
 import { UserAvatar } from "@/components/shared/user-avatar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useAdminRentals, useAdminStats, useAdminUsers, usePendingLandlords } from "@/hooks/use-admin";
+import {
+  PENDING_LISTINGS_PATH,
+  useAdminRentals,
+  useAdminStats,
+  useAdminUsers,
+  usePendingLandlords,
+} from "@/hooks/use-admin";
 import { formatCurrency, formatDate, formatNumber } from "@/lib/format";
 
 const RECENT = { limit: 5, sortBy: "createdAt", sortOrder: "desc" } as const;
@@ -65,8 +71,15 @@ export function AdminOverview() {
     { label: "Pending requests", value: totals.pending, icon: Hourglass, hint: "Waiting on landlords" },
   ];
 
-  // Buying and selling, one wider row.
+  // Listing review, then buying and selling: one row of wider tiles.
   const saleMetrics = [
+    {
+      label: "Pending listings",
+      value: totals.pendingListings,
+      icon: Hourglass,
+      href: PENDING_LISTINGS_PATH,
+      hint: "Waiting for your review",
+    },
     { label: "Homes for sale", value: totals.forSale, icon: Signpost, hint: "Sale listings, any status" },
     { label: "Offers", value: totals.offers, icon: HandCoins, href: "/dashboard/admin/offers" },
     { label: "Sales completed", value: totals.sales, icon: CircleCheck, hint: "Homes marked sold" },
@@ -100,7 +113,7 @@ export function AdminOverview() {
             href={metric.href}
             hint={metric.hint}
             isLoading={stats.isPending}
-            className="md:col-span-2 lg:col-span-4"
+            className="md:col-span-3 lg:col-span-3"
           />
         ))}
 

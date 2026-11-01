@@ -1,6 +1,6 @@
 import type { PaginationQuery } from "./api";
 import type { CategorySummary } from "./category";
-import type { AvailabilityStatus, ListingType, PropertyType } from "./enums";
+import type { AvailabilityStatus, ListingType, PropertyType, ReviewStatus } from "./enums";
 import type { UserSummary } from "./user";
 
 /** A bare property row (create/update responses and nested in rentals). */
@@ -28,6 +28,15 @@ export type Property = {
   latitude: number | null;
   longitude: number | null;
   ownerId: string;
+  /** New listings start PENDING; public endpoints only return APPROVED ones. */
+  reviewStatus: ReviewStatus;
+  /**
+   * The admin's reason for a rejection. Only sent to the owner and admins
+   * (public responses leave it out).
+   */
+  reviewNote?: string | null;
+  reviewedAt?: string | null;
+  reviewedById?: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -59,7 +68,12 @@ export type PropertyQuery = PaginationQuery<PropertySortBy> & {
   amenities?: string;
   minPrice?: number;
   maxPrice?: number;
+  /** Admin and landlord lists only (public lists are always APPROVED). */
+  reviewStatus?: ReviewStatus;
 };
+
+/** PATCH /admin/properties/:id/review. A rejection needs a note (3–500 chars). */
+export type PropertyReviewInput = { status: "APPROVED"; note?: string } | { status: "REJECTED"; note: string };
 
 export type PropertyInput = {
   title: string;

@@ -91,3 +91,14 @@ export function changedFields(initial: PropertyValues, values: PropertyValues): 
   }
   return changes as Partial<PropertyInput>;
 }
+
+// Mirrors the backend's review note rules (trimmed, 3–500 characters).
+export const rejectListingSchema = z.object({
+  note: z
+    .string()
+    .trim()
+    .min(3, "Tell the landlord what to fix (at least 3 characters)")
+    .max(500, "Keep the reason under 500 characters"),
+});
+
+export type RejectListingValues = z.infer<typeof rejectListingSchema>;

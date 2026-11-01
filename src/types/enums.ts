@@ -20,6 +20,10 @@ export type AvailabilityStatus = (typeof AVAILABILITY_STATUSES)[number];
 export const LISTING_TYPES = ["RENT", "SALE"] as const;
 export type ListingType = (typeof LISTING_TYPES)[number];
 
+/** Admin review: only APPROVED listings are public. */
+export const REVIEW_STATUSES = ["PENDING", "APPROVED", "REJECTED"] as const;
+export type ReviewStatus = (typeof REVIEW_STATUSES)[number];
+
 export const BOOKING_STATUSES = [
   "PENDING",
   "APPROVED",

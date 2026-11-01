@@ -32,7 +32,10 @@ function afterPropertyChange(queryClient: QueryClient) {
   void refreshPublicListings();
 }
 
-export type LandlordPropertyFilters = Pick<PropertyQuery, "availabilityStatus" | "propertyType" | "listingType">;
+export type LandlordPropertyFilters = Pick<
+  PropertyQuery,
+  "availabilityStatus" | "propertyType" | "listingType" | "reviewStatus"
+>;
 
 export function useLandlordProperties(page: number, filters: LandlordPropertyFilters = {}) {
   return useQuery({
@@ -51,7 +54,11 @@ export function useAllLandlordProperties() {
   });
 }
 
-/** One property (public endpoint; the edit page checks ownership). */
+/**
+ * One property. The public endpoint, called with the signed-in user's token,
+ * also returns listings that aren't approved yet to their owner and to
+ * admins (the edit and preview pages check ownership).
+ */
 export function useProperty(id: string) {
   return useQuery({
     queryKey: queryKeys.properties.detail(id),
@@ -63,9 +70,9 @@ export function useCreateProperty() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (input: PropertyInput) => landlordService.createProperty(input),
-    onSuccess: (property) => {
+    onSuccess: () => {
       afterPropertyChange(queryClient);
-      toast.success(`“${property.title}” is now listed`);
+      toast.success("Submitted for review. It goes live once an admin approves it.");
     },
     onError: (error) => toast.error(getErrorMessage(error)),
   });
@@ -78,7 +85,12 @@ export function useUpdateProperty() {
       landlordService.updateProperty(id, input),
     onSuccess: (property) => {
       afterPropertyChange(queryClient);
-      toast.success(`Saved changes to “${property.title}”`);
+      // Saving a rejected listing sends it back for review (it comes back PENDING).
+      toast.success(
+        property.reviewStatus === "PENDING"
+          ? `Saved “${property.title}”. It goes live once an admin approves it.`
+          : `Saved changes to “${property.title}”`,
+      );
     },
     onError: (error) => toast.error(getErrorMessage(error)),
   });

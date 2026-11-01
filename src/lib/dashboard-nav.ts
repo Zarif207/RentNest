@@ -75,3 +75,28 @@ export function activeNavItem(items: DashboardNavItem[], pathname: string) {
     .filter((item) => pathname === item.href || pathname.startsWith(`${item.href}/`))
     .sort((a, b) => b.href.length - a.href.length)[0];
 }
+
+/**
+ * The nav item a notification link belongs to: the longest item whose path
+ * the link's path equals or sits under ("/dashboard/tenant/requests/1/pay" →
+ * My Requests; "/dashboard/admin/properties?review=PENDING" → Properties).
+ * Overview is skipped: every link sits under it, and clearing it by prefix
+ * would clear every section.
+ */
+export function navItemForLink(items: DashboardNavItem[], link: string) {
+  const path = link.split(/[?#]/)[0];
+  const overview = items[0]?.href;
+  return items
+    .filter((item) => item.href !== overview && (path === item.href || path.startsWith(`${item.href}/`)))
+    .sort((a, b) => b.href.length - a.href.length)[0];
+}
+
+/** Unread notification counts per nav item href, from GET /notifications/summary. */
+export function sectionCounts(items: DashboardNavItem[], byLink: { link: string; count: number }[] = []) {
+  const counts = new Map<string, number>();
+  for (const { link, count } of byLink) {
+    const item = navItemForLink(items, link);
+    if (item) counts.set(item.href, (counts.get(item.href) ?? 0) + count);
+  }
+  return counts;
+}

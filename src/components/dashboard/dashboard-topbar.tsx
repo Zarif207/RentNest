@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import * as m from "motion/react-m";
@@ -24,10 +24,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth, useLogout } from "@/hooks/use-auth";
 import { usePendingOfferCount } from "@/hooks/use-landlord-offers";
 import { usePendingRequestCount } from "@/hooks/use-landlord-requests";
+import { useMarkSectionRead, useNotificationSummary } from "@/hooks/use-notifications";
 import {
   activeNavItem,
   DASHBOARD_NAV,
   dashboardRoleFromPath,
+  sectionCounts,
   type DashboardNavItem,
 } from "@/lib/dashboard-nav";
 import { cn } from "@/lib/utils";
@@ -35,37 +37,85 @@ import { cn } from "@/lib/utils";
 const iconButton =
   "grid size-10 place-items-center rounded-full bg-foreground/5 outline-none transition-colors hover:bg-foreground/10 focus-visible:ring-3 focus-visible:ring-ring/50";
 
+type NavBadge = { count: number; tone: "new" | "pending" } | null;
+
 function useDashboardNav() {
   const pathname = usePathname();
   const role = dashboardRoleFromPath(pathname);
   const items = role ? DASHBOARD_NAV[role] : [];
-  // Landlords see how many requests are waiting on "Requests".
+  // Landlords see how many requests and offers are waiting on them.
   const pendingRequests = usePendingRequestCount(role === "LANDLORD");
   const pendingOffers = usePendingOfferCount(role === "LANDLORD");
+  // Unread notifications per section, by their links.
+  const summary = useNotificationSummary();
+  const counts = sectionCounts(items, summary.data?.byLink);
+
+  const pendingFor = (item: DashboardNavItem) =>
+    item.href === "/dashboard/landlord/requests"
+      ? pendingRequests
+      : item.href === "/dashboard/landlord/offers"
+        ? pendingOffers
+        : 0;
+
   return {
     role,
     items,
+    counts,
     active: activeNavItem(items, pathname),
-    badgeFor: (item: DashboardNavItem) =>
-      item.href === "/dashboard/landlord/requests"
-        ? pendingRequests
-        : item.href === "/dashboard/landlord/offers"
-          ? pendingOffers
-          : 0,
+    /** Red "new" count from notifications first; otherwise the gold pending count. */
+    badgeFor: (item: DashboardNavItem): NavBadge => {
+      const fresh = counts.get(item.href) ?? 0;
+      if (fresh > 0) return { count: fresh, tone: "new" };
+      const pending = pendingFor(item);
+      return pending > 0 ? { count: pending, tone: "pending" } : null;
+    },
+    /** e.g. "Properties, 2 new": the badge itself is hidden from screen readers. */
+    labelFor: (item: DashboardNavItem) => {
+      const fresh = counts.get(item.href) ?? 0;
+      const pending = pendingFor(item);
+      return [item.label, fresh > 0 && `${fresh} new`, pending > 0 && `${pending} pending`].filter(Boolean).join(", ");
+    },
   };
 }
 
-function CountBadge({ count, className }: { count: number; className?: string }) {
-  if (count <= 0) return null;
+/**
+ * Opening a section reads its notifications, which clears its badge. Each
+ * section and count is tried once, so a failed request (which restores the
+ * badge) doesn't retry in a loop; a new notification tries again.
+ */
+function useClearActiveSection() {
+  const { active, counts } = useDashboardNav();
+  const { mutate } = useMarkSectionRead();
+  const tried = useRef<string | null>(null);
+  const href = active?.href;
+  const count = href ? (counts.get(href) ?? 0) : 0;
+
+  useEffect(() => {
+    if (!href || count === 0) return;
+    const attempt = `${href}:${count}`;
+    if (tried.current === attempt) return;
+    tried.current = attempt;
+    mutate(href);
+  }, [href, count, mutate]);
+}
+
+/**
+ * A small count pill. Red for new notifications, gold for pending work.
+ * Callers position it absolutely (or give it a fixed slot) so it never shifts
+ * the layout when it appears.
+ */
+function CountBadge({ badge, className }: { badge: NavBadge; className?: string }) {
+  if (!badge) return null;
   return (
     <span
+      aria-hidden
       className={cn(
-        "grid h-5 min-w-5 place-items-center rounded-full bg-gold px-1.5 text-[11px] font-semibold text-gold-foreground",
+        "grid h-4.5 min-w-4.5 place-items-center rounded-full px-1 text-[10px] leading-none font-semibold tabular-nums",
+        badge.tone === "new" ? "bg-alert text-alert-foreground" : "bg-gold text-gold-foreground",
         className,
       )}
     >
-      {count}
-      <span className="sr-only"> pending</span>
+      {badge.count > 99 ? "99+" : badge.count}
     </span>
   );
 }
@@ -76,7 +126,7 @@ function CountBadge({ count, className }: { count: number; className?: string })
  * pills on their own line under the bar for narrower desktops and tablets.
  */
 function PillNav({ variant }: { variant: "inline" | "row" }) {
-  const { items, active, badgeFor } = useDashboardNav();
+  const { items, active, badgeFor, labelFor } = useDashboardNav();
   // Profile lives in the avatar menu; keeps the pill row short.
   const pills = items.filter((item) => !item.href.endsWith("/profile"));
   const reduceMotion = useReducedMotion();
@@ -90,7 +140,8 @@ function PillNav({ variant }: { variant: "inline" | "row" }) {
           : "mx-auto mt-2 hidden max-w-7xl overflow-x-auto scrollbar-none md:block lg:hidden",
       )}
     >
-      <ul className={cn("flex items-center gap-1.5", variant === "row" && "w-max min-w-full justify-center p-0.5")}>
+      {/* The row scrolls sideways, which clips overflow: p-1 leaves room for the corner badges. */}
+      <ul className={cn("flex items-center gap-1.5", variant === "row" && "w-max min-w-full justify-center p-1")}>
         {pills.map((item) => {
           const isActive = item === active;
           return (
@@ -98,6 +149,7 @@ function PillNav({ variant }: { variant: "inline" | "row" }) {
               <Link
                 href={item.href}
                 aria-current={isActive ? "page" : undefined}
+                aria-label={labelFor(item)}
                 className={cn(
                   "relative flex h-10 items-center gap-2 rounded-full px-4 text-sm font-medium whitespace-nowrap outline-none transition-colors focus-visible:ring-3 focus-visible:ring-ring/50 xl:px-5",
                   isActive
@@ -115,7 +167,7 @@ function PillNav({ variant }: { variant: "inline" | "row" }) {
                   />
                 )}
                 <span className="relative">{item.label}</span>
-                <CountBadge count={badgeFor(item)} className="relative" />
+                <CountBadge badge={badgeFor(item)} className="absolute -top-1 -right-1 ring-2 ring-background" />
               </Link>
             </li>
           );
@@ -154,11 +206,13 @@ function SearchButton() {
 
 /** Mobile: a floating bottom tab bar with up to four pages and a "More" sheet. */
 function MobileTabBar() {
-  const { items, active, badgeFor } = useDashboardNav();
+  const { items, active, badgeFor, labelFor } = useDashboardNav();
   const { user } = useAuth();
   const logout = useLogout();
   const [moreOpen, setMoreOpen] = useState(false);
   const primary = items.slice(0, 4);
+  // A dot on "More" when a page inside it has a badge.
+  const moreHasNew = items.slice(4).some((item) => badgeFor(item)?.tone === "new");
 
   if (items.length === 0) return null;
 
@@ -176,6 +230,7 @@ function MobileTabBar() {
               <Link
                 href={item.href}
                 aria-current={isActive ? "page" : undefined}
+                aria-label={labelFor(item)}
                 className={cn(
                   "relative flex h-12 flex-col items-center justify-center gap-0.5 rounded-full text-[11px] font-medium outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
                   isActive ? "bg-foreground text-background" : "text-muted-foreground",
@@ -183,16 +238,20 @@ function MobileTabBar() {
               >
                 <item.icon className="size-4.5" aria-hidden />
                 <span className="max-w-full truncate px-1">{item.label}</span>
-                <CountBadge count={badge} className="absolute top-1 right-2 h-4 min-w-4 text-[10px]" />
+                <CountBadge badge={badge} className="absolute top-1 right-2" />
               </Link>
             </li>
           );
         })}
         <li className="flex-1">
           <Sheet open={moreOpen} onOpenChange={setMoreOpen}>
-            <SheetTrigger className="flex h-12 w-full flex-col items-center justify-center gap-0.5 rounded-full text-[11px] font-medium text-muted-foreground outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
+            <SheetTrigger
+              aria-label={moreHasNew ? "More, new notifications" : "More"}
+              className="relative flex h-12 w-full flex-col items-center justify-center gap-0.5 rounded-full text-[11px] font-medium text-muted-foreground outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+            >
               <MoreHorizontal className="size-4.5" aria-hidden />
               More
+              {moreHasNew && <span aria-hidden className="absolute top-2 right-3 size-2 rounded-full bg-alert" />}
             </SheetTrigger>
             <SheetContent side="bottom" className="rounded-t-3xl pb-8">
               <SheetTitle className="px-6 pt-6">Menu</SheetTitle>
@@ -213,6 +272,7 @@ function MobileTabBar() {
                       href={item.href}
                       onClick={() => setMoreOpen(false)}
                       aria-current={item === active ? "page" : undefined}
+                      aria-label={labelFor(item)}
                       className={cn(
                         "flex items-center gap-2.5 rounded-2xl px-4 py-3 text-sm font-medium",
                         item === active ? "bg-foreground text-background" : "bg-foreground/5",
@@ -220,7 +280,7 @@ function MobileTabBar() {
                     >
                       <item.icon className="size-4" aria-hidden />
                       <span className="flex-1 truncate">{item.label}</span>
-                      <CountBadge count={badgeFor(item)} />
+                      <CountBadge badge={badgeFor(item)} className="shrink-0" />
                     </Link>
                   </li>
                 ))}
@@ -254,6 +314,7 @@ function MobileTabBar() {
 /** Floating top bar: logo, pill navigation, search, notifications, theme and account. */
 export function DashboardTopbar() {
   const { role } = useDashboardNav();
+  useClearActiveSection();
   const { user, isLoading } = useAuth();
 
   return (

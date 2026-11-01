@@ -6,10 +6,12 @@ import type { Property } from "@/types";
 
 type PropertyCellProps = {
   property: Pick<Property, "id" | "title" | "images" | "city" | "division">;
+  /** Where the title links; the public page by default (a dashboard preview for unapproved listings). */
+  href?: string;
 };
 
 /** Thumbnail, title (linking to the listing) and "City, ST". */
-export function PropertyCell({ property }: PropertyCellProps) {
+export function PropertyCell({ property, href }: PropertyCellProps) {
   const image = property.images[0];
 
   return (
@@ -23,7 +25,7 @@ export function PropertyCell({ property }: PropertyCellProps) {
       </div>
       <div className="min-w-0">
         <Link
-          href={`/properties/${property.id}`}
+          href={href ?? `/properties/${property.id}`}
           className="block truncate font-medium underline-offset-4 hover:underline"
         >
           {property.title}

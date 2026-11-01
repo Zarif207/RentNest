@@ -29,6 +29,8 @@ type BentoCardProps = {
   title?: React.ReactNode;
   /** Adds the corner arrow button linking here. */
   href?: string;
+  /** The arrow's accessible name when `title` isn't plain text ("Open <title>" otherwise). */
+  linkLabel?: string;
   /** Something else for the header's right side (e.g. a FilterPill). */
   action?: React.ReactNode;
   className?: string;
@@ -36,7 +38,7 @@ type BentoCardProps = {
 };
 
 /** Rounded card with a soft inner highlight, an optional title and a corner arrow. */
-export function BentoCard({ title, href, action, className, children }: BentoCardProps) {
+export function BentoCard({ title, href, linkLabel, action, className, children }: BentoCardProps) {
   return (
     <section
       className={cn(
@@ -49,7 +51,7 @@ export function BentoCard({ title, href, action, className, children }: BentoCar
           {title && <h2 className="text-lg font-medium tracking-tight">{title}</h2>}
           <div className="ml-auto flex items-center gap-2">
             {action}
-            {href && <ArrowButton href={href} label={typeof title === "string" ? `Open ${title}` : "Open"} />}
+            {href && <ArrowButton href={href} label={linkLabel ?? (typeof title === "string" ? `Open ${title}` : "Open")} />}
           </div>
         </header>
       )}
@@ -99,6 +101,7 @@ export function MetricCard({ label, value, hint, icon: Icon, href, spark, isLoad
     <BentoCard
       title={<span className="text-base font-normal text-muted-foreground">{label}</span>}
       href={href}
+      linkLabel={`Open ${label}`}
       action={
         Icon && !href ? (
           <span className="grid size-9 place-items-center rounded-full bg-foreground/5">

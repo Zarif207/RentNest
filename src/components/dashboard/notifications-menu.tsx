@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { Bell, BellOff, CheckCheck } from "lucide-react";
 import { toast } from "sonner";
 import { QueryError } from "@/components/dashboard/query-error";
@@ -16,6 +17,7 @@ import {
   useMarkNotificationRead,
   useNotificationFeed,
 } from "@/hooks/use-notifications";
+import { queryKeys } from "@/lib/query-keys";
 import type { AppNotification, UserRole } from "@/types";
 
 // More than this at once (e.g. after a long time away) gets one summary toast.
@@ -27,6 +29,7 @@ const MAX_TOASTS = 2;
  */
 function useArrivalToasts(notifications: AppNotification[] | undefined, role: UserRole) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   // mutate is stable, so the effect doesn't re-run on every render.
   const { mutate: markRead } = useMarkNotificationRead();
   const seen = useRef<Set<string> | null>(null);
@@ -40,6 +43,8 @@ function useArrivalToasts(notifications: AppNotification[] | undefined, role: Us
     const fresh = notifications.filter((notification) => !seen.current?.has(notification.id) && !notification.isRead);
     notifications.forEach((notification) => seen.current?.add(notification.id));
     if (fresh.length === 0) return;
+    // New arrivals change the per-section counts behind the nav badges.
+    void queryClient.invalidateQueries({ queryKey: queryKeys.notifications.summary });
 
     if (fresh.length > MAX_TOASTS) {
       toast(`${fresh.length} new notifications`, {
@@ -60,7 +65,7 @@ function useArrivalToasts(notifications: AppNotification[] | undefined, role: Us
         },
       });
     }
-  }, [notifications, role, router, markRead]);
+  }, [notifications, role, router, markRead, queryClient]);
 }
 
 /** Bell with the unread count; the dropdown lists the latest notifications. */

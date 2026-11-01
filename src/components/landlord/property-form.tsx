@@ -370,8 +370,15 @@ export function PropertyForm({ property }: { property?: PropertyWithRelations })
           description={`${forSale ? "Asking price" : "Monthly rent"} in US dollars and the size of the home.`}
         >
           <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+            {/*
+              Keys: without them React reuses the same <input> when the
+              listing type flips, and react-hook-form registers the new field
+              from the old input's DOM value, so a monthly rent typed before
+              switching to "For sale" became the asking price ($2,400).
+            */}
             {forSale ? (
               <FormField
+                key="salePrice"
                 label="Asking price ($)"
                 htmlFor="salePrice"
                 error={errors.salePrice}
@@ -384,7 +391,7 @@ export function PropertyForm({ property }: { property?: PropertyWithRelations })
                 <Input id="salePrice" type="number" inputMode="decimal" min={1} step="any" placeholder="450000" aria-invalid={Boolean(errors.salePrice)} {...form.register("salePrice", { setValueAs: optionalNumber })} />
               </FormField>
             ) : (
-              <FormField label="Monthly rent ($)" htmlFor="rentAmount" error={errors.rentAmount}>
+              <FormField key="rentAmount" label="Monthly rent ($)" htmlFor="rentAmount" error={errors.rentAmount}>
                 <Input id="rentAmount" type="number" inputMode="decimal" min={1} step="any" placeholder="2400" aria-invalid={Boolean(errors.rentAmount)} {...form.register("rentAmount", { setValueAs: optionalNumber })} />
               </FormField>
             )}
@@ -444,7 +451,7 @@ export function PropertyForm({ property }: { property?: PropertyWithRelations })
             </Button>
             <Button type="submit" disabled={isPending}>
               {isPending && <Loader2 className="animate-spin" aria-hidden />}
-              {isPending ? "Saving…" : isEdit ? "Save changes" : "Publish listing"}
+              {isPending ? "Saving…" : isEdit ? "Save changes" : "Submit for review"}
             </Button>
           </div>
         </div>
