@@ -1,5 +1,5 @@
 import type { Page } from "@playwright/test";
-import { api, expect, session, signIn, switchUser, test } from "./fixtures";
+import { ACCOUNTS, api, expect, requireAccounts, session, signIn, switchUser, test } from "./fixtures";
 
 // These tests write real records through the API (see tests/e2e/README.md).
 // Each one undoes what the API allows in a `finally` block.
@@ -13,11 +13,9 @@ type Listing = {
   owner: { email: string };
 };
 
-const OWNER_EMAIL = "landlord1@rentnest.com";
-
 async function ownersListings(listingType: "RENT" | "SALE") {
   const listings = await api<Listing[]>(`/properties?listingType=${listingType}&availabilityStatus=AVAILABLE&limit=100`);
-  return listings.filter((listing) => listing.owner.email === OWNER_EMAIL);
+  return listings.filter((listing) => listing.owner.email === ACCOUNTS.LANDLORD.email);
 }
 
 /** A row (card or table row) in a dashboard list that mentions `text`. */
@@ -29,6 +27,7 @@ const rowWith = (page: Page, text: string, button: string | RegExp) =>
     .last();
 
 test("a tenant saves a home and removes it again @writes", async ({ page, context, baseURL }) => {
+  requireAccounts("LANDLORD");
   const { token } = await session("TENANT");
   const [listing] = await ownersListings("RENT");
   test.skip(!listing, "No available rental to save");
@@ -69,10 +68,11 @@ test(`a rental request goes from tenant to landlord (${DECISION.toLowerCase()}) 
   context,
   baseURL,
 }) => {
+  requireAccounts("LANDLORD");
   const tenant = await session("TENANT");
   const pending = await api<{ propertyId: string }[]>("/rentals?status=PENDING", { token: tenant.token });
   const listing = (await ownersListings("RENT")).find((home) => !pending.some((rental) => rental.propertyId === home.id));
-  test.skip(!listing, "Every available rental already has a pending request from tenant1");
+  test.skip(!listing, "Every available rental already has a pending request from the demo tenant");
 
   // Tenant: request the home.
   await signIn(context, "TENANT", baseURL!);
@@ -110,12 +110,13 @@ test("an offer is countered, accepted and sent to Stripe for the deposit @writes
   context,
   baseURL,
 }) => {
+  requireAccounts("LANDLORD");
   const tenant = await session("TENANT");
   const open = await api<{ propertyId: string; status: string }[]>("/offers", { token: tenant.token });
   const listing = (await ownersListings("SALE")).find(
     (home) => !open.some((offer) => offer.propertyId === home.id && ["PENDING", "COUNTERED", "ACCEPTED"].includes(offer.status)),
   );
-  test.skip(!listing, "No home for sale by landlord1 without an open offer (run the backend seed for sale homes)");
+  test.skip(!listing, "No home for sale by the E2E landlord without an open offer (run the backend seed for sale homes)");
 
   const asking = Number(listing!.salePrice);
   const offerAmount = Math.round(asking * 0.95);

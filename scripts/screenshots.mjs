@@ -1,8 +1,10 @@
 // Captures the README screenshots from a running build:
 //   npm run build && npm start   (in another terminal)
 //   node scripts/screenshots.mjs [baseUrl]
-// Signs in with the seeded demo accounts against the API the build points at
-// and writes PNGs to docs/screenshots/. A page that fails is skipped and listed.
+// Signs in against the API the build points at and writes PNGs to
+// docs/screenshots/. Landlord and admin logins come from env (E2E_LANDLORD_EMAIL,
+// E2E_LANDLORD_PASSWORD, E2E_ADMIN_EMAIL, E2E_ADMIN_PASSWORD); without them
+// those shots are skipped. A page that fails is skipped and listed.
 import { mkdir } from "node:fs/promises";
 import { chromium } from "playwright";
 
@@ -10,8 +12,8 @@ const BASE = (process.argv[2] ?? "http://localhost:3000").replace(/\/+$/, "");
 const OUT = "docs/screenshots";
 const SETTLE_MS = 1500;
 const ACCOUNTS = {
-  admin: { email: "admin@rentnest.com", password: "Admin@123" },
-  landlord: { email: "landlord1@rentnest.com", password: "Password@123" },
+  admin: { email: process.env.E2E_ADMIN_EMAIL, password: process.env.E2E_ADMIN_PASSWORD },
+  landlord: { email: process.env.E2E_LANDLORD_EMAIL, password: process.env.E2E_LANDLORD_PASSWORD },
   tenant: { email: "tenant1@rentnest.com", password: "Password@123" },
 };
 const failed = [];
@@ -60,6 +62,7 @@ async function shot(name, page, action, { fullPage = false } = {}) {
 
 async function login(page, role) {
   const { email, password } = ACCOUNTS[role];
+  if (!email || !password) throw new Error(`no ${role} login set (see the env variables above)`);
   await page.goto(`${BASE}/auth/login`);
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password", { exact: true }).fill(password);

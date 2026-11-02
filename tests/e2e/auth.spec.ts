@@ -1,4 +1,4 @@
-import { ACCOUNTS, API_URL, expect, session, signIn, test, type Role } from "./fixtures";
+import { ACCOUNTS, API_URL, expect, requireAccounts, session, signIn, test, type Role } from "./fixtures";
 
 const ROLES = Object.keys(ACCOUNTS) as Role[];
 
@@ -15,6 +15,7 @@ test("a signed-out visitor is sent to log in, then back", async ({ page }) => {
 
 for (const role of ROLES) {
   test(`${role.toLowerCase()} logs in and lands on their dashboard`, async ({ page }) => {
+    requireAccounts(role);
     const { email, password, home } = ACCOUNTS[role];
     await page.goto("/auth/login");
     await page.getByLabel("Email", { exact: true }).fill(email);
@@ -52,8 +53,9 @@ test("the notifications bell opens the latest notifications", async ({ page, con
 });
 
 test("a landlord waiting for approval can't list homes", async ({ page, context, baseURL }) => {
-  // landlord1 is approved; the profile is answered as PENDING, which is what
-  // a newly registered landlord gets. Nothing is written.
+  // The landlord is approved; the profile is answered as PENDING, which is
+  // what a newly registered landlord gets. Nothing is written.
+  requireAccounts("LANDLORD");
   const { user } = await session("LANDLORD");
   await page.route(`${API_URL}/auth/me`, async (route) => {
     const response = await route.fetch();

@@ -17,12 +17,16 @@ import { afterSignIn, safeRedirect } from "@/lib/auth";
 import { applyServerErrors } from "@/lib/forms";
 import { loginSchema, type LoginValues } from "@/schemas/auth";
 
-// Seeded accounts (backend prisma/seed.ts) so graders can sign in quickly.
+// Public demo accounts, so visitors can sign in quickly. The observer is
+// read-only; its values come from env (intentionally public).
 const DEMO_ACCOUNTS = [
   { label: "Tenant", email: "tenant1@rentnest.com", password: "Password@123" },
-  { label: "Landlord", email: "landlord1@rentnest.com", password: "Password@123" },
-  { label: "Admin", email: "admin@rentnest.com", password: "Admin@123" },
-] as const;
+  {
+    label: "Observer (read-only)",
+    email: process.env.NEXT_PUBLIC_OBSERVER_EMAIL ?? "",
+    password: process.env.NEXT_PUBLIC_OBSERVER_PASSWORD ?? "",
+  },
+].filter((account) => account.email && account.password);
 
 const LOGIN_FIELDS = ["email", "password"] as const;
 
@@ -93,7 +97,7 @@ export function LoginForm() {
 
       <div className="space-y-3 rounded-3xl border border-dashed border-border p-5">
         <p className="text-xs font-medium tracking-[0.2em] text-muted-foreground uppercase">Demo accounts</p>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 gap-2">
           {DEMO_ACCOUNTS.map(({ label, email, password }) => (
             <Button
               key={label}
@@ -108,7 +112,8 @@ export function LoginForm() {
           ))}
         </div>
         <p className="text-xs text-muted-foreground">
-          Fills the form with a seeded account. Press Log in to continue.
+          Fills the form with a demo account. The observer account can view the admin and landlord dashboards
+          but cannot change anything.
         </p>
       </div>
 

@@ -15,8 +15,9 @@
 ![Stripe](https://img.shields.io/badge/Stripe_Checkout-635BFF?logo=stripe&logoColor=white)
 ![Vercel](https://img.shields.io/badge/Vercel-000000?logo=vercel&logoColor=white)
 ![Playwright](https://img.shields.io/badge/tested_with-Playwright-2EAD33?logo=playwright&logoColor=white)
+[![License: MIT](https://img.shields.io/badge/License-MIT-C2A878.svg)](LICENSE)
 
-[**Live site**](https://YOUR-FRONTEND.vercel.app) · [**Backend API**](https://YOUR-BACKEND.vercel.app/api) · [**API docs**](https://github.com/Zarif207/rentnest-backend/blob/main/docs/api.md) · [**API integration**](API_INTEGRATION.md)
+[**Live site**](https://YOUR-FRONTEND-URL.vercel.app) · [**Backend API**](https://rentnest-backend-one.vercel.app/api) · [**API docs**](https://github.com/Zarif207/rentnest-backend/blob/main/docs/api.md) · [**API integration**](API_INTEGRATION.md)
 
 <img src="docs/screenshots/home-hero.png" alt="RentNest home page hero with search" width="900" />
 
@@ -41,7 +42,8 @@
 13. [Deployment](#deployment)
 14. [Decisions, trade-offs and limitations](#decisions-trade-offs-and-limitations)
 15. [Roadmap](#roadmap)
-16. [Author and license](#author-and-license)
+16. [Author](#author)
+17. [License](#license)
 
 ---
 
@@ -57,7 +59,7 @@ The project is the frontend: a Next.js App Router app that consumes a separate E
 
 **At a glance**
 
-- **Three roles:** tenant (renter and buyer), landlord (lister and seller) and admin, each with its own dashboard.
+- **Three roles plus a read-only observer:** tenant (renter and buyer), landlord (lister and seller) and admin each have their own dashboard; the observer can view the admin and landlord dashboards but can't change anything.
 - **Rent and buy:** rentals (request → approve → pay → complete) and sales (offer → counter → accept → deposit → sold).
 - **Stripe Checkout** for rent payments and earnest-money deposits, confirmed by the backend.
 - **Leaflet map** with marker clusters, plus a page per US state for each listing type.
@@ -92,9 +94,9 @@ A full-page capture of the home page is in [`docs/screenshots/home-full.png`](do
 | --- | --- |
 | Rent | Request a home with a move-in date and lease length; track Pending → Approved → Active → Completed; pay with Stripe once approved |
 | Buy | Make an offer (amount, financing, message); withdraw it or accept a counter-offer; pay the earnest-money deposit with Stripe |
-| Saved homes | Heart any listing; a Favorites page in the dashboard |
+| Saved homes | Heart any listing; a Saved page in the dashboard |
 | Reviews | Rate and review a home after an active or completed rental |
-| History | Payments and deposits, with receipts details |
+| History | Payments and deposits, with receipt details |
 | Notifications | Bell with an unread count and a full page; red badges on the matching section, cleared when it's opened |
 
 ### Landlord (lister and seller)
@@ -117,7 +119,15 @@ A full-page capture of the home page is in [`docs/screenshots/home-full.png`](do
 | Listing review | Tabs **Pending** (default, oldest first, with a count), Approved, Rejected, All; Approve, or Reject with a 3–500 character reason; preview before deciding |
 | Records | All rentals and all offers, with filters |
 | Catalog | Categories: create, rename, delete |
-| Homepage | Choose the hero cards, featured homes, state tiles, type images, the number of latest listings and the section order |
+| Homepage | Choose the hero homes, featured homes, state tiles, type images, the number of latest listings and the section order; a picked home that isn't public (pending, rejected, rented or sold) is flagged as hidden |
+
+### Observer (read-only)
+
+| Area | What they can do |
+| --- | --- |
+| Viewing | Open the admin dashboard and a "Landlord view" of every landlord's listings, requests, offers and reviews |
+| Changes | None: every write is refused by the API ("Observer accounts are read-only"), and the dashboard shows a read-only notice |
+| Privacy | Other people's emails, phone numbers and Stripe IDs arrive masked |
 
 ### Public and SEO
 
@@ -141,7 +151,7 @@ A full-page capture of the home page is in [`docs/screenshots/home-full.png`](do
 ```mermaid
 flowchart LR
   B[Browser] --> P["proxy.ts<br/>(reads the rn_token cookie, redirects by role)"]
-  P --> N["Next.js App Router<br/>Server Components: public pages, cached 60 s<br/>Client Components: dashboards, TanStack Query"]
+  P --> N["Next.js App Router<br/>Server Components: public pages, cached 30–60 s<br/>Client Components: dashboards, TanStack Query"]
   N -->|"lib/api/client.ts<br/>Bearer token"| A["Express API on Vercel"]
   N -->|"/api/upload route handler"| I[ImgBB]
   A --> D[(PostgreSQL via Prisma)]
@@ -256,7 +266,7 @@ sequenceDiagram
   - Browse filters, tabs and pagination live in the search params, so pages are shareable and back-button friendly.
   - Text inputs are debounced.
 - **Server Components with ISR.** `lib/data/public.ts`
-  - Public data uses `"use cache"` with a 60-second `cacheLife` and tags. Approving a listing or saving the homepage expires the tag at once.
+  - Public data uses `"use cache"` with a 60-second `cacheLife` (30 seconds for the homepage settings) and tags. Approving a listing or saving the homepage expires the tag at once.
   - Failed reads are returned, not thrown, so an error is never cached.
 - **Route protection.** `src/proxy.ts`
   - Decodes the JWT from the `rn_token` cookie, checks `exp` and redirects by role.
@@ -270,7 +280,7 @@ sequenceDiagram
   - A global CSS rule plus per-component checks stop motion under `prefers-reduced-motion`.
 - **Accessibility.**
   - Semantic landmarks and labelled controls; a visible focus ring.
-  - Status is never shown by colour alone.
+  - Status is never shown by color alone.
   - Badges carry labels such as "Properties, 2 new"; dialogs use Radix focus management.
 - **Security headers.** `next.config.ts`
   - Sets `X-Content-Type-Options`, `Referrer-Policy`, `X-Frame-Options: DENY`, a `frame-ancestors`/`base-uri`/`object-src` CSP and a strict `Permissions-Policy`.
@@ -287,15 +297,15 @@ sequenceDiagram
 
 ### Lighthouse
 
-The D2 targets were set for mobile Lighthouse on a production build. The measured scores weren't recorded in this repo, so they still need to be filled in from a run on the live site.
+The latest recorded run: mobile Lighthouse against a local production build (`next start`), on 30 October 2026. SEO was not part of that run.
 
 | Category | Target | Home | A home's page |
 | --- | --- | --- | --- |
-| Performance | ≥ 85 | _to measure_ | _to measure_ |
-| Accessibility | ≥ 95 | _to measure_ | _to measure_ |
-| Best Practices | ≥ 95 | _to measure_ | _to measure_ |
-| SEO | 100 | _to measure_ | _to measure_ |
-| CLS / LCP / INP | < 0.05 / < 2.5 s / < 200 ms | _to measure_ | _to measure_ |
+| Performance | ≥ 85 | 81 | 66 |
+| Accessibility | ≥ 95 | 100 | 100 |
+| Best Practices | ≥ 95 | 79 | 79 |
+
+Performance and Best Practices are still below target.
 
 What D2 changed:
 
@@ -316,10 +326,10 @@ What D2 changed:
 
 | Project | Covers |
 | --- | --- |
-| `smoke` (read-only) | The home hero and search; filtering on `/rent` and `/buy`; the Rent/Buy switch keeping filters; opening a listing; login and dashboard redirect for each role; wrong credentials; signed-out redirect and return; the notifications bell; the blocked flow for a pending landlord; real 404s; sitemap and robots |
+| `smoke` (read-only) | The home hero and search; filtering on `/rent` and `/buy`; the Rent/Buy switch keeping filters; opening a listing; login and dashboard redirect for each role (landlord and admin only when their logins are set); wrong credentials; signed-out redirect and return; the notifications bell; the blocked flow for a pending landlord; real 404s; sitemap and robots |
 | `flows` (`@writes`) | Saving and removing a favorite; a rental request from tenant to landlord decision; an offer that is countered, accepted and sent to Stripe for the deposit (stops at the Stripe URL) |
 
-The tests fail on any unexpected `console.error` or failed request. `npm run check:links` crawls public pages for broken links and images.
+The tests fail on any unexpected `console.error` or failed request. Landlord and admin logins are read from environment variables (names in [tests/e2e/README.md](tests/e2e/README.md)); tests that need them are skipped when they're missing. `npm run check:links` crawls public pages for broken links and images, and `npm run check:readme` checks this README.
 
 <p align="right"><a href="#top">Back to top</a></p>
 
@@ -393,8 +403,8 @@ scripts/                 # SEO check, link checker, screenshots
 **Prerequisites:** Node.js 20+, npm, and a running [RentNest backend](https://github.com/Zarif207/rentnest-backend) (local or deployed).
 
 ```bash
-git clone https://github.com/Zarif207/rentnest-frontend.git   # placeholder: use this repo's URL
-cd rentnest-frontend
+git clone https://github.com/Zarif207/RentNest.git
+cd RentNest
 npm install
 cp .env.example .env.local    # then fill in the values
 npm run dev                   # http://localhost:3000
@@ -404,10 +414,12 @@ npm run dev                   # http://localhost:3000
 
 | Variable | Scope | Description |
 | --- | --- | --- |
-| `NEXT_PUBLIC_API_URL` | Browser and server | Backend base URL, ending in `/api` |
+| `NEXT_PUBLIC_API_URL` | Browser and server | Backend base URL, ending in /api |
 | `NEXT_PUBLIC_SITE_URL` | Server | The site's public URL, used for canonical links, the sitemap, robots and Open Graph |
 | `NEXT_PUBLIC_WHATSAPP_NUMBER` | Browser | Number for the WhatsApp button (international format, digits only) |
 | `IMGBB_API_KEY` | Server only | ImgBB key used by `/api/upload`; never sent to the browser |
+| `NEXT_PUBLIC_OBSERVER_EMAIL` | Browser | Observer demo login for the login page's button; intentionally public demo value |
+| `NEXT_PUBLIC_OBSERVER_PASSWORD` | Browser | Observer demo password; intentionally public demo value (the account is read-only) |
 
 ### Scripts
 
@@ -420,6 +432,7 @@ npm run dev                   # http://localhost:3000
 | `npm run test:e2e:smoke` | Read-only Playwright tests |
 | `npm run test:e2e` | All Playwright tests, including the ones that write data |
 | `npm run check:links` | Crawl public pages for broken links and images |
+| `npm run check:readme` | Check this README's links, anchors, scripts, env variables, routes, versions and diagrams |
 
 <p align="right"><a href="#top">Back to top</a></p>
 
@@ -427,30 +440,25 @@ npm run dev                   # http://localhost:3000
 
 ## Demo access
 
-These are demo accounts from the backend seed, for evaluation only. The login page has one-click buttons for them.
+The login page has a one-click button for each of these public demo accounts.
 
 | Role | Email | Password |
 | --- | --- | --- |
-| Admin | `admin@rentnest.com` | `Admin@123` |
-| Landlord | `landlord1@rentnest.com` | `Password@123` |
 | Tenant | `tenant1@rentnest.com` | `Password@123` |
+| Observer (read-only) | `observer@rentnest.dev` | `Observer-Demo-1` |
 
-`landlord2@rentnest.com` and `tenant2@rentnest.com` also exist, with the same password.
+Admin and landlord accounts are private. Use the observer account to explore both dashboards read-only.
 
 **Stripe test card:** `4242 4242 4242 4242`, any future expiry date, any CVC. Stripe runs in test mode.
 
 **Try these flows:**
 
 1. **Rent:** as the tenant, open a home on `/rent` and request it.
-   - As the landlord, approve it under **Requests**.
-   - As the tenant, **Pay now** with the test card; the rental becomes Active.
+   - Follow its status under **My Requests**; once a landlord approves it, **Pay now** with the test card and the rental becomes Active.
 2. **Buy:** as the tenant, make an offer on a home on `/buy`.
-   - As the landlord, counter it under **Offers**.
-   - As the tenant, accept the counter and pay the deposit.
-   - As the landlord, complete the sale.
-3. **Review:** as the landlord, add a listing; it shows **Pending review**.
-   - As the admin, open **Properties**, which has a red badge and opens on the Pending tab. Approve the listing.
-   - It appears on the public site, and the landlord gets a notification.
+   - Follow it under **Offers**; accept a counter-offer, or withdraw the offer.
+3. **Look behind the scenes:** as the observer, open the admin **Overview** and **Properties** (with the Pending review tab), then **Landlord view**.
+   - Try any change: it's refused with "Observer accounts are read-only", and other people's contact details are masked.
 
 <p align="right"><a href="#top">Back to top</a></p>
 
@@ -471,10 +479,10 @@ These are demo accounts from the backend seed, for evaluation only. The login pa
 ## Deployment
 
 1. Import the repository in Vercel. The framework preset is Next.js; no build settings need changing.
-2. Set the environment variables: `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_SITE_URL` (the real production URL), `NEXT_PUBLIC_WHATSAPP_NUMBER` and `IMGBB_API_KEY`.
-3. On the **backend**, set `CLIENT_SUCCESS_URL` to `https://<frontend>/payment/success` and `CLIENT_CANCEL_URL` to `https://<frontend>/payment/cancel`, then redeploy it.
-4. Deploy, then run `npm run test:e2e:smoke` and `npm run seo:check https://<frontend>` against the live URL.
-5. Submit `https://<frontend>/sitemap.xml` to Google Search Console.
+2. Set the environment variables from the table in [Getting started](#getting-started), with `NEXT_PUBLIC_SITE_URL` set to the live site's URL.
+3. On the **backend**, set `CLIENT_SUCCESS_URL` to the live site's URL plus `/payment/success`, `CLIENT_CANCEL_URL` to it plus `/payment/cancel`, and add the live site's URL to `CORS_ORIGINS`; then redeploy the backend.
+4. Deploy, then run `npm run test:e2e:smoke` (with `E2E_BASE_URL` set to the live URL) and `npm run seo:check` with the live URL.
+5. Submit the live site's `/sitemap.xml` to Google Search Console.
 
 <p align="right"><a href="#top">Back to top</a></p>
 
@@ -484,8 +492,8 @@ These are demo accounts from the backend seed, for evaluation only. The login pa
 
 ### Decisions and trade-offs
 
-- **No refresh token:** the backend issues none. A 401 is re-checked once against `/auth/me`. If it's confirmed, the session is cleared, the user sees "Session expired" and is sent to `/auth/login?redirect=…`.
-- **Money arrives as strings:** Prisma `Decimal` fields come as strings, so they're converted with `Number()` only at the point of formatting or maths.
+- **No refresh token:** the backend issues none. A 401 is re-checked once against `GET /auth/me`. If it's confirmed, the session is cleared, the user sees "Session expired" and is sent to `/auth/login?redirect=…`.
+- **Money arrives as strings:** Prisma `Decimal` fields come as strings, so they're converted with `Number()` only at the point of formatting or math.
 - **Leaflet and OpenStreetMap instead of Google Maps:** no API key or billing, and clustering works with many pins.
 - **Contact form:** it validates and shows a thank-you panel, but **sends nothing**; the toast says so. The backend has no contact endpoint, and no third-party email service was added.
 - **No script CSP:** Next's inline scripts would need a nonce on every request, which would make every static page dynamic. The headers still block framing, `<base>` hijacking and plugins.
@@ -518,10 +526,16 @@ These are demo accounts from the backend seed, for evaluation only. The login pa
 
 ---
 
-## Author and license
+## Author
 
 **Zarif Hasan** · [github.com/Zarif207](https://github.com/Zarif207)
 
-License: _not chosen yet; add a `LICENSE` file (for example MIT) and update this line._
+<p align="right"><a href="#top">Back to top</a></p>
+
+---
+
+## License
+
+Released under the MIT License. See [LICENSE](LICENSE).
 
 <p align="right"><a href="#top">Back to top</a></p>

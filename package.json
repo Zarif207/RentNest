@@ -2,6 +2,7 @@
   "name": "rentnest-frontend",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -10,7 +11,8 @@
     "seo:check": "node scripts/check-seo.mjs",
     "test:e2e": "playwright test",
     "test:e2e:smoke": "playwright test --project=smoke",
-    "check:links": "node scripts/check-links.mjs"
+    "check:links": "node scripts/check-links.mjs",
+    "check:readme": "node scripts/check-readme.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

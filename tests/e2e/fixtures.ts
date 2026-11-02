@@ -9,12 +9,30 @@ export const API_URL = (
 
 export type Role = "TENANT" | "LANDLORD" | "ADMIN";
 
-// The seeded demo accounts (see the backend README).
+// The tenant is the public demo account. Landlord and admin accounts are
+// private, so their logins come from env (tests needing them skip without).
 export const ACCOUNTS: Record<Role, { email: string; password: string; home: string }> = {
   TENANT: { email: "tenant1@rentnest.com", password: "Password@123", home: "/dashboard/tenant" },
-  LANDLORD: { email: "landlord1@rentnest.com", password: "Password@123", home: "/dashboard/landlord" },
-  ADMIN: { email: "admin@rentnest.com", password: "Admin@123", home: "/dashboard/admin" },
+  LANDLORD: {
+    email: process.env.E2E_LANDLORD_EMAIL ?? "",
+    password: process.env.E2E_LANDLORD_PASSWORD ?? "",
+    home: "/dashboard/landlord",
+  },
+  ADMIN: {
+    email: process.env.E2E_ADMIN_EMAIL ?? "",
+    password: process.env.E2E_ADMIN_PASSWORD ?? "",
+    home: "/dashboard/admin",
+  },
 };
+
+/** Skips the current test, with a clear message, when a role's login isn't set. */
+export function requireAccounts(...roles: Role[]) {
+  const missing = roles.filter((role) => !ACCOUNTS[role].email || !ACCOUNTS[role].password);
+  base.skip(
+    missing.length > 0,
+    `Set ${missing.map((role) => `E2E_${role}_EMAIL and E2E_${role}_PASSWORD`).join(", ")} to run this test`,
+  );
+}
 
 type Session = { token: string; user: { id: string; name: string; email: string; role: Role } };
 const sessions = new Map<Role, Session>();
