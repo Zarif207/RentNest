@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 import Image from "@/components/shared/photo";
-import { HeroMosaic, MOSAIC_FACETS, type HeroCard } from "@/components/home/hero-mosaic";
+import { HeroMosaic, mosaicFacets, type HeroCard } from "@/components/home/hero-mosaic";
 import { HeroSearch, type HeroSuggestion } from "@/components/home/hero-search";
 import { SplitText } from "@/components/motion/split-text";
 import { useIntroDone } from "@/hooks/use-intro-done";
@@ -27,6 +27,7 @@ export function Hero({ suggestions, cards }: { suggestions: HeroSuggestion[]; ca
   const isDesktop = useIsDesktop();
   const finePointer = useFinePointer();
   const ready = useIntroDone();
+  const facets = mosaicFacets(cards.length);
 
   // Entrance: plays once the intro curtain has lifted (CSS keeps it hidden until then).
   useGSAP(
@@ -41,9 +42,9 @@ export function Hero({ suggestions, cards }: { suggestions: HeroSuggestion[]; ca
       // The pieces drift in from just outside their places and lock together.
       gsap.from("[data-facet-enter]", {
         opacity: 0,
-        x: (index: number) => MOSAIC_FACETS[index].direction[0] * 70,
-        y: (index: number) => MOSAIC_FACETS[index].direction[1] * 70,
-        rotation: (index: number) => MOSAIC_FACETS[index].direction[0] * 8,
+        x: (index: number) => facets[index].direction[0] * 70,
+        y: (index: number) => facets[index].direction[1] * 70,
+        rotation: (index: number) => facets[index].direction[0] * 8,
         duration: 1.1,
         ease: "power3.out",
         stagger: 0.05,
@@ -77,7 +78,7 @@ export function Hero({ suggestions, cards }: { suggestions: HeroSuggestion[]; ca
       // get a short, flat version of the same move.
       const reach = isDesktop ? 360 : 90;
       gsap.utils.toArray<HTMLElement>("[data-facet-fly]").forEach((facet, index) => {
-        const [dx, dy] = MOSAIC_FACETS[index].direction;
+        const [dx, dy] = facets[index].direction;
         tl.to(
           facet,
           isDesktop

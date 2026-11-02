@@ -8,6 +8,7 @@ import { BentoCard } from "@/components/dashboard/bento";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { QueryError } from "@/components/dashboard/query-error";
 import { ImageUploader } from "@/components/shared/image-uploader";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -132,6 +133,16 @@ function Panel({
   );
 }
 
+/**
+ * Why a picked listing is hidden from the public homepage (the backend only
+ * returns approved homes that aren't rented or sold), or null if it shows.
+ */
+function hiddenReason(property: PropertyWithRelations) {
+  if (property.reviewStatus !== "APPROVED") return formatEnumLabel(property.reviewStatus);
+  if (property.availabilityStatus !== "AVAILABLE") return formatEnumLabel(property.availabilityStatus);
+  return null;
+}
+
 /** Picked properties as a reorderable list, with a picker to add or change them. */
 function PropertyListField({
   label,
@@ -162,6 +173,7 @@ function PropertyListField({
           onReorder={onChange}
           renderItem={(id, index) => {
             const property = lookup.get(id);
+            const hidden = property && hiddenReason(property);
             return (
               <div className="flex items-center gap-3">
                 <span className="w-5 text-center text-xs text-muted-foreground tabular-nums">{index + 1}</span>
@@ -174,6 +186,15 @@ function PropertyListField({
                       : "It won't show on the homepage. Remove it or pick another."}
                   </p>
                 </div>
+                {hidden && (
+                  <Badge
+                    variant="outline"
+                    title="Not public, so it won't show on the homepage. Remove it or pick another."
+                    className="shrink-0 border-destructive/40 text-destructive"
+                  >
+                    <TriangleAlert aria-hidden /> {hidden} · hidden
+                  </Badge>
+                )}
                 <Button
                   variant="ghost"
                   size="icon-sm"

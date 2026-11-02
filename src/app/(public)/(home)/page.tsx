@@ -87,10 +87,16 @@ function toHeroSuggestions(
   ];
 }
 
-/** Hero mosaic: the admin's picks, in order (only ones with a photo; up to seven, one per piece). */
-function toHeroCards(properties: PropertyWithRelations[]): HeroCard[] {
-  return properties
-    .filter((property) => property.images.length > 0)
+/**
+ * Hero mosaic: the admin's picks, in order, topped up with the newest
+ * available homes when picks are missing (the backend drops picks that are no
+ * longer public), so every piece has a photo. Up to seven, one per piece.
+ */
+function toHeroCards(picks: PropertyWithRelations[], newest: PropertyWithRelations[]): HeroCard[] {
+  const fill = newest.filter((property) => property.availabilityStatus === "AVAILABLE");
+  const seen = new Set<string>();
+  return [...picks, ...fill]
+    .filter((property) => property.images.length > 0 && !seen.has(property.id) && seen.add(property.id))
     .slice(0, 7)
     .map((property) => ({
       id: property.id,
@@ -328,7 +334,7 @@ export default async function HomePage() {
     orNull(getPublicPropertyStates()),
   ]);
   const listings = all?.data ?? [];
-  // The admin's homepage config (revalidated every 60 s and on save).
+  // The admin's homepage config (revalidated every 30 s and on save).
   const settings = homepage ?? fallbackHomepage(listings);
   const showFaq = settings.sectionOrder.includes("faq");
 
@@ -337,7 +343,7 @@ export default async function HomePage() {
       <JsonLd data={[organizationLd(), websiteLd(), ...(showFaq ? [faqLd(toFaq(listings))] : [])]} />
       <Hero
         suggestions={toHeroSuggestions(states ?? [], listings)}
-        cards={toHeroCards(settings.hero.properties)}
+        cards={toHeroCards(settings.hero.properties, listings)}
       />
       {/* Its own boundary, so the hero's HTML (the LCP) is revealed without
           waiting for the rest of the page's markup to arrive. */}

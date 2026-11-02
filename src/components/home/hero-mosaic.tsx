@@ -20,25 +20,32 @@ const WIDTH = 100;
 const HEIGHT = 91;
 const CENTER: Point = [50, 56];
 
+type LayoutPiece = { points: readonly Point[]; z: number; shade: number; pulse?: string };
+
 // Pieces in fill order: piece i shows the admin's hero pick i (biggest first);
-// without a pick it's glass with its own `shade`, and a few glass pieces
-// `pulse`. `z` is depth toward the viewer.
-const LAYOUT: { points: readonly Point[]; z: number; shade: number; pulse?: string }[] = [
-  // Roof: the big triangle.
-  { points: [[26.6, 53.8], [62.7, 16.5], [100, 53.8]], z: 35, shade: 0.12, pulse: "0s" },
-  // Walls: the big triangle standing on the floor.
-  { points: [[10.6, 91], [49.3, 53.8], [86.8, 91]], z: 40, shade: 0.12 },
-  // Walls: the left triangle.
-  { points: [[10.6, 53.8], [49.3, 53.8], [10.6, 91]], z: 15, shade: 0.14, pulse: "-2.5s" },
-  // Roof: the parallelogram on the left.
-  { points: [[25.2, 26.6], [51.5, 26.6], [26.6, 53.8], [0, 53.8]], z: 5, shade: 0.11 },
-  // Chimney.
-  { points: [[25.2, 0], [51.5, 0], [51.5, 26.6], [25.2, 26.6]], z: -10, shade: 0.16, pulse: "-5s" },
-  // Walls: the narrow triangle on the right.
-  { points: [[86.8, 53.8], [86.8, 91], [68, 72.4]], z: -5, shade: 0.1 },
-  // Walls: the small inverted triangle under the roof.
-  { points: [[49.3, 53.8], [86.8, 53.8], [68, 72.4]], z: 20, shade: 0.13 },
-];
+// without any picks they're glass with their own `shade`, and a few glass
+// pieces `pulse`. `z` is depth toward the viewer.
+const ROOF: LayoutPiece = { points: [[26.6, 53.8], [62.7, 16.5], [100, 53.8]], z: 35, shade: 0.12, pulse: "0s" };
+const WALL_BIG: LayoutPiece = { points: [[10.6, 91], [49.3, 53.8], [86.8, 91]], z: 40, shade: 0.12 };
+const WALL_LEFT: LayoutPiece = { points: [[10.6, 53.8], [49.3, 53.8], [10.6, 91]], z: 15, shade: 0.14, pulse: "-2.5s" };
+const PARALLELOGRAM: LayoutPiece = { points: [[25.2, 26.6], [51.5, 26.6], [26.6, 53.8], [0, 53.8]], z: 5, shade: 0.11 };
+const CHIMNEY: LayoutPiece = { points: [[25.2, 0], [51.5, 0], [51.5, 26.6], [25.2, 26.6]], z: -10, shade: 0.16, pulse: "-5s" };
+const WALL_NARROW: LayoutPiece = { points: [[86.8, 53.8], [86.8, 91], [68, 72.4]], z: -5, shade: 0.1 };
+const WALL_SMALL: LayoutPiece = { points: [[49.3, 53.8], [86.8, 53.8], [68, 72.4]], z: 20, shade: 0.13 };
+
+// Merged pieces for fewer homes: same outline, so the house keeps its shape.
+// (WALL_SMALL + WALL_NARROW share the wall's diagonal, so together they're one triangle.)
+const WALL_RIGHT: LayoutPiece = { points: [[49.3, 53.8], [86.8, 53.8], [86.8, 91]], z: 20, shade: 0.12 };
+const WALL_TRAPEZOID: LayoutPiece = { points: [[10.6, 53.8], [49.3, 53.8], [86.8, 91], [10.6, 91]], z: 40, shade: 0.12 };
+const WALLS: LayoutPiece = { points: [[10.6, 53.8], [86.8, 53.8], [86.8, 91], [10.6, 91]], z: 40, shade: 0.12 };
+
+// The house cut into 7, 6, 5 or 4 pieces (fewest: roof, walls, parallelogram, chimney).
+const LAYOUTS: Record<number, LayoutPiece[]> = {
+  7: [ROOF, WALL_BIG, WALL_LEFT, PARALLELOGRAM, CHIMNEY, WALL_NARROW, WALL_SMALL],
+  6: [ROOF, WALL_BIG, WALL_LEFT, PARALLELOGRAM, CHIMNEY, WALL_RIGHT],
+  5: [ROOF, WALL_TRAPEZOID, PARALLELOGRAM, CHIMNEY, WALL_RIGHT],
+  4: [ROOF, WALLS, PARALLELOGRAM, CHIMNEY],
+};
 
 // Half the gap between pieces, and the hairline drawn just inside each one (px).
 const GAP = 1;
@@ -105,10 +112,23 @@ function buildPiece(points: readonly Point[]) {
   };
 }
 
-/** Every piece, ready to render; the hero animates them by index. */
-export const MOSAIC_FACETS = LAYOUT.map((piece) => ({ ...piece, ...buildPiece(piece.points) }));
+const FACETS = Object.fromEntries(
+  Object.entries(LAYOUTS).map(([count, pieces]) => [
+    count,
+    pieces.map((piece) => ({ ...piece, ...buildPiece(piece.points) })),
+  ]),
+);
 
-type Piece = (typeof MOSAIC_FACETS)[number];
+/**
+ * The pieces for this many homes, ready to render (the hero animates them by
+ * index): one piece per home from 4 to 7, all 7 as glass with none. With 1 to
+ * 3 homes the 4 pieces repeat them, so a piece is never empty.
+ */
+export function mosaicFacets(cardCount: number) {
+  return FACETS[cardCount === 0 ? 7 : Math.min(Math.max(cardCount, 4), 7)];
+}
+
+type Piece = ReturnType<typeof mosaicFacets>[number];
 
 /** A photo cut to the piece's shape; just the picture, the link names the home. */
 function PhotoPiece({ piece, card }: { piece: Piece; card: HeroCard }) {
@@ -159,8 +179,8 @@ function GlassPiece({ piece }: { piece: Piece }) {
 }
 
 /**
- * The hero's tangram house: seven pieces with hairline gaps. Each shows one
- * of the admin's hero listings as a photo; spares are glass. Purely
+ * The hero's tangram house: four to seven pieces with hairline gaps, one per
+ * hero listing (shown as a photo); with no listings it's seven glass pieces. Purely
  * presentational: the hero drives the tilt, entrance and break-apart through
  * the data attributes.
  */
@@ -175,8 +195,8 @@ export function HeroMosaic({ cards, className }: { cards: HeroCard[]; className?
     >
       <div className="size-full transform-3d motion-safe:animate-[hero-bob_7s_ease-in-out_infinite]">
         <ul data-mosaic-tilt aria-label="Featured homes" className="relative size-full transform-3d">
-          {MOSAIC_FACETS.map((piece, index) => {
-            const card = cards.at(index);
+          {mosaicFacets(cards.length).map((piece, index) => {
+            const card = cards.length > 0 ? cards[index % cards.length] : undefined;
             return (
               <li
                 key={index}

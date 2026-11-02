@@ -12,6 +12,9 @@ import type { ListingType, PropertyQuery } from "@/types";
 
 const PUBLIC_CACHE = { stale: 60, revalidate: 60, expire: 3600 };
 
+// The homepage config refreshes faster; an admin save also expires it at once.
+const HOMEPAGE_CACHE = { stale: 30, revalidate: 30, expire: 3600 };
+
 /** Tag on every cached listing read; expired when a landlord changes a property. */
 export const PROPERTIES_TAG = "properties";
 
@@ -68,7 +71,7 @@ async function cachedCategories() {
 
 async function cachedHomepage() {
   "use cache";
-  cacheLife(PUBLIC_CACHE);
+  cacheLife(HOMEPAGE_CACHE);
   // Featured/hero properties come from listings too, so either change expires it.
   cacheTag(HOMEPAGE_TAG, PROPERTIES_TAG);
   return settle(siteSettingsService.getHomepage());
