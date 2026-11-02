@@ -50,6 +50,17 @@ export const DASHBOARD_NAV: Record<UserRole, DashboardNavItem[]> = {
     { href: "/dashboard/admin/homepage", label: "Homepage", icon: LayoutTemplate },
     { href: "/dashboard/admin/profile", label: "Profile", icon: UserRound },
   ],
+  // Read-only reviewer: the admin screens plus every landlord's view.
+  OBSERVER: [
+    { href: "/dashboard/admin", label: "Overview", icon: LayoutDashboard },
+    { href: "/dashboard/admin/users", label: "Users", icon: Users },
+    { href: "/dashboard/admin/properties", label: "Properties", icon: Building2 },
+    { href: "/dashboard/admin/rentals", label: "Rentals", icon: ClipboardList },
+    { href: "/dashboard/admin/offers", label: "Offers", icon: HandCoins },
+    { href: "/dashboard/admin/categories", label: "Categories", icon: Tags },
+    { href: "/dashboard/admin/homepage", label: "Homepage", icon: LayoutTemplate },
+    { href: "/dashboard/landlord", label: "Landlord view", icon: Inbox },
+  ],
 };
 
 const ROLE_BY_SEGMENT: Record<string, UserRole> = {

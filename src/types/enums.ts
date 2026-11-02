@@ -1,6 +1,7 @@
 // Mirrors prisma/schema/enums.prisma in the backend.
 
-export const USER_ROLES = ["ADMIN", "LANDLORD", "TENANT"] as const;
+// OBSERVER: a read-only reviewer who can open the admin and landlord dashboards.
+export const USER_ROLES = ["ADMIN", "LANDLORD", "TENANT", "OBSERVER"] as const;
 export type UserRole = (typeof USER_ROLES)[number];
 
 export const USER_STATUSES = ["ACTIVE", "BLOCKED"] as const;

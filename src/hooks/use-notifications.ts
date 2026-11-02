@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
 import { getErrorMessage } from "@/lib/api/client";
 import { notificationsService } from "@/lib/api/notifications";
+import { roleHome } from "@/lib/auth";
 import { queryKeys } from "@/lib/query-keys";
 import type { AppNotification, NotificationQuery, NotificationSummary, Paginated, UserRole } from "@/types";
 
@@ -12,7 +13,7 @@ import type { AppNotification, NotificationQuery, NotificationSummary, Paginated
 export const FEED_QUERY = { limit: 8 } as const satisfies NotificationQuery;
 const POLL_MS = 30_000;
 
-export const notificationsPath = (role: UserRole) => `/dashboard/${role.toLowerCase()}/notifications`;
+export const notificationsPath = (role: UserRole) => `${roleHome(role)}/notifications`;
 
 /**
  * Latest notifications plus the unread count, polled every 30 s while the

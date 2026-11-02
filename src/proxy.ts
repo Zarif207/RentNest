@@ -1,9 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { decodeToken, isTokenExpired, roleHome, TOKEN_COOKIE } from "@/lib/auth";
+import { canOpenDashboard, decodeToken, isTokenExpired, roleHome, TOKEN_COOKIE } from "@/lib/auth";
 import { BROWSE_PATHS, shouldNoindexBrowse } from "@/lib/seo";
 import { stateFromSlug } from "@/lib/us-states";
 import { isUuid } from "@/lib/utils";
-import { USER_ROLES, type UserRole } from "@/types";
 
 /**
  * Route protection (Next 16 "proxy", formerly middleware).
@@ -51,9 +50,7 @@ export function proxy(request: NextRequest) {
     return redirectTo(loginUrl.pathname + loginUrl.search);
   }
 
-  const requiredRole = dashboardRole(pathname);
-
-  if (!requiredRole || requiredRole !== session.role) {
+  if (!canOpenDashboard(session.role, pathname)) {
     // "/dashboard" itself, or another role's dashboard: go to your own.
     return redirectTo(roleHome(session.role));
   }
@@ -73,16 +70,6 @@ const isPublicDetail = (pathname: string) => /^\/(properties|rent|buy)\/[^/]+$/.
 function isMissingPage(pathname: string) {
   const [, section, slug] = pathname.split("/");
   return section === "properties" ? !isUuid(slug) : !stateFromSlug(slug);
-}
-
-/** "/dashboard/admin/users" → "ADMIN"; null for "/dashboard" or unknown segments. */
-function dashboardRole(pathname: string): UserRole | null {
-  return (
-    USER_ROLES.find((role) => {
-      const home = roleHome(role);
-      return pathname === home || pathname.startsWith(`${home}/`);
-    }) ?? null
-  );
 }
 
 // Only the protected, auth, browse and public detail routes run the proxy, so

@@ -2,7 +2,12 @@ import { Badge } from "@/components/ui/badge";
 import { formatEnumLabel } from "@/lib/format";
 import type { LandlordStatus, UserRole, UserStatus } from "@/types";
 
-const ROLE_VARIANT = { ADMIN: "default", LANDLORD: "approved", TENANT: "secondary" } as const;
+const ROLE_VARIANT = {
+  ADMIN: "default",
+  LANDLORD: "approved",
+  TENANT: "secondary",
+  OBSERVER: "outline",
+} as const satisfies Record<UserRole, string>;
 
 export function RoleBadge({ role }: { role: UserRole }) {
   return <Badge variant={ROLE_VARIANT[role]}>{formatEnumLabel(role)}</Badge>;

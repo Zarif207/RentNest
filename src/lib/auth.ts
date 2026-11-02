@@ -9,10 +9,35 @@ const ROLE_HOME: Record<UserRole, string> = {
   TENANT: "/dashboard/tenant",
   LANDLORD: "/dashboard/landlord",
   ADMIN: "/dashboard/admin",
+  // Read-only reviewer: lands on the admin dashboard.
+  OBSERVER: "/dashboard/admin",
 };
+
+// The dashboards that exist, by the role that owns each one.
+const DASHBOARD_OWNERS = ["TENANT", "LANDLORD", "ADMIN"] as const satisfies readonly UserRole[];
 
 export function roleHome(role: UserRole) {
   return ROLE_HOME[role];
+}
+
+/** "/dashboard/admin/users" → "ADMIN"; null for "/dashboard" or unknown paths. */
+export function dashboardOwner(pathname: string): UserRole | null {
+  return (
+    DASHBOARD_OWNERS.find((role) => {
+      const home = ROLE_HOME[role];
+      return pathname === home || pathname.startsWith(`${home}/`);
+    }) ?? null
+  );
+}
+
+/**
+ * Whether a role may open a dashboard path. Observers may view the admin and
+ * landlord dashboards (the API lets them read, never write).
+ */
+export function canOpenDashboard(role: UserRole, pathname: string) {
+  const owner = dashboardOwner(pathname);
+  if (!owner) return false;
+  return owner === role || (role === "OBSERVER" && (owner === "ADMIN" || owner === "LANDLORD"));
 }
 
 /**
@@ -32,10 +57,9 @@ export function safeRedirect(path: string | null | undefined) {
  * redirect the client navigation, and redirected RSC requests 404.
  */
 export function afterSignIn(redirectTo: string | null, role: UserRole) {
-  const home = roleHome(role);
-  if (!redirectTo) return home;
+  if (!redirectTo) return roleHome(role);
   const isDashboard = redirectTo === "/dashboard" || redirectTo.startsWith("/dashboard/");
-  return !isDashboard || redirectTo === home || redirectTo.startsWith(`${home}/`) ? redirectTo : home;
+  return !isDashboard || canOpenDashboard(role, redirectTo) ? redirectTo : roleHome(role);
 }
 
 function isUserRole(value: unknown): value is UserRole {
