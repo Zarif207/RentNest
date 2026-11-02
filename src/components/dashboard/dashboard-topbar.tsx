@@ -43,7 +43,10 @@ type NavBadge = { count: number; tone: "new" | "pending" } | null;
 function useDashboardNav() {
   const pathname = usePathname();
   const role = dashboardRoleFromPath(pathname);
-  const items = role ? DASHBOARD_NAV[role] : [];
+  const { user } = useAuth();
+  // Observers keep one nav (admin screens plus the landlord view) on both
+  // dashboards, and never see write-only items like "Add Property".
+  const items = user?.role === "OBSERVER" ? DASHBOARD_NAV.OBSERVER : role ? DASHBOARD_NAV[role] : [];
   // Landlords see how many requests and offers are waiting on them.
   const pendingRequests = usePendingRequestCount(role === "LANDLORD");
   const pendingOffers = usePendingOfferCount(role === "LANDLORD");
