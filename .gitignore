@@ -49,5 +49,8 @@ next-env.d.ts
 
 # claude code
 CLAUDE.md
-PLAN.md
+PLAN*.md
 .claude/
+
+# logs
+*.log

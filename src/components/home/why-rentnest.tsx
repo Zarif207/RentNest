@@ -168,7 +168,7 @@ export function WhyRentNest({ rent, photos }: { rent: number; photos: string[] }
             ))}
           </div>
         </Tile>
-
+{/* 
         <Tile
           title="Light or dark"
           text="Both themes are designed with care, and RentNest follows your system setting."
@@ -182,7 +182,7 @@ export function WhyRentNest({ rent, photos }: { rent: number; photos: string[] }
               <Moon className="size-4" />
             </span>
           </span>
-        </Tile>
+        </Tile> */}
       </Reveal>
     </div>
   );

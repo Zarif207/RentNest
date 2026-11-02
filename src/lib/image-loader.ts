@@ -7,7 +7,7 @@ import type { ImageLoaderProps } from "next/image";
  * made the optimizer time out), and Unsplash's CDN resizes on the fly, so
  * those go straight to it. Any other host is shown as-is.
  */
-export const OPTIMIZED_IMAGE_HOSTS = ["i.ibb.co", "ap.rdcpix.com", "images.openai.com"];
+export const OPTIMIZED_IMAGE_HOSTS = ["i.ibb.co", "ap.rdcpix.com", "ar.rdcpix.com", "images.openai.com"];
 
 function hostOf(src: string) {
   try {

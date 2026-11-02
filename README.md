@@ -400,7 +400,7 @@ scripts/                 # SEO check, link checker, screenshots
 
 ## Getting started
 
-**Prerequisites:** Node.js 20+, npm, and a running [RentNest backend](https://github.com/Zarif207/rentnest-backend) (local or deployed).
+**Prerequisites:** Node.js 20.9+, npm, and a running [RentNest backend](https://github.com/Zarif207/rentnest-backend) (local or deployed).
 
 ```bash
 git clone https://github.com/Zarif207/RentNest.git

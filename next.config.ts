@@ -12,8 +12,18 @@ const SECURITY_HEADERS = [
   { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=(), usb=()" },
 ];
 
+// Every absolute URL (canonical, sitemap, robots, Open Graph, JSON-LD) comes
+// from NEXT_PUBLIC_SITE_URL, and every API call from NEXT_PUBLIC_API_URL.
+if (process.env.NODE_ENV === "production") {
+  for (const name of ["NEXT_PUBLIC_SITE_URL", "NEXT_PUBLIC_API_URL"]) {
+    if (!process.env[name]) console.warn(`⚠ ${name} is not set: see .env.example.`);
+  }
+}
+
 const nextConfig: NextConfig = {
   cacheComponents: true,
+  reactStrictMode: true,
+  poweredByHeader: false,
   // Unsplash photos skip the optimizer (components/shared/photo.tsx).
   images: {
     formats: ["image/avif", "image/webp"],
