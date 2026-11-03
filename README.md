@@ -8,6 +8,7 @@
 
 **A US home marketplace to rent or buy, with verified landlords, Stripe payments, offers and admin-reviewed listings.**
 
+[![Live demo](https://img.shields.io/badge/Live_demo-rentnest--realty.vercel.app-C2A878?logo=vercel&logoColor=white)](https://rentnest-realty.vercel.app)
 ![Next.js](https://img.shields.io/badge/Next.js_16-000000?logo=nextdotjs&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS_v4-06B6D4?logo=tailwindcss&logoColor=white)
@@ -17,7 +18,7 @@
 ![Playwright](https://img.shields.io/badge/tested_with-Playwright-2EAD33?logo=playwright&logoColor=white)
 [![License: MIT](https://img.shields.io/badge/License-MIT-C2A878.svg)](LICENSE)
 
-[**Live site**](https://YOUR-FRONTEND-URL.vercel.app) · [**Backend API**](https://rentnest-backend-one.vercel.app/api) · [**API docs**](https://github.com/Zarif207/rentnest-backend/blob/main/docs/api.md) · [**API integration**](API_INTEGRATION.md)
+[**Live site**](https://rentnest-realty.vercel.app) · [**Backend API**](https://rentnest-backend-one.vercel.app/api) · [**API docs**](https://github.com/Zarif207/rentnest-backend/blob/main/docs/api.md) · [**API integration**](API_INTEGRATION.md)
 
 <img src="docs/screenshots/home-hero.png" alt="RentNest home page hero with search" width="900" />
 
@@ -25,25 +26,40 @@
 
 ---
 
+## Live links
+
+| | |
+| --- | --- |
+| Live site | [rentnest-realty.vercel.app](https://rentnest-realty.vercel.app) |
+| Backend API | [rentnest-backend-one.vercel.app/api](https://rentnest-backend-one.vercel.app/api) |
+| Backend repo | [Zarif207/rentnest-backend](https://github.com/Zarif207/rentnest-backend) |
+| API docs | [docs/api.md](https://github.com/Zarif207/rentnest-backend/blob/main/docs/api.md) |
+| Frontend repo | [Zarif207/RentNest](https://github.com/Zarif207/RentNest) |
+
+Hosting: Vercel (frontend and backend). Database: Prisma Postgres.
+
+---
+
 ## Contents
 
-1. [Overview](#overview)
-2. [Screenshots](#screenshots)
-3. [Features](#features)
-4. [How it works](#how-it-works)
-5. [Tech stack](#tech-stack)
-6. [Engineering highlights](#engineering-highlights)
-7. [Performance and quality](#performance-and-quality)
-8. [Design system](#design-system)
-9. [Project structure](#project-structure)
-10. [Getting started](#getting-started)
-11. [Demo access](#demo-access)
-12. [API integration](#api-integration)
-13. [Deployment](#deployment)
-14. [Decisions, trade-offs and limitations](#decisions-trade-offs-and-limitations)
-15. [Roadmap](#roadmap)
-16. [Author](#author)
-17. [License](#license)
+1. [Live links](#live-links)
+2. [Overview](#overview)
+3. [Screenshots](#screenshots)
+4. [Features](#features)
+5. [How it works](#how-it-works)
+6. [Tech stack](#tech-stack)
+7. [Engineering highlights](#engineering-highlights)
+8. [Performance and quality](#performance-and-quality)
+9. [Design system](#design-system)
+10. [Project structure](#project-structure)
+11. [Getting started](#getting-started)
+12. [Demo access](#demo-access)
+13. [API integration](#api-integration)
+14. [Deployment](#deployment)
+15. [Decisions, trade-offs and limitations](#decisions-trade-offs-and-limitations)
+16. [Roadmap](#roadmap)
+17. [Author](#author)
+18. [License](#license)
 
 ---
 
@@ -451,14 +467,14 @@ Admin and landlord accounts are private. Use the observer account to explore bot
 
 **Stripe test card:** `4242 4242 4242 4242`, any future expiry date, any CVC. Stripe runs in test mode.
 
-**Try these flows:**
+### Try it
 
-1. **Rent:** as the tenant, open a home on `/rent` and request it.
-   - Follow its status under **My Requests**; once a landlord approves it, **Pay now** with the test card and the rental becomes Active.
-2. **Buy:** as the tenant, make an offer on a home on `/buy`.
-   - Follow it under **Offers**; accept a counter-offer, or withdraw the offer.
-3. **Look behind the scenes:** as the observer, open the admin **Overview** and **Properties** (with the Pending review tab), then **Landlord view**.
-   - Try any change: it's refused with "Observer accounts are read-only", and other people's contact details are masked.
+1. Open [the live site](https://rentnest-realty.vercel.app) and browse homes on **Rent** or **Buy**, using the filters and the map.
+2. Log in with the **Tenant** button on the login page.
+3. Open a home on `/rent`, request it, and follow its status under **My Requests**.
+4. Open a home on `/buy` and make an offer; follow it under **Offers**, where you can accept a counter-offer or withdraw.
+5. Once a landlord approves a request, click **Pay now** and pay with the Stripe test card; the rental becomes Active.
+6. Log out, log in with the **Observer** button, and open the admin **Overview**, **Properties** (Pending review tab) and **Landlord view**. Any change is refused with "Observer accounts are read-only", and other people's contact details are masked.
 
 <p align="right"><a href="#top">Back to top</a></p>
 
@@ -478,11 +494,28 @@ Admin and landlord accounts are private. Use the observer account to explore bot
 
 ## Deployment
 
-1. Import the repository in Vercel. The framework preset is Next.js; no build settings need changing.
-2. Set the environment variables from the table in [Getting started](#getting-started), with `NEXT_PUBLIC_SITE_URL` set to the live site's URL.
-3. On the **backend**, set `CLIENT_SUCCESS_URL` to the live site's URL plus `/payment/success`, `CLIENT_CANCEL_URL` to it plus `/payment/cancel`, and add the live site's URL to `CORS_ORIGINS`; then redeploy the backend.
-4. Deploy, then run `npm run test:e2e:smoke` (with `E2E_BASE_URL` set to the live URL) and `npm run seo:check` with the live URL.
-5. Submit the live site's `/sitemap.xml` to Google Search Console.
+The live site runs on **Vercel** (project `rentnest-realty`, Next.js preset, default build settings). The backend is a separate Vercel project, and its database is **Prisma Postgres**.
+
+1. Import [the repository](https://github.com/Zarif207/RentNest) in Vercel. No build settings need changing.
+2. Add these environment variables (names and example shapes only):
+
+   | Variable | Example shape |
+   | --- | --- |
+   | `NEXT_PUBLIC_API_URL` | `https://rentnest-backend-one.vercel.app/api` |
+   | `NEXT_PUBLIC_SITE_URL` | `https://rentnest-realty.vercel.app` |
+   | `NEXT_PUBLIC_OBSERVER_EMAIL` | the observer demo email |
+   | `NEXT_PUBLIC_OBSERVER_PASSWORD` | the observer demo password |
+   | `IMGBB_API_KEY` | your ImgBB API key (server only) |
+   | `NEXT_PUBLIC_WHATSAPP_NUMBER` | optional, digits only, e.g. `15551234567` |
+
+3. On the **backend** project, set:
+   - `CORS_ORIGINS` to a list that includes `https://rentnest-realty.vercel.app`.
+   - `CLIENT_SUCCESS_URL` to `https://rentnest-realty.vercel.app/payment/success`.
+   - `CLIENT_CANCEL_URL` to `https://rentnest-realty.vercel.app/payment/cancel`.
+
+   Then redeploy the backend.
+4. Deploy, then run `npm run test:e2e:smoke` (with `E2E_BASE_URL=https://rentnest-realty.vercel.app`) and `npm run seo:check` against the live URL.
+5. Submit `https://rentnest-realty.vercel.app/sitemap.xml` to Google Search Console.
 
 <p align="right"><a href="#top">Back to top</a></p>
 

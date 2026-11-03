@@ -11,9 +11,19 @@ import { chromium } from "playwright";
 const BASE = (process.argv[2] ?? "http://localhost:3000").replace(/\/+$/, "");
 const OUT = "docs/screenshots";
 const SETTLE_MS = 1500;
+// The read-only observer can view the admin and landlord dashboards, so it
+// stands in for those roles unless private E2E accounts are set.
+const OBSERVER = {
+  email: process.env.NEXT_PUBLIC_OBSERVER_EMAIL ?? "observer@rentnest.dev",
+  password: process.env.NEXT_PUBLIC_OBSERVER_PASSWORD ?? "Observer-Demo-1",
+};
 const ACCOUNTS = {
-  admin: { email: process.env.E2E_ADMIN_EMAIL, password: process.env.E2E_ADMIN_PASSWORD },
-  landlord: { email: process.env.E2E_LANDLORD_EMAIL, password: process.env.E2E_LANDLORD_PASSWORD },
+  admin: process.env.E2E_ADMIN_EMAIL
+    ? { email: process.env.E2E_ADMIN_EMAIL, password: process.env.E2E_ADMIN_PASSWORD }
+    : OBSERVER,
+  landlord: process.env.E2E_LANDLORD_EMAIL
+    ? { email: process.env.E2E_LANDLORD_EMAIL, password: process.env.E2E_LANDLORD_PASSWORD }
+    : OBSERVER,
   tenant: { email: "tenant1@rentnest.com", password: "Password@123" },
 };
 const failed = [];
