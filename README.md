@@ -2,7 +2,6 @@
 
 <div align="center">
 
-<img src="docs/screenshots/logo.png" alt="RentNest logo" height="56" />
 
 # RentNest
 
@@ -30,11 +29,9 @@
 
 | | |
 | --- | --- |
-| Live site | [rentnest-realty.vercel.app](https://rentnest-realty.vercel.app) |
 | Backend API | [rentnest-backend-one.vercel.app/api](https://rentnest-backend-one.vercel.app/api) |
 | Backend repo | [Zarif207/rentnest-backend](https://github.com/Zarif207/rentnest-backend) |
 | API docs | [docs/api.md](https://github.com/Zarif207/rentnest-backend/blob/main/docs/api.md) |
-| Frontend repo | [Zarif207/RentNest](https://github.com/Zarif207/RentNest) |
 
 Hosting: Vercel (frontend and backend). Database: Prisma Postgres.
 
