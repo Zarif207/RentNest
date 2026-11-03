@@ -23,17 +23,6 @@
 
 </div>
 
----
-
-## Live links
-
-| | |
-| --- | --- |
-| Backend API | [rentnest-backend-one.vercel.app/api](https://rentnest-backend-one.vercel.app/api) |
-| Backend repo | [Zarif207/rentnest-backend](https://github.com/Zarif207/rentnest-backend) |
-| API docs | [docs/api.md](https://github.com/Zarif207/rentnest-backend/blob/main/docs/api.md) |
-
-Hosting: Vercel (frontend and backend). Database: Prisma Postgres.
 
 ---
 
