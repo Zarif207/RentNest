@@ -81,7 +81,6 @@ The project is the frontend: a Next.js App Router app that consumes a separate E
 | <img src="docs/screenshots/landlord-offers.png" alt="Landlord offers dashboard" width="300" /><br/>Landlord offers | <img src="docs/screenshots/admin-properties-pending.png" alt="Admin properties, Pending review tab" width="300" /><br/>Admin review (Pending) | <img src="docs/screenshots/admin-overview.png" alt="Admin overview bento dashboard" width="300" /><br/>Admin overview |
 | <img src="docs/screenshots/notifications-open.png" alt="Notifications menu open in the dashboard" width="300" /><br/>Notifications | <img src="docs/screenshots/mobile-home.png" alt="Home page on a phone" width="180" /><br/>Mobile home | <img src="docs/screenshots/mobile-menu.png" alt="Mobile menu open" width="180" /><br/>Mobile menu |
 
-A full-page capture of the home page is in [`docs/screenshots/home-full.png`](docs/screenshots/home-full.png). To regenerate every image, run `node scripts/screenshots.mjs <baseUrl>` against a running build.
 
 <p align="right"><a href="#top">Back to top</a></p>
 
